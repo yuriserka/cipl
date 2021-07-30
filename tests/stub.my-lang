@@ -1,0 +1,18 @@
+// my comment will not be displayed
+fn main = (number argv, string argv) {
+    number myadd = 5.25 + 1;
+    bool isEqOne = true && false == 1;
+    bool isLte = 1 < 2 || 1 == 2;
+    if (isEqOne) {
+        number fr = 1.23 + 3.14159;
+    }
+    number hexx = 0x145;
+    number octall = 0123;
+    number res = fr * myadd / 2 * isLte;
+    res += hexx;
+    res &= octall;
+    number mask = 0xFF;
+    res ^= mask;
+
+    return 0;
+}
