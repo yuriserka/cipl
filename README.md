@@ -5,9 +5,7 @@
 ## Usage
 
 ```shell
-flex lex-def.l
-gcc -o mylex.out -O lex.yy.c -lfl
-./mylex.out < tests/<program>.cipl
+./tradutores.out < tests/<input>.cipl > tokenized_<output>.txt
 ```
 
 Running valgrind to check for memory leaks
@@ -20,8 +18,6 @@ make mem_check
 
 ```shell
 sudo apt install flex bison gcc make autoconf
-autoreconf --install
-./configure
 make
 ```
 
