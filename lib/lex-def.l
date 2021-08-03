@@ -1,4 +1,5 @@
 %option nounput noinput noyywrap
+%option outfile="src/main.c" header-file="include/flex/scanner.h"
 
 %{
     #include <stdio.h>
@@ -8,6 +9,33 @@
     int curr_tab = 0;
     int reading_string = 0;
     int reading_args = 0;
+    int last_act;
+
+    char error_message[512] = {0};
+
+    typedef struct {
+        int col;
+        int line;
+    } cursorpos;
+
+    cursorpos err, curr;
+
+    #define YY_UPDT_POS if ((last_act = yy_act) != -1) update_position(&curr.line, &curr.col);
+    #define YY_BREAK YY_UPDT_POS break;
+    #define RET YY_UPDT_POS return
+    
+    void update_position(int *lnum, int *lcol) {
+        extern char *yytext;
+        extern int yyleng;
+        for (int i = 0; i < yyleng; i++) {
+            if (yytext[i] == '\n') {
+                ++(*lnum);
+                *lcol = 0;
+            } else {
+                ++(*lcol);
+            }
+        }
+    }
 
     char *build_tabs();
     void rm_n_tabs(char *s, const int qtd);
@@ -36,6 +64,7 @@
         BINOP2, // > < >= <=
         BINOP1, // >> <<
         UNIOP,
+        STRINGLITERAL,
     } yytokentypes;
 %}
 
@@ -64,18 +93,20 @@ REAL_NUMBER {INTEGER_NUMBER}(\.{DIGIT}+)?([eE][+-]?{DIGIT}+)?
 OCTAL_NUMBER 0[0-7]+
 HEX_NUMBER 0[Xx]{HEX_DIGIT}+
 
-MULTILINE_COMMENT "/*"([^*]|"*"[^/])*"*/"
+MULTILINE_COMMENT ("/"+"*")([^*]|"*"[^/])*"*/"
 SINGLELINE_COMMENT "//"[^\n]*
+STRING_LITERAL_ESCAPE \("\\\""|{ESCAPE}|[^"\\]|{WS}\)
 
 TYPES {CORE_TYPES}|{NEW_TYPES}
 
-ESCAPE "\\\\"|"\\0"|"\\a"|"\\b"|"\\t"|"\\n"|"\\v"|"\\f"|"\\r"|"\\e"|"\\"[xX]{HEX_DIGIT}+|"\\"{OCTAL_NUMBER}
+ESCAPE "\\a"|"\\b"|"\\e"|"\\f"|"\\n"|"\\r"|"\\t"|"\\v"|"\\\\"|"\\0"|"\\"[xX]{HEX_DIGIT}+|"\\"{OCTAL_NUMBER}|"\\"[uU]{HEX_DIGIT}+
 
-%x expect_string
+%x string_literal
 
 %%
-
+    /* eat comments */
 <*>{MULTILINE_COMMENT}|{SINGLELINE_COMMENT}
+    /* eat spaces if not reading a string literal */
 <*>{WS} {
     if (!reading_string) {
         BEGIN(INITIAL);
@@ -86,10 +117,9 @@ ESCAPE "\\\\"|"\\0"|"\\a"|"\\b"|"\\t"|"\\n"|"\\v"|"\\f"|"\\r"|"\\e"|"\\"[xX]{HEX
 
 <INITIAL>[\(\){};,] {
 	BEGIN(INITIAL);
-    const char punct = yytext[0];
     char *tabs = build_tabs();
 
-    switch (punct) {
+    switch (yytext[0]) {
         case '(': reading_args = 1; printf("<LPARAN> "); break;
         case ')': reading_args = 0; printf("<RPARAN> "); break;
         case '{': {
@@ -108,52 +138,52 @@ ESCAPE "\\\\"|"\\0"|"\\a"|"\\b"|"\\t"|"\\n"|"\\v"|"\\f"|"\\r"|"\\e"|"\\"[xX]{HEX
         } break;
     }
     free(tabs);
-    return punct;
+    RET yytext[0];
 }
 
-if { printf("<IF> "); return IF; }
-else { printf("<ELSE> "); return ELSE; }
-return { printf("<RETURN> "); return RETURN; }
-break { printf("<BREAK> "); return BREAK; }
-for { printf("<FOR> "); return FOR; }
-NIL { printf("<LISTNIL> "); return NIL; }
+if { printf("<IF> "); RET IF; }
+else { printf("<ELSE> "); RET ELSE; }
+return { printf("<RETURN> "); RET RETURN; }
+break { printf("<BREAK> "); RET BREAK; }
+for { printf("<FOR> "); RET FOR; }
+NIL { printf("<LISTNIL> "); RET NIL; }
 
 {TYPES} {
     printf("<TYPE, `%s`> ", yytext);
-    return TYPE;
+    RET TYPE;
 }
 
 {ID} {
     printf("<ID, `%s`> ", yytext);
-    return ID;
+    RET ID;
 }
 
 {INTEGER_NUMBER} {
     long int longval;
     sscanf(yytext, "%ld", &longval);
     printf("<INTNUM, `%ld`> ", longval);
-    return INT_NUM;
+    RET INT_NUM;
 }
 
 {REAL_NUMBER} {
     double doubleval;
     sscanf(yytext, "%lf", &doubleval);
     printf("<REALNUM, `%lf`> ", doubleval);
-    return REAL_NUM;
+    RET REAL_NUM;
 }
 
 {HEX_NUMBER} {
     unsigned int hexval;
     sscanf(yytext, "%x", &hexval);
     printf("<HEXNUM, `%s`=`%d`> ", yytext, hexval);
-    return INT_NUM;
+    RET INT_NUM;
 }
 
 {OCTAL_NUMBER} {
     unsigned int octval;
     sscanf(yytext, "%o", &octval);
     printf("<OCTNUM, `%s`=`%d`> ", yytext, octval);
-    return INT_NUM;
+    RET INT_NUM;
 }
 
 {UNARY_OP} {
@@ -166,18 +196,18 @@ NIL { printf("<LISTNIL> "); return NIL; }
         case '%': printf("<LISTTAILPOPOP, `%s`> ", token); break;
         case '~': printf("<BITOP, `%s`> ", token); break;
     }
-    return token[0];
+    RET token[0];
 }
 
 {BINARY_OP} {
     char *token = yytext;
     switch (token[0]) {
-        case ':': printf("<LISTPUSHOP> "); return LISTPUSHOP;
+        case ':': printf("<LISTPUSHOP> "); RET LISTPUSHOP;
         case '*':
         case '/':
         case '%':
         case '+':
-        case '-': printf("<ARITHOP, `%s`> ", token); return token[0];
+        case '-': printf("<ARITHOP, `%s`> ", token); RET token[0];
         case '<':
         case '>': {
             const int is_dless = !strcmp(token, "<<");
@@ -188,18 +218,18 @@ NIL { printf("<LISTNIL> "); return NIL; }
             if (is_cmp) printf("<INEQOP, `%s`> ", token);
             else printf("<%s> ", is_dless ? "LISTFILTEROP" : "LISTMAPOP");
             
-            return is_cmp ? BINOP1 : BINOP2;
+            RET is_cmp ? BINOP1 : BINOP2;
         } break;
         case '=': 
-        case '!': printf("<EQOP, `%s`> ", token); return BINOP3;
-        case '^': printf("<BITOP, `%s`> ", token); return BINOP5;
+        case '!': printf("<EQOP, `%s`> ", token); RET BINOP3;
+        case '^': printf("<BITOP, `%s`> ", token); RET BINOP5;
         case '&': {
             printf("<%s, `%s`> ", yyleng > 1 ? "BOOLOP" : "BITOP", token);
-            return yyleng > 1 ? BINOP7 : BINOP4;
+            RET yyleng > 1 ? BINOP7 : BINOP4;
         }
         case '|': {
             printf("<%s, `%s`> ", yyleng > 1 ? "BOOLOP" : "BITOP", token);
-            return yyleng > 1 ? BINOP8 : BINOP6;
+            RET yyleng > 1 ? BINOP8 : BINOP6;
         }
     }
 }
@@ -218,7 +248,7 @@ NIL { printf("<LISTNIL> "); return NIL; }
         default: printf("<EQ> ");
     }
 
-    return ASSIGN;
+    RET ASSIGN;
 }
 
 {INCDEC_OP} {
@@ -228,25 +258,27 @@ NIL { printf("<LISTNIL> "); return NIL; }
         case '-': printf("<DECREMENT_OP, `%s`> ", token); break;
     }
 
-    return INCDECOP;
+    RET INCDECOP;
 }
 
-\"/\("\\\""|{ESCAPE}|[^"\\]|{WS}\)*\" {
-	BEGIN(expect_string);
+\"/{STRING_LITERAL_ESCAPE}*\" {
+	BEGIN(string_literal);
 	reading_string = 1;
 	yymore();
 }
 
-<expect_string>"\\\""   |
-<expect_string>{ESCAPE} |
-<expect_string>[^"\\]   { yymore(); }
+<string_literal>"\\\""   |
+<string_literal>{ESCAPE} |
+<string_literal>[^"\\]   { yymore(); }
 
-<expect_string>\" {
+<string_literal>\" {
     BEGIN(INITIAL);
     reading_string = 0;
 
     char *const_string = yytext;
-    printf("<CONSTSTR, `%s`> ", const_string);
+    printf("<STRINGLITERAL, `%s`> ", const_string);
+
+    RET STRINGLITERAL;
 }
 
 %%

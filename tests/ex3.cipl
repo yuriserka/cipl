@@ -1,0 +1,16 @@
+// returns the sum of three ints as an int
+int sum(int a, int b, int c, int d) {
+    return a + b + c + d;
+}
+
+/*
+ * main function
+ * returns 0 if SUCCESS
+ */
+int main() {
+    int x;
+    x = sum(1, 2, 3, 4+5); // total_sum
+    writeln(x);
+    writeln("this is a literal... string? (maybe the val is 0xFF)");
+    return 0;
+}
