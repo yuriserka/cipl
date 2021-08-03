@@ -1,0 +1,25 @@
+<TYPE, `float`> <ID, `compute_w`> <LPARAN> <TYPE, `int`> <ID, `elem`> <RPARAN> 
+	<RETURN> <LPARAN> <ID, `elem`> <ARITHOP, `*`> <REALNUM, `4.300000`> <RPARAN> <ARITHOP, `/`> <INTNUM, `2`> <EOSTMT>
+	
+<TYPE, `int`> <ID, `main`> <LPARAN> <RPARAN> 
+	<TYPE, `int list`> <ID, `l`> <EOSTMT>
+	<TYPE, `int`> <ID, `n`> <EOSTMT>
+	<ID, `read`> <LPARAN> <ID, `n`> <RPARAN> <EOSTMT>
+	<TYPE, `int`> <ID, `i`> <COMMA> <ID, `elem`> <EOSTMT>
+	<FOR> <LPARAN> <ID, `i`> <EQ> <INTNUM, `0`> <EOSTMT> <ID, `i`> <INEQOP, `<`> <ID, `n`> <EOSTMT> <INCREMENT_OP, `++`> <ID, `i`> <RPARAN> 
+		<ID, `read`> <LPARAN> <ID, `elem`> <RPARAN> <EOSTMT>
+		<ID, `l`> <EQ> <ID, `elem`> <LISTPUSHOP> <ID, `l`> <EOSTMT>
+		
+	<TYPE, `float list`> <ID, `w`> <COMMA> <ID, `it`> <EOSTMT>
+	<ID, `w`> <EQ> <ID, `l`> <LISTMAPOP> <ID, `compute_w`> <EOSTMT>
+	<ID, `i`> <EQ> <INTNUM, `0`> <EOSTMT>
+	<FOR> <LPARAN> <ID, `it`> <EQ> <ID, `w`> <EOSTMT> <ID, `it`> <EQOP, `!=`> <LISTNIL> <EOSTMT> <ID, `it`> <EQ> <LISTTAILOP, `!`> <ID, `it`> <RPARAN> 
+		<ID, `write`> <LPARAN> <CONSTSTR, `"w_("`> <RPARAN> <EOSTMT>
+		<ID, `write`> <LPARAN> <ID, `i`> <RPARAN> <EOSTMT>
+		<ID, `write`> <LPARAN> <CONSTSTR, `"): "`> <RPARAN> <EOSTMT>
+		<ID, `writeln`> <LPARAN> <LISTHEADOP, `?`> <ID, `it`> <RPARAN> <EOSTMT>
+		<INCREMENT_OP, `++`> <ID, `i`> <EOSTMT>
+		
+	<ID, `it`> <EQ> <LISTTAILPOPOP, `%`> <ID, `it`> <EOSTMT>
+	<RETURN> <INTNUM, `0`> <EOSTMT>
+	

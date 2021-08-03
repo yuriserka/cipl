@@ -1,0 +1,35 @@
+float compute_w(
+    // int list_elem buga por causa da regra {NEW_TYPES}
+    int elem
+) {
+    return (elem * 4.3) / 2;
+}
+
+int main() {
+    int list l;
+    
+    int n;
+    read(n);
+
+    int i, elem;
+    for (i = 0; i < n; ++i) {
+        read(elem);
+        l = elem : l;
+    }
+
+    float list w, it;
+    w = l >> compute_w;
+    i = 0;
+
+    for (it = w; it != NIL; it = !it) {
+        write("w_(");
+        write(i);
+        write("): ");
+        writeln(?it);
+        ++i;
+    }
+
+    it = %it;
+
+    return 0;
+}

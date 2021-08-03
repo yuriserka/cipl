@@ -1,15 +1,13 @@
-# C-Onjunto
+# C-IPL
 
-> C-like language with native set suport
-
-background details relevant to understanding what this module does
+> C-like language with native list suport
 
 ## Usage
 
 ```shell
 flex lex-def.l
-gcc -o mylex -O lex.yy.c -lfl
-./mylex < tests/<program>.my-lang
+gcc -o mylex.out -O lex.yy.c -lfl
+./mylex.out < tests/<program>.cipl
 ```
 
 Running valgrind to check for memory leaks
