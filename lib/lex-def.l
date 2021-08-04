@@ -11,61 +11,10 @@
     int reading_args = 0;
     int last_act;
 
-    char error_message[512] = {0};
-
-    typedef struct {
-        int col;
-        int line;
-    } cursorpos;
-
-    cursorpos err, curr;
-
-    #define YY_UPDT_POS if ((last_act = yy_act) != -1) update_position(&curr.line, &curr.col);
-    #define YY_BREAK YY_UPDT_POS break;
-    #define RET YY_UPDT_POS return
-    
-    void update_position(int *lnum, int *lcol) {
-        extern char *yytext;
-        extern int yyleng;
-        for (int i = 0; i < yyleng; i++) {
-            if (yytext[i] == '\n') {
-                ++(*lnum);
-                *lcol = 0;
-            } else {
-                ++(*lcol);
-            }
-        }
-    }
-
     char *build_tabs();
     void rm_n_tabs(char *s, const int qtd);
     void rm_char_at(char *s, unsigned int index);
-
-    typedef enum {
-        IF = 258,
-        ELSE,
-        RETURN,
-        BREAK,
-        FOR,
-        NIL,
-        TYPE,
-        INT_NUM,
-        REAL_NUM,
-        ID,
-        ASSIGN,
-        INCDECOP,
-        LISTPUSHOP,
-        BINOP8, // //
-        BINOP7, // &&
-        BINOP6, // |
-        BINOP5, // ^
-        BINOP4, // &
-        BINOP3, // == !=
-        BINOP2, // > < >= <=
-        BINOP1, // >> <<
-        UNIOP,
-        STRINGLITERAL,
-    } yytokentypes;
+    void string_literal_rm_dquote(char *s);
 %}
 
 DELIM [[:blank:]\n]
@@ -73,20 +22,24 @@ LETTER [[:alpha:]_]
 DIGIT [[:digit:]]
 LETTER_OR_DIGIT [[:alnum:]_]
 HEX_DIGIT [[:xdigit:]]
-CORE_TYPES "int"|"float"
-NEW_TYPES "int list"|"float list"
+TYPES "int list"|"float list"|"int"|"float"
 
-OP_ARITHMETIC "*"|"/"|"%"|"+"|"-"
-OP_BIN_BITWISE "&"|"^"|"|"|"^"
-OP_BOOL "&&"|"||"
-OP_COMPARISON "<="|">="|"<"|">"|"!="|"=="
+OP_BIN_ARITHMETIC "*"|"/"|"%"|"+"|"-"
+OP_BIN_BITWISE "&"|"^"|"|"|"^"|"<<"|">>"
+OP_BIN_BOOL "&&"|"||"
+OP_BIN_COMPARISON "<="|">="|"<"|">"|"!="|"=="
+OP_BIN_LIST "<<"|">>"|":" 
+
+OP_UNI_ARITHMETIC "-"|"++"|"--"
+OP_UNI_BOOL "!"
+OP_UNI_BITWISE "~"
+OP_UNI_LIST "?"|"%"|"!"
 
 WS {DELIM}+
 ID {LETTER}{LETTER_OR_DIGIT}*
-BINARY_OP {OP_ARITHMETIC}|{OP_COMPARISON}|{OP_BOOL}|{OP_BIN_BITWISE}|"<<"|">>"|":"
-UNARY_OP "+"|"-"|"!"|"~"|"?"|"%"
-OP_ASSSIGN =|{OP_ARITHMETIC}=|{OP_BIN_BITWISE}=
-INCDEC_OP "++"|"--"
+BINARY_OP {OP_BIN_ARITHMETIC}|{OP_BIN_COMPARISON}|{OP_BIN_BOOL}|{OP_BIN_BITWISE}|{OP_BIN_LIST}
+UNARY_OP {OP_UNI_ARITHMETIC}|{OP_UNI_BOOL}|{OP_UNI_BITWISE}|{OP_UNI_LIST}
+OP_ASSSIGN =|{OP_BIN_ARITHMETIC}=|{OP_BIN_BITWISE}=
 
 INTEGER_NUMBER -?(0|[1-9]{DIGIT}*)
 REAL_NUMBER {INTEGER_NUMBER}(\.{DIGIT}+)?([eE][+-]?{DIGIT}+)?
@@ -95,25 +48,15 @@ HEX_NUMBER 0[Xx]{HEX_DIGIT}+
 
 MULTILINE_COMMENT ("/"+"*")([^*]|"*"[^/])*"*/"
 SINGLELINE_COMMENT "//"[^\n]*
-STRING_LITERAL_ESCAPE \("\\\""|{ESCAPE}|[^"\\]|{WS}\)
 
-TYPES {CORE_TYPES}|{NEW_TYPES}
+STRING_LITERAL \"([^"\\]|\\.)*\"
 
-ESCAPE "\\a"|"\\b"|"\\e"|"\\f"|"\\n"|"\\r"|"\\t"|"\\v"|"\\\\"|"\\0"|"\\"[xX]{HEX_DIGIT}+|"\\"{OCTAL_NUMBER}|"\\"[uU]{HEX_DIGIT}+
-
-%x string_literal
+/* ESCAPE "\\a"|"\\b"|"\\e"|"\\f"|"\\n"|"\\r"|"\\t"|"\\v"|"\\\\"|"\\0"|"\\"[xX]{HEX_DIGIT}+|"\\"{OCTAL_NUMBER}|"\\"[uU]{HEX_DIGIT}+ */
 
 %%
     /* eat comments */
 <*>{MULTILINE_COMMENT}|{SINGLELINE_COMMENT}
-    /* eat spaces if not reading a string literal */
-<*>{WS} {
-    if (!reading_string) {
-        BEGIN(INITIAL);
-    } else {
-        yymore();
-    }
-}
+<*>{WS} {}
 
 <INITIAL>[\(\){};,] {
 	BEGIN(INITIAL);
@@ -134,80 +77,76 @@ ESCAPE "\\a"|"\\b"|"\\e"|"\\f"|"\\n"|"\\r"|"\\t"|"\\v"|"\\\\"|"\\0"|"\\"[xX]{HEX
         } break;
         case ',': printf("<COMMA> "); break;
         case ';': {
-            printf("<EOSTMT>%s%s", reading_args ? " " : "\n", tabs);
+            printf("<SEMI>%s%s", reading_args ? " " : "\n", tabs);
         } break;
     }
     free(tabs);
-    RET yytext[0];
 }
 
-if { printf("<IF> "); RET IF; }
-else { printf("<ELSE> "); RET ELSE; }
-return { printf("<RETURN> "); RET RETURN; }
-break { printf("<BREAK> "); RET BREAK; }
-for { printf("<FOR> "); RET FOR; }
-NIL { printf("<LISTNIL> "); RET NIL; }
+if { printf("<IF> "); }
+else { printf("<ELSE> "); }
+return { printf("<RETURN> "); }
+break { printf("<BREAK> "); }
+for { printf("<FOR> "); }
+NIL { printf("<NIL> "); }
 
 {TYPES} {
     printf("<TYPE, `%s`> ", yytext);
-    RET TYPE;
 }
 
 {ID} {
     printf("<ID, `%s`> ", yytext);
-    RET ID;
 }
 
 {INTEGER_NUMBER} {
     long int longval;
     sscanf(yytext, "%ld", &longval);
     printf("<INTNUM, `%ld`> ", longval);
-    RET INT_NUM;
 }
 
 {REAL_NUMBER} {
     double doubleval;
     sscanf(yytext, "%lf", &doubleval);
     printf("<REALNUM, `%lf`> ", doubleval);
-    RET REAL_NUM;
 }
 
 {HEX_NUMBER} {
     unsigned int hexval;
     sscanf(yytext, "%x", &hexval);
     printf("<HEXNUM, `%s`=`%d`> ", yytext, hexval);
-    RET INT_NUM;
 }
 
 {OCTAL_NUMBER} {
     unsigned int octval;
     sscanf(yytext, "%o", &octval);
     printf("<OCTNUM, `%s`=`%d`> ", yytext, octval);
-    RET INT_NUM;
 }
 
 {UNARY_OP} {
     char *token = yytext;
     switch (token[0]) {
-        case '+':
-        case '-': printf("<SIGNEDNUMOP, `%s`> ", token); break;
-        case '!': printf("<LISTTAILOP, `%s`> ", token); break;
-        case '?': printf("<LISTHEADOP, `%s`> ", token); break;
-        case '%': printf("<LISTTAILPOPOP, `%s`> ", token); break;
+        case '-': {
+            printf("<%s, `%s`> ", yyleng > 1 ? "DECREMENT_OP" : "SIGNCHANGEOP", token);
+        } break;
+        case '+': printf("<INCREMENT_OP, `%s`> ", token); break;
+        // só será possivel decidir a ação na analise semantica
+        // se !int = NOTOP senao !list = LISTTAILOP
+        case '!': printf("<EXCLAMATIONOP, `%s`> ", token); break;
+        case '?': printf("<QUESTIONMARKOP, `%s`> ", token); break;
+        case '%': printf("<PERCENTOP, `%s`> ", token); break;
         case '~': printf("<BITOP, `%s`> ", token); break;
     }
-    RET token[0];
 }
 
 {BINARY_OP} {
     char *token = yytext;
     switch (token[0]) {
-        case ':': printf("<LISTPUSHOP> "); RET LISTPUSHOP;
+        case ':': printf("<COLONOP> "); break;
         case '*':
         case '/':
         case '%':
         case '+':
-        case '-': printf("<ARITHOP, `%s`> ", token); RET token[0];
+        case '-': printf("<ARITHOP, `%s`> ", token); break;
         case '<':
         case '>': {
             const int is_dless = !strcmp(token, "<<");
@@ -216,21 +155,13 @@ NIL { printf("<LISTNIL> "); RET NIL; }
             const int is_cmp = !is_dless && !is_dgreat;
 
             if (is_cmp) printf("<INEQOP, `%s`> ", token);
-            else printf("<%s> ", is_dless ? "LISTFILTEROP" : "LISTMAPOP");
-            
-            RET is_cmp ? BINOP1 : BINOP2;
+            else printf("<%s> ", is_dless ? "DLESSOP" : "DGREATOP");
         } break;
         case '=': 
-        case '!': printf("<EQOP, `%s`> ", token); RET BINOP3;
-        case '^': printf("<BITOP, `%s`> ", token); RET BINOP5;
-        case '&': {
-            printf("<%s, `%s`> ", yyleng > 1 ? "BOOLOP" : "BITOP", token);
-            RET yyleng > 1 ? BINOP7 : BINOP4;
-        }
-        case '|': {
-            printf("<%s, `%s`> ", yyleng > 1 ? "BOOLOP" : "BITOP", token);
-            RET yyleng > 1 ? BINOP8 : BINOP6;
-        }
+        case '!': printf("<EQOP, `%s`> ", token); break;
+        case '^': printf("<BITOP, `%s`> ", token); break;
+        case '&': printf("<%s, `%s`> ", yyleng > 1 ? "BOOLOP" : "BITOP", token); break;
+        case '|': printf("<%s, `%s`> ", yyleng > 1 ? "BOOLOP" : "BITOP", token); break;
     }
 }
 
@@ -245,40 +176,17 @@ NIL { printf("<LISTNIL> "); RET NIL; }
         case '&': printf("<ANDEQ> "); break;
         case '^': printf("<XOREQ> "); break;
         case '|': printf("<OREQ> "); break;
+        case '>': printf("<RSHIFTEQ> "); break;
+        case '<': printf("<LSHIFTEQ> "); break;
         default: printf("<EQ> ");
     }
-
-    RET ASSIGN;
 }
 
-{INCDEC_OP} {
-    char *token = yytext;
-    switch (token[0]) {
-        case '+': printf("<INCREMENT_OP, `%s`> ", token); break;
-        case '-': printf("<DECREMENT_OP, `%s`> ", token); break;
-    }
-
-    RET INCDECOP;
-}
-
-\"/{STRING_LITERAL_ESCAPE}*\" {
-	BEGIN(string_literal);
-	reading_string = 1;
-	yymore();
-}
-
-<string_literal>"\\\""   |
-<string_literal>{ESCAPE} |
-<string_literal>[^"\\]   { yymore(); }
-
-<string_literal>\" {
-    BEGIN(INITIAL);
-    reading_string = 0;
-
-    char *const_string = yytext;
-    printf("<STRINGLITERAL, `%s`> ", const_string);
-
-    RET STRINGLITERAL;
+{STRING_LITERAL} {
+    char *str_dup = strdup(yytext);
+    string_literal_rm_dquote(str_dup);
+    printf("<STRINGLITERAL, `%s`> ", str_dup);
+    free(str_dup);
 }
 
 %%
@@ -295,4 +203,11 @@ void rm_char_at(char *str, unsigned int index) {
 
 void rm_n_tabs(char *str, int n) {
     for (int i = 0; i < n; ++i) rm_char_at(str, 0);
+}
+
+void string_literal_rm_dquote(char *s) {
+    unsigned int len = strlen(s);
+    rm_char_at(s, 0); --len;
+    rm_char_at(s, len - 1); --len;
+    s = realloc(s, sizeof(char) * (len + 1));
 }

@@ -1,0 +1,20 @@
+int list intlist;
+intlist = NIL;
+
+int head;
+head = ?intlist;
+
+int list tail;
+tail = !intlist;
+
+int list newtail;
+newtail = %intlist;
+
+int list tailOrOriginal;
+tailOrOriginal= 1 ==1 ? intlist : newtail;
+
+int list mapped;
+mapped = intlist >> mapfn;
+
+int list filtered;
+filtered = mapped << filterfn;

@@ -1,0 +1,40 @@
+int i;
+int j;
+
+// Arithmetic Operators
+
+i = i + j;
+i = i - j;
+i = i * j;
+i = i / j;
+i = i % j;
+i++;
+++i;
+i--;
+--i;
+
+// Relational Operators
+
+i = i == j;
+i = i != j;
+i = i > j;
+i = i >= j;
+i = i < j;
+i = i <= j;
+
+// Logical Operators
+
+i = i && j;
+i = i || j;
+i = !i;
+
+// Bitwise Operators
+i = i & j;
+i = i | j;
+i = i ^ j;
+i = ~i;
+i = i << j;
+i = i >> j;
+
+// Ternary Operator
+i = 1 == 1 ? i : j;

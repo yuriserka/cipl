@@ -1,10 +1,14 @@
-<TYPE, `int`> <ID, `sum`> <LPARAN> <TYPE, `int`> <ID, `a`> <COMMA> <TYPE, `int`> <ID, `b`> <COMMA> <TYPE, `int`> <ID, `c`> <COMMA> <TYPE, `int`> <ID, `d`> <RPARAN> 
-	<RETURN> <ID, `a`> <SIGNEDNUMOP, `+`> <ID, `b`> <SIGNEDNUMOP, `+`> <ID, `c`> <SIGNEDNUMOP, `+`> <ID, `d`> <EOSTMT>
-	
-<TYPE, `int`> <ID, `main`> <LPARAN> <RPARAN> 
-	<TYPE, `int`> <ID, `x`> <EOSTMT>
-	<ID, `x`> <EQ> <ID, `sum`> <LPARAN> <INTNUM, `1`> <COMMA> <INTNUM, `2`> <COMMA> <INTNUM, `3`> <COMMA> <INTNUM, `4`> <SIGNEDNUMOP, `+`> <INTNUM, `5`> <RPARAN> <EOSTMT>
-	<ID, `writeln`> <LPARAN> <ID, `x`> <RPARAN> <EOSTMT>
-	<ID, `writeln`> <LPARAN> <STRINGLITERAL, `"this is a literal... string? (maybe the val is 0xFF)"`> <RPARAN> <EOSTMT>
-	<RETURN> <INTNUM, `0`> <EOSTMT>
-	
+<TYPE, `int list`> <ID, `intlist`> <SEMI>
+<ID, `intlist`> <EQ> <NIL> <SEMI>
+<TYPE, `int`> <ID, `head`> <SEMI>
+<ID, `head`> <EQ> <QUESTIONMARKOP, `?`> <ID, `intlist`> <SEMI>
+<TYPE, `int list`> <ID, `tail`> <SEMI>
+<ID, `tail`> <EQ> <EXCLAMATIONOP, `!`> <ID, `intlist`> <SEMI>
+<TYPE, `int list`> <ID, `newtail`> <SEMI>
+<ID, `newtail`> <EQ> <PERCENTOP, `%`> <ID, `intlist`> <SEMI>
+<TYPE, `int list`> <ID, `tailOrOriginal`> <SEMI>
+<ID, `tailOrOriginal`> <EQ> <INTNUM, `1`> <EQOP, `==`> <INTNUM, `1`> <QUESTIONMARKOP, `?`> <ID, `intlist`> <COLONOP> <ID, `newtail`> <SEMI>
+<TYPE, `int list`> <ID, `mapped`> <SEMI>
+<ID, `mapped`> <EQ> <ID, `intlist`> <DGREATOP> <ID, `mapfn`> <SEMI>
+<TYPE, `int list`> <ID, `filtered`> <SEMI>
+<ID, `filtered`> <EQ> <ID, `mapped`> <DLESSOP> <ID, `filterfn`> <SEMI>

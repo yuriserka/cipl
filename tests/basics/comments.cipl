@@ -1,0 +1,15 @@
+// single line comments are consumed
+
+int only_this_line_should_get_tokenized;
+
+/* multiline can be single line */
+
+/*
+ * multiline comments can contains anything like "" '' 
+ * ****** 1 2 3 0 9 8 ; /\!@#$%&*()_+=?
+ * 0x123 -- u123
+ * 0255 + 0x123
+ * and only ends with an * followed by /
+ * \001 \x55 \\;//
+ and more!
+ */

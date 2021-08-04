@@ -1,0 +1,21 @@
+int list integers;
+float list reals;
+
+int n;
+float p;
+
+int func(int a, float b) {
+    return 0;
+}
+
+float ff() { return 1.0; }
+
+int list nint(float list l1) {
+    int list l;
+    return l;
+}
+
+float list fl(int a, float b, int list z) {
+    float list l;
+    return l;
+}

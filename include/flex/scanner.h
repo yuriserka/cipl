@@ -216,7 +216,6 @@ extern char *yytext;
 
 #ifdef YY_HEADER_EXPORT_START_CONDITIONS
 #define INITIAL 0
-#define string_literal 1
 
 #endif
 
@@ -470,9 +469,9 @@ extern int yylex (void);
 #undef yyTABLES_NAME
 #endif
 
-#line 287 "lib/lex-def.l"
+#line 193 "lib/lex-def.l"
 
 
-#line 477 "include/flex/scanner.h"
+#line 476 "include/flex/scanner.h"
 #undef yyIN_HEADER
 #endif /* yyHEADER_H */

@@ -1,0 +1,20 @@
+writeln("a valid simple str literal");
+
+writeln(""); // empty literal
+
+writeln("escaped chars are allowed like: \"this\" and \'that\' or `this`");
+
+writeln("\twhat about this?\n\n");
+
+writeln("\ttes\0te");
+
+writeln("other symbols: ! @ $ % & * (a_) - + =");
+
+writeln("This will
+        print over three
+        lines, ( and will include extra tabs or spaces. )" );
+
+writeln("hex nums code bacome some printable -> A\072five"); // expected: "A:5"
+
+writeln("same for octals -> B\x4a"); // expected: "BJ"
+
