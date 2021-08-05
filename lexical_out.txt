@@ -1,14 +1,15 @@
-<TYPE, `int list`> <ID, `intlist`> <SEMI>
-<ID, `intlist`> <EQ> <NIL> <SEMI>
-<TYPE, `int`> <ID, `head`> <SEMI>
-<ID, `head`> <EQ> <QUESTIONMARKOP, `?`> <ID, `intlist`> <SEMI>
-<TYPE, `int list`> <ID, `tail`> <SEMI>
-<ID, `tail`> <EQ> <EXCLAMATIONOP, `!`> <ID, `intlist`> <SEMI>
-<TYPE, `int list`> <ID, `newtail`> <SEMI>
-<ID, `newtail`> <EQ> <PERCENTOP, `%`> <ID, `intlist`> <SEMI>
-<TYPE, `int list`> <ID, `tailOrOriginal`> <SEMI>
-<ID, `tailOrOriginal`> <EQ> <INTNUM, `1`> <EQOP, `==`> <INTNUM, `1`> <QUESTIONMARKOP, `?`> <ID, `intlist`> <COLONOP> <ID, `newtail`> <SEMI>
-<TYPE, `int list`> <ID, `mapped`> <SEMI>
-<ID, `mapped`> <EQ> <ID, `intlist`> <DGREATOP> <ID, `mapfn`> <SEMI>
-<TYPE, `int list`> <ID, `filtered`> <SEMI>
-<ID, `filtered`> <EQ> <ID, `mapped`> <DLESSOP> <ID, `filterfn`> <SEMI>
+<ID, `this`>
+<SIGNCHANGEOP, `-`>
+<INEQOP, `>`>
+<COLONOP>
+<ID, `assa`>
+<ID, `prop`>
+<ID, `comment`>
+<QUESTIONMARKOP, `?`>
+
+lexical analysis completed with 5 errors generated.
+tests/invalid/not-expected-chars.cipl:3:2: error: Unexpected Character: #
+tests/invalid/not-expected-chars.cipl:3:1: error: Unexpected Character: #
+tests/invalid/not-expected-chars.cipl:2:1: error: Unexpected Character: @
+tests/invalid/not-expected-chars.cipl:1:2: error: Unexpected Character: $
+tests/invalid/not-expected-chars.cipl:1:1: error: Unexpected Character: $

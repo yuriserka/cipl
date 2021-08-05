@@ -5,15 +5,25 @@
     #include <stdio.h>
     #include <stdlib.h>
     #include <ctype.h>
+    #include "data-structures/stack.h"
 
     int curr_tab = 0;
     int reading_string = 0;
     int reading_args = 0;
-    int last_act;
+    int errors_count = 0;
+    char *filename;
+    StackNode* error_stack = NULL;
 
-    char *build_tabs();
-    void rm_n_tabs(char *s, const int qtd);
-    void rm_char_at(char *s, unsigned int index);
+    typedef struct {
+        int col;
+        int line;
+    } cursor_pos;
+
+    cursor_pos cursor = {.col=1, .line=1};
+
+    void str_rm_n_char_from_beg(char *s, const int qtd);
+    void str_rm_char_at(char *s, unsigned int index);
+    void str_2_upper(char *s, char *d);
     void string_literal_rm_dquote(char *s);
 %}
 
@@ -50,103 +60,107 @@ MULTILINE_COMMENT ("/"+"*")([^*]|"*"[^/])*"*/"
 SINGLELINE_COMMENT "//"[^\n]*
 
 STRING_LITERAL \"([^"\\]|\\.)*\"
-
-/* ESCAPE "\\a"|"\\b"|"\\e"|"\\f"|"\\n"|"\\r"|"\\t"|"\\v"|"\\\\"|"\\0"|"\\"[xX]{HEX_DIGIT}+|"\\"{OCTAL_NUMBER}|"\\"[uU]{HEX_DIGIT}+ */
+RESERVED_KEYWORDS if|else|return|break|for|NIL
 
 %%
-    /* eat comments */
+
 <*>{MULTILINE_COMMENT}|{SINGLELINE_COMMENT}
-<*>{WS} {}
+<*>{WS} {
+    switch (yytext[0]) {
+        case '\n':
+            ++cursor.line;
+            cursor.col = 1;
+            break;
+        default:
+            cursor.col += yyleng;
+    }
+}
 
 <INITIAL>[\(\){};,] {
 	BEGIN(INITIAL);
-    char *tabs = build_tabs();
 
     switch (yytext[0]) {
-        case '(': reading_args = 1; printf("<LPARAN> "); break;
-        case ')': reading_args = 0; printf("<RPARAN> "); break;
-        case '{': {
-            ++curr_tab;
-            tabs = build_tabs();
-            printf("\n%s", tabs);
-        } break;
-        case '}': {
-            --curr_tab;
-            rm_char_at(tabs, 0);
-            printf("\n%s", tabs);
-        } break;
-        case ',': printf("<COMMA> "); break;
-        case ';': {
-            printf("<SEMI>%s%s", reading_args ? " " : "\n", tabs);
-        } break;
+        case '(': printf("<LPARAN>\n"); break;
+        case ')': printf("<RPARAN>\n"); break;
+        case '{': printf("<LBRACE>\n"); break;
+        case '}': printf("<RBRACE>\n"); break;
+        case ',': printf("<COMMA>\n"); break;
+        case ';': printf("<SEMI>\n"); break;
     }
-    free(tabs);
+    cursor.col += yyleng;
 }
 
-if { printf("<IF> "); }
-else { printf("<ELSE> "); }
-return { printf("<RETURN> "); }
-break { printf("<BREAK> "); }
-for { printf("<FOR> "); }
-NIL { printf("<NIL> "); }
+{RESERVED_KEYWORDS} {
+    char *upper = calloc(yyleng, sizeof(char));
+    str_2_upper(yytext, upper);
+    printf("<%s>\n", upper);
+    free(upper);
+}
 
 {TYPES} {
-    printf("<TYPE, `%s`> ", yytext);
+    printf("<TYPE, `%s`>\n", yytext);
+    cursor.col += yyleng;
 }
 
 {ID} {
-    printf("<ID, `%s`> ", yytext);
+    printf("<ID, `%s`>\n", yytext);
+    cursor.col += yyleng;
 }
 
 {INTEGER_NUMBER} {
     long int longval;
     sscanf(yytext, "%ld", &longval);
-    printf("<INTNUM, `%ld`> ", longval);
+    printf("<INTNUM, `%ld`>\n", longval);
+    cursor.col += yyleng;
 }
 
 {REAL_NUMBER} {
     double doubleval;
     sscanf(yytext, "%lf", &doubleval);
-    printf("<REALNUM, `%lf`> ", doubleval);
+    printf("<REALNUM, `%lf`>\n", doubleval);
+    cursor.col += yyleng;
 }
 
 {HEX_NUMBER} {
     unsigned int hexval;
     sscanf(yytext, "%x", &hexval);
-    printf("<HEXNUM, `%s`=`%d`> ", yytext, hexval);
+    printf("<HEXNUM, `%s`=`%d`>\n", yytext, hexval);
+    cursor.col += yyleng;
 }
 
 {OCTAL_NUMBER} {
     unsigned int octval;
     sscanf(yytext, "%o", &octval);
-    printf("<OCTNUM, `%s`=`%d`> ", yytext, octval);
+    printf("<OCTNUM, `%s`=`%d`>\n", yytext, octval);
+    cursor.col += yyleng;
 }
 
 {UNARY_OP} {
     char *token = yytext;
     switch (token[0]) {
         case '-': {
-            printf("<%s, `%s`> ", yyleng > 1 ? "DECREMENT_OP" : "SIGNCHANGEOP", token);
+            printf("<%s, `%s`>\n", yyleng > 1 ? "DECREMENT_OP" : "SIGNCHANGEOP", token);
         } break;
-        case '+': printf("<INCREMENT_OP, `%s`> ", token); break;
+        case '+': printf("<INCREMENT_OP, `%s`>\n", token); break;
         // só será possivel decidir a ação na analise semantica
         // se !int = NOTOP senao !list = LISTTAILOP
-        case '!': printf("<EXCLAMATIONOP, `%s`> ", token); break;
-        case '?': printf("<QUESTIONMARKOP, `%s`> ", token); break;
-        case '%': printf("<PERCENTOP, `%s`> ", token); break;
-        case '~': printf("<BITOP, `%s`> ", token); break;
+        case '!': printf("<EXCLAMATIONOP, `%s`>\n", token); break;
+        case '?': printf("<QUESTIONMARKOP, `%s`>\n", token); break;
+        case '%': printf("<PERCENTOP, `%s`>\n", token); break;
+        case '~': printf("<BITOP, `%s`>\n", token); break;
     }
+    cursor.col += yyleng;
 }
 
 {BINARY_OP} {
     char *token = yytext;
     switch (token[0]) {
-        case ':': printf("<COLONOP> "); break;
+        case ':': printf("<COLONOP>\n"); break;
         case '*':
         case '/':
         case '%':
         case '+':
-        case '-': printf("<ARITHOP, `%s`> ", token); break;
+        case '-': printf("<ARITHOP, `%s`>\n", token); break;
         case '<':
         case '>': {
             const int is_dless = !strcmp(token, "<<");
@@ -154,60 +168,101 @@ NIL { printf("<NIL> "); }
 
             const int is_cmp = !is_dless && !is_dgreat;
 
-            if (is_cmp) printf("<INEQOP, `%s`> ", token);
-            else printf("<%s> ", is_dless ? "DLESSOP" : "DGREATOP");
+            if (is_cmp) printf("<INEQOP, `%s`>\n", token);
+            else printf("<%s>\n", is_dless ? "DLESSOP" : "DGREATOP");
         } break;
         case '=': 
-        case '!': printf("<EQOP, `%s`> ", token); break;
-        case '^': printf("<BITOP, `%s`> ", token); break;
-        case '&': printf("<%s, `%s`> ", yyleng > 1 ? "BOOLOP" : "BITOP", token); break;
-        case '|': printf("<%s, `%s`> ", yyleng > 1 ? "BOOLOP" : "BITOP", token); break;
+        case '!': printf("<EQOP, `%s`>\n", token); break;
+        case '^': printf("<BITOP, `%s`>\n", token); break;
+        case '&': printf("<%s, `%s`>\n", yyleng > 1 ? "BOOLOP" : "BITOP", token); break;
+        case '|': printf("<%s, `%s`>\n", yyleng > 1 ? "BOOLOP" : "BITOP", token); break;
     }
+    cursor.col += yyleng;
 }
 
 {OP_ASSSIGN} {
     char *token = yytext;
     switch (token[0]) {
-        case '*': printf("<MULTEQ> "); break;
-        case '/': printf("<DIVEQ> "); break;
-        case '%': printf("<MODEQ> "); break;
-        case '+': printf("<PLUSEQ> "); break;
-        case '-': printf("<MINUSEQ> "); break;
-        case '&': printf("<ANDEQ> "); break;
-        case '^': printf("<XOREQ> "); break;
-        case '|': printf("<OREQ> "); break;
-        case '>': printf("<RSHIFTEQ> "); break;
-        case '<': printf("<LSHIFTEQ> "); break;
-        default: printf("<EQ> ");
+        case '*': printf("<MULTEQ>\n"); break;
+        case '/': printf("<DIVEQ>\n"); break;
+        case '%': printf("<MODEQ>\n"); break;
+        case '+': printf("<PLUSEQ>\n"); break;
+        case '-': printf("<MINUSEQ>\n"); break;
+        case '&': printf("<ANDEQ>\n"); break;
+        case '^': printf("<XOREQ>\n"); break;
+        case '|': printf("<OREQ>\n"); break;
+        case '>': printf("<RSHIFTEQ>\n"); break;
+        case '<': printf("<LSHIFTEQ>\n"); break;
+        default: printf("<EQ>\n");
     }
+    cursor.col += yyleng;
 }
 
 {STRING_LITERAL} {
     char *str_dup = strdup(yytext);
     string_literal_rm_dquote(str_dup);
-    printf("<STRINGLITERAL, `%s`> ", str_dup);
+    printf("<STRINGLITERAL, `%s`>\n", str_dup);
     free(str_dup);
+    cursor.col += yyleng;
+}
+
+. {
+    char *err_buff = calloc(512, sizeof(char));
+    sprintf(
+        err_buff,
+        "%s:%d:%d: error: Unexpected Character: %s",
+        filename, cursor.line, cursor.col, yytext
+    );
+    stack_push(&error_stack, err_buff);
+    ++errors_count;
+    cursor.col += yyleng;
 }
 
 %%
 
-char *build_tabs() {
-    char *v = calloc(curr_tab + 1, sizeof(char));
-    for (int i = 0; !reading_args && i < curr_tab; ++i) strcat(v, "\t"); 
-    return v;
+int main(int argc, char **argv){
+    if (argc < 2) {
+        printf("usage: %s filename", argv[0]);
+        return 1;
+    }
+
+    filename = argv[1];
+    FILE *pfile = fopen(argv[1], "r");
+    yyin = pfile;
+    yylex();
+    
+    printf(
+        "\nlexical analysis completed with %d error%s generated.\n",
+        errors_count, errors_count > 1 ? "s" : ""
+    );
+
+    while(error_stack) {
+        printf("%s\n", (char *)stack_peek(error_stack));
+        stack_pop(&error_stack);
+    }
+
+    fclose(yyin);
+    yylex_destroy();
+
+    return 0;
 }
 
-void rm_char_at(char *str, unsigned int index) {
+void str_rm_char_at(char *str, unsigned int index) {
     memmove(&str[index], &str[index + 1], strlen(str) - index);
 }
 
-void rm_n_tabs(char *str, int n) {
-    for (int i = 0; i < n; ++i) rm_char_at(str, 0);
+void str_rm_n_char_from_beg(char *str, int n) {
+    for (int i = 0; i < n; ++i) str_rm_char_at(str, 0);
 }
 
 void string_literal_rm_dquote(char *s) {
     unsigned int len = strlen(s);
-    rm_char_at(s, 0); --len;
-    rm_char_at(s, len - 1); --len;
+    str_rm_char_at(s, 0); --len;
+    str_rm_char_at(s, len - 1); --len;
     s = realloc(s, sizeof(char) * (len + 1));
+}
+
+void str_2_upper(char *s, char *d) {
+    char *psrc = s;
+    while (*psrc != '\0') *d++ = toupper(*psrc++);
 }

@@ -1,0 +1,12 @@
+if (1) {
+    return 1.2;
+} else {
+    write("a");
+}
+
+for (;;) {
+    write("rep");
+    break;
+}
+
+int list l = NIL;
