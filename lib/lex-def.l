@@ -6,19 +6,14 @@
     #include <stdlib.h>
     #include <ctype.h>
     #include "utils/io.h"
+    #include "utils/str2num.h"
+    #include "utils/str-unescape.h"
+    #include "utils/cursor-position.h"
 
-    int curr_tab = 0;
-    int reading_string = 0;
-    int reading_args = 0;
     int errors_count = 0;
     char *filename;
 
-    typedef struct {
-        int col;
-        int line;
-    } cursor_pos;
-
-    cursor_pos cursor = {.col=1, .line=1};
+    cursor_position cursor = {.col=1, .line=1};
 
     void str_rm_n_char_from_beg(char *s, const int qtd);
     void str_rm_char_at(char *s, unsigned int index);
@@ -200,15 +195,14 @@ RESERVED_KEYWORDS if|else|return|break|for|NIL
 {STRING_LITERAL} {
     char *str_dup = strdup(yytext);
     string_literal_rm_dquote(str_dup);
-    printf("<STRINGLITERAL, `%s`>\n", str_dup);
+    char *unescaped = str_literal_unescape(str_dup);
+    printf("<STRINGLITERAL, `%s`>\n", unescaped);
     free(str_dup);
-    cursor.col += yyleng;
+    free(unescaped);
 }
 
 . {
-    printf("%s:%d:%d: ", filename, cursor.line, cursor.col);
-    cipl_printf_color(RED, "error:");
-    printf(" Unexpected Character: %s\n", yytext);
+    cipl_perror("Unexpected Character: %s\n", yytext);
     ++errors_count;
     cursor.col += yyleng;
 }

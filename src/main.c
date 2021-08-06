@@ -533,26 +533,21 @@ char *yytext;
     #include <stdlib.h>
     #include <ctype.h>
     #include "utils/io.h"
+    #include "utils/str2num.h"
+    #include "utils/str-unescape.h"
+    #include "utils/cursor-position.h"
 
-    int curr_tab = 0;
-    int reading_string = 0;
-    int reading_args = 0;
     int errors_count = 0;
     char *filename;
 
-    typedef struct {
-        int col;
-        int line;
-    } cursor_pos;
-
-    cursor_pos cursor = {.col=1, .line=1};
+    cursor_position cursor = {.col=1, .line=1};
 
     void str_rm_n_char_from_beg(char *s, const int qtd);
     void str_rm_char_at(char *s, unsigned int index);
     void str_2_upper(char *s, char *d);
     void string_literal_rm_dquote(char *s);
-#line 555 "src/main.c"
-#line 556 "src/main.c"
+#line 550 "src/main.c"
+#line 551 "src/main.c"
 
 #define INITIAL 0
 
@@ -767,10 +762,10 @@ YY_DECL
 		}
 
 	{
-#line 64 "lib/lex-def.l"
+#line 59 "lib/lex-def.l"
 
 
-#line 774 "src/main.c"
+#line 769 "src/main.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -830,13 +825,13 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 66 "lib/lex-def.l"
+#line 61 "lib/lex-def.l"
 
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 67 "lib/lex-def.l"
+#line 62 "lib/lex-def.l"
 {
     switch (yytext[0]) {
         case '\n':
@@ -850,7 +845,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 78 "lib/lex-def.l"
+#line 73 "lib/lex-def.l"
 {
 	BEGIN(INITIAL);
 
@@ -867,7 +862,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 92 "lib/lex-def.l"
+#line 87 "lib/lex-def.l"
 {
     char *upper = calloc(yyleng, sizeof(char));
     str_2_upper(yytext, upper);
@@ -877,7 +872,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 99 "lib/lex-def.l"
+#line 94 "lib/lex-def.l"
 {
     printf("<TYPE, `%s`>\n", yytext);
     cursor.col += yyleng;
@@ -885,7 +880,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 104 "lib/lex-def.l"
+#line 99 "lib/lex-def.l"
 {
     printf("<ID, `%s`>\n", yytext);
     cursor.col += yyleng;
@@ -893,7 +888,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 109 "lib/lex-def.l"
+#line 104 "lib/lex-def.l"
 {
     long int longval;
     sscanf(yytext, "%ld", &longval);
@@ -903,7 +898,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 116 "lib/lex-def.l"
+#line 111 "lib/lex-def.l"
 {
     double doubleval;
     sscanf(yytext, "%lf", &doubleval);
@@ -913,7 +908,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 123 "lib/lex-def.l"
+#line 118 "lib/lex-def.l"
 {
     unsigned int hexval;
     sscanf(yytext, "%x", &hexval);
@@ -923,7 +918,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 130 "lib/lex-def.l"
+#line 125 "lib/lex-def.l"
 {
     unsigned int octval;
     sscanf(yytext, "%o", &octval);
@@ -933,7 +928,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 137 "lib/lex-def.l"
+#line 132 "lib/lex-def.l"
 {
     char *token = yytext;
     switch (token[0]) {
@@ -953,7 +948,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 154 "lib/lex-def.l"
+#line 149 "lib/lex-def.l"
 {
     char *token = yytext;
     switch (token[0]) {
@@ -984,7 +979,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 182 "lib/lex-def.l"
+#line 177 "lib/lex-def.l"
 {
     char *token = yytext;
     switch (token[0]) {
@@ -1006,32 +1001,31 @@ YY_RULE_SETUP
 case 14:
 /* rule 14 can match eol */
 YY_RULE_SETUP
-#line 200 "lib/lex-def.l"
+#line 195 "lib/lex-def.l"
 {
     char *str_dup = strdup(yytext);
     string_literal_rm_dquote(str_dup);
-    printf("<STRINGLITERAL, `%s`>\n", str_dup);
+    char *unescaped = str_literal_unescape(str_dup);
+    printf("<STRINGLITERAL, `%s`>\n", unescaped);
     free(str_dup);
-    cursor.col += yyleng;
+    free(unescaped);
 }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 208 "lib/lex-def.l"
+#line 204 "lib/lex-def.l"
 {
-    printf("%s:%d:%d: ", filename, cursor.line, cursor.col);
-    cipl_printf_color(RED, "error:");
-    printf(" Unexpected Character: %s\n", yytext);
+    cipl_perror("Unexpected Character: %s\n", yytext);
     ++errors_count;
     cursor.col += yyleng;
 }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 216 "lib/lex-def.l"
+#line 210 "lib/lex-def.l"
 ECHO;
 	YY_BREAK
-#line 1035 "src/main.c"
+#line 1029 "src/main.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1999,7 +1993,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 216 "lib/lex-def.l"
+#line 210 "lib/lex-def.l"
 
 
 int main(int argc, char **argv){
