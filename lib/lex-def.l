@@ -5,14 +5,13 @@
     #include <stdio.h>
     #include <stdlib.h>
     #include <ctype.h>
-    #include "data-structures/stack.h"
+    #include "utils/io.h"
 
     int curr_tab = 0;
     int reading_string = 0;
     int reading_args = 0;
     int errors_count = 0;
     char *filename;
-    StackNode* error_stack = NULL;
 
     typedef struct {
         int col;
@@ -207,13 +206,9 @@ RESERVED_KEYWORDS if|else|return|break|for|NIL
 }
 
 . {
-    char *err_buff = calloc(512, sizeof(char));
-    sprintf(
-        err_buff,
-        "%s:%d:%d: error: Unexpected Character: %s",
-        filename, cursor.line, cursor.col, yytext
-    );
-    stack_push(&error_stack, err_buff);
+    printf("%s:%d:%d: ", filename, cursor.line, cursor.col);
+    cipl_printf_color(RED, "error:");
+    printf(" Unexpected Character: %s\n", yytext);
     ++errors_count;
     cursor.col += yyleng;
 }
@@ -222,29 +217,35 @@ RESERVED_KEYWORDS if|else|return|break|for|NIL
 
 int main(int argc, char **argv){
     if (argc < 2) {
-        printf("usage: %s filename", argv[0]);
+        cipl_printf_color(RED, "usage: %s filename", argv[0]);
         return 1;
     }
 
-    filename = argv[1];
     FILE *pfile = fopen(argv[1], "r");
-    yyin = pfile;
-    yylex();
-    
-    printf(
-        "\nlexical analysis completed with %d error%s generated.\n",
-        errors_count, errors_count > 1 ? "s" : ""
-    );
 
-    while(error_stack) {
-        printf("%s\n", (char *)stack_peek(error_stack));
-        stack_pop(&error_stack);
+    if (!pfile) {
+        cipl_printf_color(RED, "could not open file at: %s\n", argv[1]);
+        return 1;
+    }
+
+    yyin = pfile;
+    (filename = strrchr(argv[1], '/')) ? ++filename : (filename = argv[1]);
+
+    yylex();
+
+    if (errors_count) {
+        cipl_printf_color(
+            RED,
+            "\n%d error%s generated.\n",
+            errors_count, errors_count > 1 ? "s" : ""
+        );
+        
     }
 
     fclose(yyin);
     yylex_destroy();
 
-    return 0;
+    return errors_count > 0;
 }
 
 void str_rm_char_at(char *str, unsigned int index) {
