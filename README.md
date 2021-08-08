@@ -5,7 +5,7 @@
 ## Usage
 
 ```shell
-./tradutores.out < tests/<input>.cipl > tokenized_<output>.txt
+./tradutor.out tests/{input}.cipl (> {output}.txt)?
 ```
 
 Running valgrind to check for memory leaks
@@ -17,7 +17,7 @@ make mem_check
 ## Installation
 
 ```shell
-sudo apt install flex bison gcc make autoconf
+sudo apt install flex gcc make
 make
 ```
 

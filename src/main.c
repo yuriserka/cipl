@@ -1005,10 +1005,10 @@ YY_RULE_SETUP
 {
     char *str_dup = strdup(yytext);
     string_literal_rm_dquote(str_dup);
-    char *unescaped = str_unescape(str_dup);
-    printf("<STRINGLITERAL, `%s`>\n", unescaped);
+    // char *unescaped = str_unescape(str_dup);
+    printf("<STRINGLITERAL, `%s`>\n", str_dup);
     free(str_dup);
-    free(unescaped);
+    // free(unescaped);
 }
 	YY_BREAK
 case 15:
