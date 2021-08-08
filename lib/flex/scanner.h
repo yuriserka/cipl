@@ -2,9 +2,9 @@
 #define yyHEADER_H 1
 #define yyIN_HEADER 1
 
-#line 6 "include/flex/scanner.h"
+#line 6 "lib/flex/scanner.h"
 
-#line 8 "include/flex/scanner.h"
+#line 8 "lib/flex/scanner.h"
 
 #define  YY_INT_ALIGNED short int
 
@@ -469,9 +469,9 @@ extern int yylex (void);
 #undef yyTABLES_NAME
 #endif
 
-#line 210 "lib/lex-def.l"
+#line 215 "src/flex/lex-def.l"
 
 
-#line 476 "include/flex/scanner.h"
+#line 476 "lib/flex/scanner.h"
 #undef yyIN_HEADER
 #endif /* yyHEADER_H */

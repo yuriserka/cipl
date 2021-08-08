@@ -1,12 +1,10 @@
-#include "utils/str2num.h"
+#include "utils/string/2-num.h"
 
 #include <ctype.h>
 #include <math.h>
 #include <stdio.h>
 
 #include "utils/cursor-position.h"
-
-extern cursor_position cursor;
 
 int str_hex2int(char **hex) {
   int val = 0, digits_count = 0;
@@ -21,7 +19,7 @@ int str_hex2int(char **hex) {
     val = (val << 4) | (byte & 0xF);
     ++*hex;
     ++digits_count;
-    ++cursor.col;
+    cursor_position_update(0, 1);
   }
   return digits_count > 2 ? HEX_ESCAPE_OOR : val;
 }
@@ -44,7 +42,7 @@ int str_oct2int(char **oct) {
     byte -= '0';
     val += byte * pow(8, --digits_count);
     ++*oct;
-    ++cursor.col;
+    cursor_position_update(0, 1);
   }
 
   return val > 255 ? OCT_ESCAPE_OOR : val;

@@ -1,16 +1,18 @@
 %option nounput noinput noyywrap
-%option outfile="src/main.c" header-file="include/flex/scanner.h"
+%option outfile="src/main.c" header-file="lib/flex/scanner.h"
 
 %{
     #include <stdio.h>
     #include <stdlib.h>
     #include <ctype.h>
     #include "utils/io.h"
-    #include "utils/str2num.h"
-    #include "utils/str-unescape.h"
+    #include "utils/string/2-num.h"
+    #include "utils/string/unescape.h"
+    #include "utils/string/find-occurrences.h"
     #include "utils/cursor-position.h"
 
     int errors_count = 0;
+    int scanning_string_literal = 0;
     char *filename;
 
     cursor_position cursor = {.col=1, .line=1};
@@ -39,7 +41,7 @@ OP_UNI_BOOL "!"
 OP_UNI_BITWISE "~"
 OP_UNI_LIST "?"|"%"|"!"
 
-WS {DELIM}+
+WS {DELIM}
 ID {LETTER}{LETTER_OR_DIGIT}*
 BINARY_OP {OP_BIN_ARITHMETIC}|{OP_BIN_COMPARISON}|{OP_BIN_BOOL}|{OP_BIN_BITWISE}|{OP_BIN_LIST}
 UNARY_OP {OP_UNI_ARITHMETIC}|{OP_UNI_BOOL}|{OP_UNI_BITWISE}|{OP_UNI_LIST}
@@ -58,21 +60,23 @@ RESERVED_KEYWORDS if|else|return|break|for|NIL
 
 %%
 
-<*>{MULTILINE_COMMENT}|{SINGLELINE_COMMENT}
-<*>{WS} {
+{MULTILINE_COMMENT}|{SINGLELINE_COMMENT} {
+    int num_of_nl = str_count_occ_char(yytext, '\n');
+    cursor_position_update(num_of_nl, 0);
+}
+
+{WS} {
     switch (yytext[0]) {
-        case '\n':
-            ++cursor.line;
-            cursor.col = 1;
+        case ' ':
+        case '\t':
+            cursor_position_update(0, yyleng);
             break;
         default:
-            cursor.col += yyleng;
+            cursor_position_update(yyleng, 0);
     }
 }
 
-<INITIAL>[\(\){};,] {
-	BEGIN(INITIAL);
-
+[\(\){};,] {
     switch (yytext[0]) {
         case '(': printf("<LPARAN>\n"); break;
         case ')': printf("<RPARAN>\n"); break;
@@ -81,7 +85,7 @@ RESERVED_KEYWORDS if|else|return|break|for|NIL
         case ',': printf("<COMMA>\n"); break;
         case ';': printf("<SEMI>\n"); break;
     }
-    cursor.col += yyleng;
+    cursor_position_update(0, yyleng);
 }
 
 {RESERVED_KEYWORDS} {
@@ -89,44 +93,45 @@ RESERVED_KEYWORDS if|else|return|break|for|NIL
     str_2_upper(yytext, upper);
     printf("<%s>\n", upper);
     free(upper);
+    cursor_position_update(0, yyleng);
 }
 
 {TYPES} {
     printf("<TYPE, `%s`>\n", yytext);
-    cursor.col += yyleng;
+    cursor_position_update(0, yyleng);
 }
 
 {ID} {
     printf("<ID, `%s`>\n", yytext);
-    cursor.col += yyleng;
+    cursor_position_update(0, yyleng);
 }
 
 {INTEGER_NUMBER} {
     long int longval;
     sscanf(yytext, "%ld", &longval);
     printf("<INTNUM, `%ld`>\n", longval);
-    cursor.col += yyleng;
+    cursor_position_update(0, yyleng);
 }
 
 {REAL_NUMBER} {
     double doubleval;
     sscanf(yytext, "%lf", &doubleval);
     printf("<REALNUM, `%lf`>\n", doubleval);
-    cursor.col += yyleng;
+    cursor_position_update(0, yyleng);
 }
 
 {HEX_NUMBER} {
     unsigned int hexval;
     sscanf(yytext, "%x", &hexval);
     printf("<HEXNUM, `%s`=`%d`>\n", yytext, hexval);
-    cursor.col += yyleng;
+    cursor_position_update(0, yyleng);
 }
 
 {OCTAL_NUMBER} {
     unsigned int octval;
     sscanf(yytext, "%o", &octval);
     printf("<OCTNUM, `%s`=`%d`>\n", yytext, octval);
-    cursor.col += yyleng;
+    cursor_position_update(0, yyleng);
 }
 
 {UNARY_OP} {
@@ -143,7 +148,7 @@ RESERVED_KEYWORDS if|else|return|break|for|NIL
         case '%': printf("<PERCENTOP, `%s`>\n", token); break;
         case '~': printf("<BITOP, `%s`>\n", token); break;
     }
-    cursor.col += yyleng;
+    cursor_position_update(0, yyleng);
 }
 
 {BINARY_OP} {
@@ -171,7 +176,7 @@ RESERVED_KEYWORDS if|else|return|break|for|NIL
         case '&': printf("<%s, `%s`>\n", yyleng > 1 ? "BOOLOP" : "BITOP", token); break;
         case '|': printf("<%s, `%s`>\n", yyleng > 1 ? "BOOLOP" : "BITOP", token); break;
     }
-    cursor.col += yyleng;
+    cursor_position_update(0, yyleng);
 }
 
 {OP_ASSSIGN} {
@@ -189,13 +194,13 @@ RESERVED_KEYWORDS if|else|return|break|for|NIL
         case '<': printf("<LSHIFTEQ>\n"); break;
         default: printf("<EQ>\n");
     }
-    cursor.col += yyleng;
+    cursor_position_update(0, yyleng);
 }
 
 {STRING_LITERAL} {
     char *str_dup = strdup(yytext);
     string_literal_rm_dquote(str_dup);
-    char *unescaped = str_literal_unescape(str_dup);
+    char *unescaped = str_unescape(str_dup);
     printf("<STRINGLITERAL, `%s`>\n", unescaped);
     free(str_dup);
     free(unescaped);
@@ -204,21 +209,23 @@ RESERVED_KEYWORDS if|else|return|break|for|NIL
 . {
     cipl_perror("Unexpected Character: %s\n", yytext);
     ++errors_count;
-    cursor.col += yyleng;
+    cursor_position_update(0, yyleng);
 }
 
 %%
 
 int main(int argc, char **argv){
     if (argc < 2) {
-        cipl_printf_color(RED, "usage: %s filename", argv[0]);
+        cipl_printf_color(RED, "error: ");
+        cipl_printf("usage: %s <filename>\n", argv[0]);
         return 1;
     }
 
     FILE *pfile = fopen(argv[1], "r");
 
     if (!pfile) {
-        cipl_printf_color(RED, "could not open file at: %s\n", argv[1]);
+        cipl_printf_color(RED, "error: ");
+        cipl_printf("could not open file at: %s\n", argv[1]);
         return 1;
     }
 
