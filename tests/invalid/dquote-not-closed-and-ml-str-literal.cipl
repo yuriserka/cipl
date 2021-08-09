@@ -1,0 +1,9 @@
+int main() {
+    writeln("invalid
+    literal"
+    );
+
+    writeln("only single line");
+    "not closed
+}
+"

@@ -12,8 +12,6 @@
     #include "utils/cursor-position.h"
 
     int errors_count = 0;
-    int scanning_string_literal = 0;
-    cursor_position dquote_open_cursor;
     char *filename;
 
     cursor_position cursor = {.line=1, .col=1};
@@ -53,39 +51,22 @@ REAL_NUMBER {INTEGER_NUMBER}(\.{DIGIT}+)?([eE][+-]?{DIGIT}+)?
 OCTAL_NUMBER 0[0-7]+
 HEX_NUMBER 0[Xx]{HEX_DIGIT}+
 
-MULTILINE_COMMENT ("/"+"*")([^*]|"*"[^/])*"*/"
 SINGLELINE_COMMENT "//"[^\n]*
 
 RESERVED_KEYWORDS if|else|return|break|for|NIL
 
-%x SCAN_STR_LITERAL
+%x SCANNING_STR_LITERAL
+%x SCANNING_ML_COMMENT
 
 %%
 
-<<EOF>> {
-    if (scanning_string_literal) {
-        cursor = dquote_open_cursor;
+{SINGLELINE_COMMENT} {}
 
-        ++errors_count;
-        cipl_pwarn("missing terminating '\"' character\n");
-    }
-    yyterminate();
-}
-
-<*>{MULTILINE_COMMENT}|{SINGLELINE_COMMENT} {
-    int num_of_nl = str_count_occ_char(yytext, '\n');
-    cursor_position_update(num_of_nl, 0);
-}
-
-<*>{WS} {
-    const int TAB_SIZE = 4;
+{WS} {
     switch (yytext[0]) {
         case ' ':
-        case '\t':
-            cursor_position_update(0, yyleng * TAB_SIZE);
-            break;
-        default:
-            cursor_position_update(yyleng, 0);
+        case '\t': cursor_position_update(0, yyleng); break;
+        default: cursor_position_update(yyleng, 0); break;
     }
 }
 
@@ -211,33 +192,59 @@ RESERVED_KEYWORDS if|else|return|break|for|NIL
 }
 
 ["] {
-    BEGIN(SCAN_STR_LITERAL);
-    scanning_string_literal = 1;
-
-    dquote_open_cursor = cursor;
-    
-    yymore();
-}
-
-<SCAN_STR_LITERAL>([^"\\]|\\.)* {
-    cursor_position_update(
-        str_count_occ_char(yytext, '\n'),
-        str_len_after_last_char(yytext, '\n')
-    );
-    yymore();
-}
-
-<SCAN_STR_LITERAL>["] {
-    BEGIN(INITIAL);
+    BEGIN(SCANNING_STR_LITERAL);
     cursor_position_update(0, yyleng);
+    yymore();
+}
 
-    char *str_dup = strdup(yytext);
-    string_literal_rm_dquote(str_dup);
-    // char *unescaped = str_unescape(str_dup);
-    printf("<STRINGLITERAL, `%s`>\n", str_dup);
-    free(str_dup);
-    // free(unescaped);
-    scanning_string_literal = 0;
+<SCANNING_STR_LITERAL>{
+    ([^\n"\\]|\\.)* {
+        cursor_position_update(0, yyleng);
+        yymore();
+    }
+    ["] {
+        cursor_position_update(0, yyleng);
+        char *str_dup = strdup(yytext);
+        string_literal_rm_dquote(str_dup);
+        // char *unescaped = str_unescape(str_dup);
+        printf("<STRINGLITERAL, `%s`>\n", str_dup);
+        free(str_dup);
+        // free(unescaped);
+        BEGIN(INITIAL);
+    }
+    \n {
+        ++errors_count;
+        cipl_pwarn("missing terminating '\"' character\n");
+        cursor_position_update(1, 0);
+        BEGIN(INITIAL);
+    }
+    <<EOF>> {
+        ++errors_count;
+        cipl_pwarn("missing terminating '\"' character\n");
+        BEGIN(INITIAL);
+    }
+}
+
+"/*" {
+    BEGIN(SCANNING_ML_COMMENT);
+    cursor_position_update(0, yyleng);
+    yymore();
+}
+
+<SCANNING_ML_COMMENT>{
+    ([^*\n]|"*"[^/\n])* { /* noop */ }
+    "\n" {
+        cursor_position_update(yyleng, 0);
+    }
+    "*/" {
+        BEGIN(INITIAL);
+        cursor_position_update(0, yyleng);
+    }
+   <<EOF>> {
+        ++errors_count;
+        cipl_pwarn("unterminated comment\n");
+        BEGIN(INITIAL);
+    } 
 }
 
 . {

@@ -1,10 +1,10 @@
 int main() {
-	$$this->:assa
+    $$this->:assa
 
-	@prop           @expected_col_17
-	#col
+    @prop           @err_in_col_22
+    #col
 
-	## comment?
+    ## comment?
 
-							$ // tabs != spaces??
+            $ // tabs != spaces??
 }
