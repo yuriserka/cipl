@@ -1,6 +1,10 @@
-$$this->:assa
+int main() {
+	$$this->:assa
 
-@prop           
-#col
+	@prop           @expected_col_17
+	#col
 
-## comment?
+	## comment?
+
+							$ // tabs != spaces??
+}

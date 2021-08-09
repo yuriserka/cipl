@@ -12,7 +12,7 @@ writeln("other symbols: ! @ $ % & * (a_) - + =");
 
 writeln("octal code bacome some printable -> A\072five"); // expected: "A:5"
 
-writeln("same for hexs -> B\x4aLol"); // expected: "BJ"
+writeln("same for hexs -> B\x4aLol"); // expected: "BJLol"
 
 writeln("multi: \133x\135=\x58^\x59"); // expected: "multi: [x]=X^Y"
 

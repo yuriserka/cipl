@@ -1,13 +1,14 @@
-// my first lex error
-$a
-
-/*
- * this error is a bit more sophisticated
- * but i can handle
- * properly too
- * :)
- :P
- ****
-*/
-
 @Decorator()
+int main() {
+    // my first lex error
+    $a = 10;
+
+    /*
+    * this error is a bit more sophisticated
+    * but i can handle
+    * properly too
+    * :)
+    :P
+    ****
+    */
+}

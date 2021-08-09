@@ -13,3 +13,9 @@ int only_this_line_should_get_tokenized;
  * \001 \x55 \\;//
  and more!
  */
+
+/*
+ example:
+  int i = 0;
+  for (int j = ++i; j < 10; ++j) {  }
+*/

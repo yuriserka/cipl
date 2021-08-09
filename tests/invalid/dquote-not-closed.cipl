@@ -1,4 +1,15 @@
-writeln("
+int main() {
+    writeln("
+    valid
+    xyz")
 
-long test
-)
+    writeln("
+        still valid
+    );
+
+    writeln(
+    "
+
+    // next line is invalid missing dquote at 13:4
+    ");
+}
