@@ -1,5 +1,6 @@
 #include "utils/string/find-occurrences.h"
 
+#include <stdio.h>
 #include <string.h>
 
 int str_count_occ_char(char *s, char c) {
@@ -10,6 +11,11 @@ int str_count_occ_char(char *s, char c) {
     ptr = strchr(++ptr, c);
   }
   return count;
+}
+
+int str_len_after_last_char(char *s, char c) {
+  char *ptr = strrchr(s, c);
+  return ptr ? strlen(++ptr) : 0;
 }
 
 int str_count_occ_str(char *s, char *ss) {

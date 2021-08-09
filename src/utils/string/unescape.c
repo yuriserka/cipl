@@ -1,11 +1,10 @@
 #include "utils/string/unescape.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
-#include "utils/cursor-position.h"
 #include "utils/io.h"
 #include "utils/string/2-num.h"
 
@@ -16,7 +15,6 @@ char *str_unescape(char *s) {
   while (*s != '\0') {
     char *sstr = str;
     if (*s == '\\') {
-      cursor_position_update(0, 1);
       switch (*++s) {
         case 'a':
           sprintf(str, "%s%c", sstr, '\a');
@@ -61,7 +59,6 @@ char *str_unescape(char *s) {
         case 'x':
         case 'X': {
           ++s;
-          cursor_position_update(0, 1);
           int hexval = str_hex2int(&s);
           if (hexval == HEX_ESCAPE_OOR) {
             ++errors_count;
@@ -69,7 +66,6 @@ char *str_unescape(char *s) {
             goto end_str;
           } else {
             sprintf(str, "%s%c", sstr, hexval);
-            cursor_position_update(0, 1);
             if (!hexval) goto end_str;
           }
         } break;
@@ -82,7 +78,6 @@ char *str_unescape(char *s) {
               goto end_str;
             } else {
               sprintf(str, "%s%c", sstr, octval);
-              cursor_position_update(0, 1);
               if (!octval) goto end_str;
             }
           } else {
@@ -94,8 +89,6 @@ char *str_unescape(char *s) {
     } else {
       sprintf(str, "%s%c", sstr, *s++);
     }
-    if (*s == '\n') ++cursor.line;
-    cursor_position_update(0, 1);
   }
 
 end_str:

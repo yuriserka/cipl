@@ -13,9 +13,10 @@
 
     int errors_count = 0;
     int scanning_string_literal = 0;
+    cursor_position dquote_open_cursor;
     char *filename;
 
-    cursor_position cursor = {.col=1, .line=1};
+    cursor_position cursor = {.line=1, .col=1};
 
     void str_rm_n_char_from_beg(char *s, const int qtd);
     void str_rm_char_at(char *s, unsigned int index);
@@ -31,10 +32,10 @@ HEX_DIGIT [[:xdigit:]]
 TYPES "int list"|"float list"|"int"|"float"
 
 OP_BIN_ARITHMETIC "*"|"/"|"%"|"+"|"-"
-OP_BIN_BITWISE "&"|"^"|"|"|"^"|"<<"|">>"
+OP_BIN_BITWISE "&"|"^"|"|"|"<<"|">>"
 OP_BIN_BOOL "&&"|"||"
 OP_BIN_COMPARISON "<="|">="|"<"|">"|"!="|"=="
-OP_BIN_LIST "<<"|">>"|":" 
+OP_BIN_LIST "<<"|">>"|":"
 
 OP_UNI_ARITHMETIC "-"|"++"|"--"
 OP_UNI_BOOL "!"
@@ -55,28 +56,40 @@ HEX_NUMBER 0[Xx]{HEX_DIGIT}+
 MULTILINE_COMMENT ("/"+"*")([^*]|"*"[^/])*"*/"
 SINGLELINE_COMMENT "//"[^\n]*
 
-STRING_LITERAL \"([^"\\]|\\.)*\"
 RESERVED_KEYWORDS if|else|return|break|for|NIL
+
+%x SCAN_STR_LITERAL
 
 %%
 
-{MULTILINE_COMMENT}|{SINGLELINE_COMMENT} {
+<<EOF>> {
+    if (scanning_string_literal) {
+        cursor = dquote_open_cursor;
+
+        ++errors_count;
+        cipl_pwarn("missing terminating '\"' character\n");
+    }
+    yyterminate();
+}
+
+<*>{MULTILINE_COMMENT}|{SINGLELINE_COMMENT} {
     int num_of_nl = str_count_occ_char(yytext, '\n');
     cursor_position_update(num_of_nl, 0);
 }
 
-{WS} {
+<*>{WS} {
+    const int TAB_SIZE = 4;
     switch (yytext[0]) {
         case ' ':
         case '\t':
-            cursor_position_update(0, yyleng);
+            cursor_position_update(0, yyleng * TAB_SIZE);
             break;
         default:
             cursor_position_update(yyleng, 0);
     }
 }
 
-[\(\){};,] {
+<INITIAL>[\(\){};,] {
     switch (yytext[0]) {
         case '(': printf("<LPARAN>\n"); break;
         case ')': printf("<RPARAN>\n"); break;
@@ -197,13 +210,34 @@ RESERVED_KEYWORDS if|else|return|break|for|NIL
     cursor_position_update(0, yyleng);
 }
 
-{STRING_LITERAL} {
+["] {
+    BEGIN(SCAN_STR_LITERAL);
+    scanning_string_literal = 1;
+
+    dquote_open_cursor = cursor;
+    
+    yymore();
+}
+
+<SCAN_STR_LITERAL>([^"\\]|\\.)* {
+    cursor_position_update(
+        str_count_occ_char(yytext, '\n'),
+        str_len_after_last_char(yytext, '\n')
+    );
+    yymore();
+}
+
+<SCAN_STR_LITERAL>["] {
+    BEGIN(INITIAL);
+    cursor_position_update(0, yyleng);
+
     char *str_dup = strdup(yytext);
     string_literal_rm_dquote(str_dup);
     // char *unescaped = str_unescape(str_dup);
     printf("<STRINGLITERAL, `%s`>\n", str_dup);
     free(str_dup);
     // free(unescaped);
+    scanning_string_literal = 0;
 }
 
 . {
