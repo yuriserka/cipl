@@ -11,7 +11,7 @@ int list newtail;
 newtail = %intlist;
 
 int list mapped;
-mapped = intlist >> mapfn;
+mapped = mapfn >> intlist;
 
 int list filtered;
-filtered = mapped << filterfn;
+filtered = filterfn << mapped;

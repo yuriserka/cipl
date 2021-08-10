@@ -7,4 +7,16 @@ int main() {
     ## comment?
 
             $ // tabs != spaces??
+    /* here everything is allowed
+
+
+    $$this2->:assa2
+
+    @prop 2          @err_in_col_22
+    #col2
+
+    ## comment2?
+
+            $ // tabs2 != spaces2??
+            */
 }

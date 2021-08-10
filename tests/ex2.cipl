@@ -18,7 +18,7 @@ int main() {
     }
 
     float list w, it;
-    w = l >> compute_w;
+    w = compute_w >> l;
     i = 0;
 
     for (it = w; it != NIL; it = !it) {

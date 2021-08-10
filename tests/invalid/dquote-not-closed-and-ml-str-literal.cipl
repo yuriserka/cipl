@@ -6,4 +6,3 @@ int main() {
     writeln("only single line");
     "not closed
 }
-"

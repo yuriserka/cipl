@@ -217,7 +217,7 @@ extern char *yytext;
 #ifdef YY_HEADER_EXPORT_START_CONDITIONS
 #define INITIAL 0
 #define SCANNING_STR_LITERAL 1
-#define SCANNING_ML_COMMENT 2
+#define SCANNING_MULTILINE_COMMENT 2
 
 #endif
 
@@ -471,7 +471,7 @@ extern int yylex (void);
 #undef yyTABLES_NAME
 #endif
 
-#line 256 "src/flex/lex-def.l"
+#line 225 "src/flex/lex-def.l"
 
 
 #line 478 "lib/flex/scanner.h"

@@ -4,9 +4,13 @@ if (1) {
     write("a");
 }
 
+int i;
+read(i);
+
 for (;;) {
     write("rep");
-    break;
+    writeln("");
 }
 
-int list l = NIL;
+int list l;
+l = NIL;

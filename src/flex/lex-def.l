@@ -26,41 +26,36 @@ DELIM [[:blank:]\n]
 LETTER [[:alpha:]_]
 DIGIT [[:digit:]]
 LETTER_OR_DIGIT [[:alnum:]_]
-HEX_DIGIT [[:xdigit:]]
 TYPES "int list"|"float list"|"int"|"float"
 
-OP_BIN_ARITHMETIC "*"|"/"|"%"|"+"|"-"
-OP_BIN_BITWISE "&"|"^"|"|"|"<<"|">>"
+OP_BIN_ARITHMETIC "*"|"/"|"+"|"-"
 OP_BIN_BOOL "&&"|"||"
 OP_BIN_COMPARISON "<="|">="|"<"|">"|"!="|"=="
 OP_BIN_LIST "<<"|">>"|":"
 
-OP_UNI_ARITHMETIC "-"|"++"|"--"
 OP_UNI_BOOL "!"
-OP_UNI_BITWISE "~"
 OP_UNI_LIST "?"|"%"|"!"
 
 WS {DELIM}
 ID {LETTER}{LETTER_OR_DIGIT}*
-BINARY_OP {OP_BIN_ARITHMETIC}|{OP_BIN_COMPARISON}|{OP_BIN_BOOL}|{OP_BIN_BITWISE}|{OP_BIN_LIST}
-UNARY_OP {OP_UNI_ARITHMETIC}|{OP_UNI_BOOL}|{OP_UNI_BITWISE}|{OP_UNI_LIST}
-OP_ASSSIGN =|{OP_BIN_ARITHMETIC}=|{OP_BIN_BITWISE}=
+BINARY_OP {OP_BIN_ARITHMETIC}|{OP_BIN_COMPARISON}|{OP_BIN_BOOL}|{OP_BIN_LIST}
+UNARY_OP {OP_UNI_BOOL}|{OP_UNI_LIST}
+OP_ASSSIGN =
 
 INTEGER_NUMBER -?(0|[1-9]{DIGIT}*)
 REAL_NUMBER {INTEGER_NUMBER}(\.{DIGIT}+)?([eE][+-]?{DIGIT}+)?
-OCTAL_NUMBER 0[0-7]+
-HEX_NUMBER 0[Xx]{HEX_DIGIT}+
 
 SINGLELINE_COMMENT "//"[^\n]*
 
-RESERVED_KEYWORDS if|else|return|break|for|NIL
+RESERVED_KEYWORDS if|else|return|for|NIL
+BUILTIN_FNS read|write|writeln
 
 %x SCANNING_STR_LITERAL
-%x SCANNING_ML_COMMENT
+%x SCANNING_MULTILINE_COMMENT
 
 %%
 
-{SINGLELINE_COMMENT} {}
+{SINGLELINE_COMMENT} { /* noop */ }
 
 {WS} {
     switch (yytext[0]) {
@@ -78,6 +73,14 @@ RESERVED_KEYWORDS if|else|return|break|for|NIL
         case '}': printf("<RBRACE>\n"); break;
         case ',': printf("<COMMA>\n"); break;
         case ';': printf("<SEMI>\n"); break;
+    }
+    cursor_position_update(0, yyleng);
+}
+
+{BUILTIN_FNS} {
+    switch (yytext[0]) {
+        case 'r': printf("<IN, `%s`>\n", yytext); break;
+        default: printf("<OUT, `%s`>\n", yytext); break;
     }
     cursor_position_update(0, yyleng);
 }
@@ -114,33 +117,14 @@ RESERVED_KEYWORDS if|else|return|break|for|NIL
     cursor_position_update(0, yyleng);
 }
 
-{HEX_NUMBER} {
-    unsigned int hexval;
-    sscanf(yytext, "%x", &hexval);
-    printf("<HEXNUM, `%s`=`%d`>\n", yytext, hexval);
-    cursor_position_update(0, yyleng);
-}
-
-{OCTAL_NUMBER} {
-    unsigned int octval;
-    sscanf(yytext, "%o", &octval);
-    printf("<OCTNUM, `%s`=`%d`>\n", yytext, octval);
-    cursor_position_update(0, yyleng);
-}
-
 {UNARY_OP} {
     char *token = yytext;
     switch (token[0]) {
-        case '-': {
-            printf("<%s, `%s`>\n", yyleng > 1 ? "DECREMENT_OP" : "SIGNCHANGEOP", token);
-        } break;
-        case '+': printf("<INCREMENT_OP, `%s`>\n", token); break;
         // só será possivel decidir a ação na analise semantica
         // se !int = NOTOP senao !list = LISTTAILOP
         case '!': printf("<EXCLAMATIONOP, `%s`>\n", token); break;
-        case '?': printf("<QUESTIONMARKOP, `%s`>\n", token); break;
-        case '%': printf("<PERCENTOP, `%s`>\n", token); break;
-        case '~': printf("<BITOP, `%s`>\n", token); break;
+        case '?': printf("<LISTHEADEROP, `%s`>\n", token); break;
+        case '%': printf("<LISTTAILPOPOP, `%s`>\n", token); break;
     }
     cursor_position_update(0, yyleng);
 }
@@ -148,10 +132,9 @@ RESERVED_KEYWORDS if|else|return|break|for|NIL
 {BINARY_OP} {
     char *token = yytext;
     switch (token[0]) {
-        case ':': printf("<COLONOP>\n"); break;
+        case ':': printf("<LISTCTROP>\n"); break;
         case '*':
         case '/':
-        case '%':
         case '+':
         case '-': printf("<ARITHOP, `%s`>\n", token); break;
         case '<':
@@ -164,30 +147,16 @@ RESERVED_KEYWORDS if|else|return|break|for|NIL
             if (is_cmp) printf("<INEQOP, `%s`>\n", token);
             else printf("<%s>\n", is_dless ? "DLESSOP" : "DGREATOP");
         } break;
-        case '=': 
+        case '=':
         case '!': printf("<EQOP, `%s`>\n", token); break;
-        case '^': printf("<BITOP, `%s`>\n", token); break;
-        case '&': printf("<%s, `%s`>\n", yyleng > 1 ? "BOOLOP" : "BITOP", token); break;
-        case '|': printf("<%s, `%s`>\n", yyleng > 1 ? "BOOLOP" : "BITOP", token); break;
+        case '&':
+        case '|': printf("<BOOLOP, `%s`>\n", token); break;
     }
     cursor_position_update(0, yyleng);
 }
 
 {OP_ASSSIGN} {
-    char *token = yytext;
-    switch (token[0]) {
-        case '*': printf("<MULTEQ>\n"); break;
-        case '/': printf("<DIVEQ>\n"); break;
-        case '%': printf("<MODEQ>\n"); break;
-        case '+': printf("<PLUSEQ>\n"); break;
-        case '-': printf("<MINUSEQ>\n"); break;
-        case '&': printf("<ANDEQ>\n"); break;
-        case '^': printf("<XOREQ>\n"); break;
-        case '|': printf("<OREQ>\n"); break;
-        case '>': printf("<RSHIFTEQ>\n"); break;
-        case '<': printf("<LSHIFTEQ>\n"); break;
-        default: printf("<EQ>\n");
-    }
+    printf("<EQ>\n");
     cursor_position_update(0, yyleng);
 }
 
@@ -226,12 +195,12 @@ RESERVED_KEYWORDS if|else|return|break|for|NIL
 }
 
 "/*" {
-    BEGIN(SCANNING_ML_COMMENT);
+    BEGIN(SCANNING_MULTILINE_COMMENT);
     cursor_position_update(0, yyleng);
     yymore();
 }
 
-<SCANNING_ML_COMMENT>{
+<SCANNING_MULTILINE_COMMENT>{
     ([^*\n]|"*"[^/\n])* { /* noop */ }
     "\n" {
         cursor_position_update(yyleng, 0);
