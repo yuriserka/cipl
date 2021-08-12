@@ -383,7 +383,7 @@ static const flex_int16_t yy_accept[92] =
 static const YY_CHAR yy_ec[256] =
     {   0,
         1,    1,    1,    1,    1,    1,    1,    1,    2,    3,
-        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    2,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    4,    5,    6,    1,    1,    7,    8,    1,    9,
         9,   10,   11,    9,   12,   13,   14,   15,   16,   16,
@@ -535,6 +535,7 @@ char *yytext;
 
     int errors_count = 0;
     char *filename;
+    cursor_position dquote_open_pos, comment_open_pos;
 
     cursor_position cursor = {.line=1, .col=1};
 
@@ -542,9 +543,10 @@ char *yytext;
     void str_rm_char_at(char *s, unsigned int index);
     void str_2_upper(char *s, char *d);
     void string_literal_rm_dquote(char *s);
-#line 546 "src/main.c"
-
+    void show_str_literal_err();
 #line 548 "src/main.c"
+
+#line 550 "src/main.c"
 
 #define INITIAL 0
 #define SCANNING_STR_LITERAL 1
@@ -761,10 +763,10 @@ YY_DECL
 		}
 
 	{
-#line 56 "src/flex/lex-def.l"
+#line 58 "src/flex/lex-def.l"
 
 
-#line 768 "src/main.c"
+#line 770 "src/main.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -829,13 +831,13 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 58 "src/flex/lex-def.l"
+#line 60 "src/flex/lex-def.l"
 { /* noop */ }
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 60 "src/flex/lex-def.l"
+#line 62 "src/flex/lex-def.l"
 {
     switch (yytext[0]) {
         case ' ':
@@ -846,7 +848,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 68 "src/flex/lex-def.l"
+#line 70 "src/flex/lex-def.l"
 {
     switch (yytext[0]) {
         case '(': printf("<LPARAN>\n"); break;
@@ -861,7 +863,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 80 "src/flex/lex-def.l"
+#line 82 "src/flex/lex-def.l"
 {
     switch (yytext[0]) {
         case 'r': printf("<IN, `%s`>\n", yytext); break;
@@ -872,7 +874,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 88 "src/flex/lex-def.l"
+#line 90 "src/flex/lex-def.l"
 {
     char *upper = calloc(yyleng, sizeof(char));
     str_2_upper(yytext, upper);
@@ -883,7 +885,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 96 "src/flex/lex-def.l"
+#line 98 "src/flex/lex-def.l"
 {
     printf("<TYPE, `%s`>\n", yytext);
     cursor_position_update(0, yyleng);
@@ -891,7 +893,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 101 "src/flex/lex-def.l"
+#line 103 "src/flex/lex-def.l"
 {
     printf("<ID, `%s`>\n", yytext);
     cursor_position_update(0, yyleng);
@@ -899,7 +901,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 106 "src/flex/lex-def.l"
+#line 108 "src/flex/lex-def.l"
 {
     long int longval;
     sscanf(yytext, "%ld", &longval);
@@ -909,7 +911,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 113 "src/flex/lex-def.l"
+#line 115 "src/flex/lex-def.l"
 {
     double doubleval;
     sscanf(yytext, "%lf", &doubleval);
@@ -919,7 +921,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 120 "src/flex/lex-def.l"
+#line 122 "src/flex/lex-def.l"
 {
     char *token = yytext;
     switch (token[0]) {
@@ -934,7 +936,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 132 "src/flex/lex-def.l"
+#line 134 "src/flex/lex-def.l"
 {
     char *token = yytext;
     switch (token[0]) {
@@ -963,7 +965,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 158 "src/flex/lex-def.l"
+#line 160 "src/flex/lex-def.l"
 {
     printf("<EQ>\n");
     cursor_position_update(0, yyleng);
@@ -971,17 +973,18 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 163 "src/flex/lex-def.l"
+#line 165 "src/flex/lex-def.l"
 {
     BEGIN(SCANNING_STR_LITERAL);
     cursor_position_update(0, yyleng);
+    dquote_open_pos = cursor;
     yymore();
 }
 	YY_BREAK
 
 case 14:
 YY_RULE_SETUP
-#line 170 "src/flex/lex-def.l"
+#line 173 "src/flex/lex-def.l"
 {
         cursor_position_update(0, yyleng);
         yymore();
@@ -989,7 +992,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 174 "src/flex/lex-def.l"
+#line 177 "src/flex/lex-def.l"
 {
         cursor_position_update(0, yyleng);
         char *str_dup = strdup(yytext);
@@ -1004,29 +1007,26 @@ YY_RULE_SETUP
 case 16:
 /* rule 16 can match eol */
 YY_RULE_SETUP
-#line 184 "src/flex/lex-def.l"
+#line 187 "src/flex/lex-def.l"
 {
-        ++errors_count;
-        cipl_pwarn("missing terminating '\"' character\n");
+        show_str_literal_err();
         cursor_position_update(1, 0);
-        BEGIN(INITIAL);
     }
 	YY_BREAK
 case YY_STATE_EOF(SCANNING_STR_LITERAL):
-#line 190 "src/flex/lex-def.l"
+#line 191 "src/flex/lex-def.l"
 {
-        ++errors_count;
-        cipl_pwarn("missing terminating '\"' character\n");
-        BEGIN(INITIAL);
+        show_str_literal_err();
     }
 	YY_BREAK
 
 case 17:
 YY_RULE_SETUP
-#line 197 "src/flex/lex-def.l"
+#line 196 "src/flex/lex-def.l"
 {
     BEGIN(SCANNING_MULTILINE_COMMENT);
     cursor_position_update(0, yyleng);
+    comment_open_pos = cursor;
     yymore();
 }
 	YY_BREAK
@@ -1041,7 +1041,7 @@ case 19:
 YY_RULE_SETUP
 #line 205 "src/flex/lex-def.l"
 {
-        cursor_position_update(yyleng, 0);
+        cursor_position_update(1, 0);
     }
 	YY_BREAK
 case 20:
@@ -1056,26 +1056,29 @@ case YY_STATE_EOF(SCANNING_MULTILINE_COMMENT):
 #line 212 "src/flex/lex-def.l"
 {
         ++errors_count;
+        cursor_position b4 = cursor;
+        cursor = comment_open_pos;
         cipl_pwarn("unterminated comment\n");
+        cursor = b4;
         BEGIN(INITIAL);
     } 
 	YY_BREAK
 
 case 21:
 YY_RULE_SETUP
-#line 219 "src/flex/lex-def.l"
+#line 222 "src/flex/lex-def.l"
 {
-    cipl_perror("Unexpected Character: %s\n", yytext);
+    cipl_perror("unexpected character: %s\n", yytext);
     ++errors_count;
     cursor_position_update(0, yyleng);
 }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 225 "src/flex/lex-def.l"
+#line 228 "src/flex/lex-def.l"
 ECHO;
 	YY_BREAK
-#line 1079 "src/main.c"
+#line 1082 "src/main.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2043,7 +2046,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 225 "src/flex/lex-def.l"
+#line 228 "src/flex/lex-def.l"
 
 
 int main(int argc, char **argv){
@@ -2099,5 +2102,14 @@ void string_literal_rm_dquote(char *s) {
 void str_2_upper(char *s, char *d) {
     char *psrc = s;
     while (*psrc != '\0') *d++ = toupper(*psrc++);
+}
+
+void show_str_literal_err() {
+    ++errors_count;
+    cursor_position b4 = cursor;
+    cursor = dquote_open_pos;
+    cipl_pwarn("missing terminating '\"' character\n");
+    cursor = b4;
+    BEGIN(INITIAL);
 }
 

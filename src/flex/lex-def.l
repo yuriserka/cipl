@@ -13,6 +13,7 @@
 
     int errors_count = 0;
     char *filename;
+    cursor_position dquote_open_pos, comment_open_pos;
 
     cursor_position cursor = {.line=1, .col=1};
 
@@ -20,9 +21,10 @@
     void str_rm_char_at(char *s, unsigned int index);
     void str_2_upper(char *s, char *d);
     void string_literal_rm_dquote(char *s);
+    void show_str_literal_err();
 %}
 
-DELIM [[:blank:]\n]
+DELIM [[:blank:]\n\r]
 LETTER [[:alpha:]_]
 DIGIT [[:digit:]]
 LETTER_OR_DIGIT [[:alnum:]_]
@@ -163,6 +165,7 @@ BUILTIN_FNS read|write|writeln
 ["] {
     BEGIN(SCANNING_STR_LITERAL);
     cursor_position_update(0, yyleng);
+    dquote_open_pos = cursor;
     yymore();
 }
 
@@ -182,28 +185,25 @@ BUILTIN_FNS read|write|writeln
         BEGIN(INITIAL);
     }
     \n {
-        ++errors_count;
-        cipl_pwarn("missing terminating '\"' character\n");
+        show_str_literal_err();
         cursor_position_update(1, 0);
-        BEGIN(INITIAL);
     }
     <<EOF>> {
-        ++errors_count;
-        cipl_pwarn("missing terminating '\"' character\n");
-        BEGIN(INITIAL);
+        show_str_literal_err();
     }
 }
 
 "/*" {
     BEGIN(SCANNING_MULTILINE_COMMENT);
     cursor_position_update(0, yyleng);
+    comment_open_pos = cursor;
     yymore();
 }
 
 <SCANNING_MULTILINE_COMMENT>{
     ([^*\n]|"*"[^/\n])* { /* noop */ }
     "\n" {
-        cursor_position_update(yyleng, 0);
+        cursor_position_update(1, 0);
     }
     "*/" {
         BEGIN(INITIAL);
@@ -211,13 +211,16 @@ BUILTIN_FNS read|write|writeln
     }
    <<EOF>> {
         ++errors_count;
+        cursor_position b4 = cursor;
+        cursor = comment_open_pos;
         cipl_pwarn("unterminated comment\n");
+        cursor = b4;
         BEGIN(INITIAL);
     } 
 }
 
 . {
-    cipl_perror("Unexpected Character: %s\n", yytext);
+    cipl_perror("unexpected character: %s\n", yytext);
     ++errors_count;
     cursor_position_update(0, yyleng);
 }
@@ -277,4 +280,13 @@ void string_literal_rm_dquote(char *s) {
 void str_2_upper(char *s, char *d) {
     char *psrc = s;
     while (*psrc != '\0') *d++ = toupper(*psrc++);
+}
+
+void show_str_literal_err() {
+    ++errors_count;
+    cursor_position b4 = cursor;
+    cursor = dquote_open_pos;
+    cipl_pwarn("missing terminating '\"' character\n");
+    cursor = b4;
+    BEGIN(INITIAL);
 }
