@@ -1,19 +1,21 @@
-writeln("a valid simple str literal");
+int main() {
+    writeln("a valid simple str literal");
 
-writeln(""); // empty literal
+    writeln(""); // empty literal
 
-writeln("escaped chars are allowed like: \"this\" and \'that\' or `this`");
+    writeln("escaped chars are allowed like: \"this\" and \'that\' or `this`");
 
-writeln("\twhat about this?\n\n");
+    writeln("\twhat about this?\n\n");
 
-writeln("\ttes\0te");
+    writeln("\ttes\0te");
 
-writeln("other symbols: ! @ $ % & * (a_) - + =");
+    writeln("other symbols: ! @ $ % & * (a_) - + =");
 
-writeln("octal code bacome some printable -> A\072five"); // expected: "A:5"
+    writeln("octal code bacome some printable -> A\072five"); // expected: "A:5"
 
-writeln("same for hexs -> B\x4aLol"); // expected: "BJLol"
+    writeln("same for hexs -> B\x4aLol"); // expected: "BJLol"
 
-writeln("multi: \133x\135=\x58^\x59"); // expected: "multi: [x]=X^Y"
+    writeln("multi: \133x\135=\x58^\x59"); // expected: "multi: [x]=X^Y"
 
-writeln("octal pruned at 3: x\1335\135=\065;"); // expected: "octal pruned at 3: x[5]=5;"
+    writeln("octal pruned at 3: x\1335\135=\065;"); // expected: "octal pruned at 3: x[5]=5;"
+}

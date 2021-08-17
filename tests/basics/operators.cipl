@@ -1,24 +1,26 @@
 int i;
 int j;
 
-// Arithmetic Operators
+int main() {
+    // Arithmetic Operators
 
-i = i + j;
-i = i - j;
-i = i * j;
-i = i / j;
+    i = i + j;
+    i = i - j;
+    i = i * j;
+    i = i / j;
 
-// Relational Operators
+    // Relational Operators
 
-i = i == j;
-i = i != j;
-i = i > j;
-i = i >= j;
-i = i < j;
-i = i <= j;
+    i = i == j;
+    i = i != j;
+    i = i > j;
+    i = i >= j;
+    i = i < j;
+    i = i <= j;
 
-// Logical Operators
+    // Logical Operators
 
-i = i && j;
-i = i || j;
-i = !i;
+    i = i && j;
+    i = i || j;
+    i = !i;
+}

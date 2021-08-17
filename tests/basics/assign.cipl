@@ -1,20 +1,22 @@
-int list i;
-int j;
+int main() {
+    int list i;
+    int j;
 
-i = NIL;
-j = 1;
+    i = NIL;
+    j = 1;
 
-i = j : i;
+    i = j : i;
 
-j = j + 1;
-j = j - 1;
-j = j * 10;
-j = j / 1;
-j = j && 1;
-j = j || 1;
+    j = j + 1;
+    j = j - 1;
+    j = j * 10;
+    j = j / 1;
+    j = j && 1;
+    j = j || 1;
 
-i = j : i;
+    i = j : i;
 
-float k;
-k = 3.14159;
-k = k + 2.7;
+    float k;
+    k = 3.14159;
+    k = k + 2.7;
+}

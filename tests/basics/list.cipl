@@ -1,17 +1,20 @@
 int list intlist;
-intlist = NIL;
 
-int head;
-head = ?intlist;
+int main() {
+    intlist = NIL;
 
-int list tail;
-tail = !intlist;
+    int head;
+    head = ?intlist;
 
-int list newtail;
-newtail = %intlist;
+    int list tail;
+    tail = !intlist;
 
-int list mapped;
-mapped = mapfn >> intlist;
+    int list newtail;
+    newtail = %intlist;
 
-int list filtered;
-filtered = filterfn << mapped;
+    int list mapped;
+    mapped = mapfn >> intlist;
+
+    int list filtered;
+    filtered = filterfn << mapped;
+}

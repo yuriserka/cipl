@@ -19,3 +19,5 @@ float list fl(int a, float b, int list z) {
     float list l;
     return l;
 }
+
+int main() {}
