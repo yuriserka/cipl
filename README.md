@@ -11,7 +11,7 @@
 Running valgrind to check for memory leaks
 
 ```shell
-make mem_check
+make mem_check filename=tests/{input}.cipl
 ```
 
 ## Installation

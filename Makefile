@@ -62,7 +62,7 @@ format:
 	@rm ./.clang-format
 
 mem_check: all
-	@valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all ./$(EXEC)
+	@valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all ./$(EXEC) $(filename)
 
 docs:
 	doxygen ./Doxyfile
