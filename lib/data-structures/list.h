@@ -1,8 +1,8 @@
 #pragma once
 
 typedef struct __listnode {
-    void *data;
-    struct __listnode *next;
+  void *data;
+  struct __listnode *next;
 } ListNode;
 
 void list_destroy(ListNode *head);
