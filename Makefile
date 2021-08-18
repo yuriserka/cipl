@@ -9,7 +9,7 @@ OBJ_DIR := $(BUILD_DIR)/.objs
 SRCS := $(shell find src -name '*.c')
 MAKE_DIR = @mkdir -p $(@D)
 DEL_FILES = $(RM) *~ $(OBJS) $(DEPS) $(EXEC)
-EXEC := $(EXEC_NAME).out
+EXEC := $(EXEC_NAME)
 
 OBJS := $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 DEPS := $(SRCS:$(SRC_DIR)/%.c=$(DEP_DIR)/%.d)

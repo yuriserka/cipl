@@ -1,6 +1,8 @@
 float compute_w(
-    // int list_elem buga por causa da regra {NEW_TYPES}
-    int elem
+    // TODO: nao permitir casar: <type, int list> <id, _elem>
+    int list_elem, 
+    int elem,
+    int list h
 ) {
     return (elem * 4.3) / 2;
 }

@@ -1,5 +1,5 @@
 build
 .vscode
 *.out
-lexical_out.txt
+tradutor
 doc

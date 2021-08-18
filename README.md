@@ -5,7 +5,7 @@
 ## Usage
 
 ```shell
-./tradutor.out tests/{input}.cipl (> {output}.txt)?
+./tradutor tests/{input}.cipl (> {output}.txt)?
 ```
 
 Running valgrind to check for memory leaks

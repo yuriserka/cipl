@@ -92,6 +92,5 @@ char *str_unescape(char *s) {
   }
 
 end_str:
-  str = realloc(str, sizeof(char) * (strlen(str) + 1));
   return str;
 }

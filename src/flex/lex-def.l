@@ -42,10 +42,10 @@ WS {DELIM}
 ID {LETTER}{LETTER_OR_DIGIT}*
 BINARY_OP {OP_BIN_ARITHMETIC}|{OP_BIN_COMPARISON}|{OP_BIN_BOOL}|{OP_BIN_LIST}
 UNARY_OP {OP_UNI_BOOL}|{OP_UNI_LIST}
-OP_ASSSIGN =
+OP_ASSSIGN "="
 
-INTEGER_NUMBER -?(0|[1-9]{DIGIT}*)
-REAL_NUMBER {INTEGER_NUMBER}(\.{DIGIT}+)?([eE][+-]?{DIGIT}+)?
+INTEGER_NUMBER [+-]?(0|[1-9]{DIGIT}*)
+REAL_NUMBER ({DIGIT}*[.])?{DIGIT}+([eE][+-]?{DIGIT}+)?
 
 SINGLELINE_COMMENT "//"[^\n]*
 
@@ -253,7 +253,6 @@ int main(int argc, char **argv){
             "\n%d error%s generated.\n",
             errors_count, errors_count > 1 ? "s" : ""
         );
-        
     }
 
     fclose(yyin);
@@ -274,7 +273,6 @@ void string_literal_rm_dquote(char *s) {
     unsigned int len = strlen(s);
     str_rm_char_at(s, 0); --len;
     str_rm_char_at(s, len - 1); --len;
-    s = realloc(s, sizeof(char) * (len + 1));
 }
 
 void str_2_upper(char *s, char *d) {

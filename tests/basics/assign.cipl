@@ -3,20 +3,24 @@ int main() {
     int j;
 
     i = NIL;
-    j = 1;
+    j = 99921;
 
     i = j : i;
 
-    j = j + 1;
-    j = j - 1;
-    j = j * 10;
-    j = j / 1;
-    j = j && 1;
-    j = j || 1;
+    j = j + 47359;
+    j = j - 42527;
+    j = j * 959;
+    j = j / 324;
+    j = j && 2367;
+    j = j || 12535;
 
     i = j : i;
 
     float k;
     k = 3.14159;
-    k = k + 2.7;
+    k = k + 2.75467;
+    k = k / .25325;
+    float mod;
+    mod = 1e9 + 7;
+    k = k + mod;
 }
