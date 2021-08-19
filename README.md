@@ -17,7 +17,7 @@ make mem_check filename=tests/{input}.cipl
 ## Installation
 
 ```shell
-sudo apt install flex gcc make
+sudo apt install flex gcc make bison
 make
 ```
 

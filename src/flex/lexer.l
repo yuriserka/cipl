@@ -1,5 +1,5 @@
 %option nounput noinput noyywrap
-%option outfile="src/main.c" header-file="lib/flex/scanner.h"
+%option outfile="src/flex/lexer.c" header-file="lib/flex/scanner.h"
 
 %{
     #include <stdio.h>
@@ -10,6 +10,7 @@
     #include "utils/string/unescape.h"
     #include "utils/string/find-occurrences.h"
     #include "utils/cursor-position.h"
+    #include "bison/grammar.h"
 
     int errors_count = 0;
     char *filename;
@@ -88,7 +89,7 @@ BUILTIN_FNS read|write|writeln
 }
 
 {RESERVED_KEYWORDS} {
-    char *upper = calloc(yyleng, sizeof(char));
+    char *upper = calloc(yyleng + 1, sizeof(char));
     str_2_upper(yytext, upper);
     printf("<%s>\n", upper);
     free(upper);
@@ -227,7 +228,7 @@ BUILTIN_FNS read|write|writeln
 
 %%
 
-int main(int argc, char **argv){
+/* int main(int argc, char **argv){
     if (argc < 2) {
         cipl_printf_color(RED, "error: ");
         cipl_printf("usage: %s <filename>\n", argv[0]);
@@ -259,7 +260,7 @@ int main(int argc, char **argv){
     yylex_destroy();
 
     return errors_count > 0;
-}
+} */
 
 void str_rm_char_at(char *str, unsigned int index) {
     memmove(&str[index], &str[index + 1], strlen(str) - index);
