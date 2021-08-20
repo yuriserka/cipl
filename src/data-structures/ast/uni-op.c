@@ -9,16 +9,17 @@
 AST *ast_uniop_init(char op, AST *l) {
   UniOpAST *ast = calloc(1, sizeof(UniOpAST));
   ast->op = op;
-  return ast_cast((AST *)ast, AST_UNI_OP, l, NULL);
+  return ast_cast((AST *)ast, AST_UNI_OP, 1, l);
 }
 
 double ast_uniop_eval(AST *ast) {
   UniOpAST *binop_ast = (UniOpAST *)ast;
+  AST *lhs = ast->children->data;
   switch (binop_ast->op) {
     case '!':
-      return fabs(ast_eval(ast->l));
+      return fabs(ast_eval(lhs));
     case '-':
-      return -ast_eval(ast->l);
+      return -ast_eval(lhs);
   }
   return 0;
 }

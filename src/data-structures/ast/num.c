@@ -10,9 +10,7 @@ AST *ast_number_init(NumberType number_type, NumberValue value) {
   ast->num_type = number_type;
   ast->type = number_type == INTEGER ? AST_NUMBER_INT : AST_NUMBER_REAL;
   ast->value = value;
-  return (AST *)ast;
-  // por algum motivo isso n funciona
-  return ast_cast((AST *)ast, ast->type, NULL, NULL);
+  return ast_cast((AST *)ast, ast->type, 0);
 }
 
 double ast_number_eval(AST *ast) {

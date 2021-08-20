@@ -3,10 +3,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-AST *ast_cast(AST *ast, AstTypes type, AST *l, AST *r) {
+AST *ast_cast(AST *ast, AstTypes type, int n, ...) {
   ast->type = type;
-  ast->l = l;
-  ast->r = r;
+  va_list ptr;
+  va_start(ptr, n);
+  for (int i = 0; i < n; ++i) {
+    list_push(&ast->children, va_arg(ptr, AST *));
+  }
+  va_end(ptr);
   return ast;
 }
 
