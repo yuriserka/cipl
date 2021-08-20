@@ -6,6 +6,7 @@
   #include <stdlib.h>
   #include "bison/grammar.h"
   #include "utils/cursor-position.h"
+  #include "utils/io.h"
 
   int errors_count = 0;
   char *filename;
@@ -14,18 +15,37 @@
 
 %%
 
-[0-9]+ { yylval.value = atoi(yytext); return NUMBER; }
-"+" { return ADD; }
-"-" { return SUB; }
-"*" { return MUL; }
-"/" { return DIV; }
-"!" { return ABS; }
-\n { return EOL; }
-"(" { return OP; }
-")" { return CP; }
+[0-9]+ {
+  cursor_position_update(0, yyleng);
+  yylval.integer = atoi(yytext);
+  return NUMBER_INT;
+}
 
-[ \t]|"//".*
+([0-9]*[.])?[0-9]+([eE][+-]?[0-9]+)? {
+  cursor_position_update(0, yyleng);
+  yylval.real = atof(yytext);
+  return NUMBER_REAL;
+}
 
-. { printf("Mystery character %c\n", *yytext); }
+"+"|"-"|"*"|"/"|"!"|"("|")" {
+  cursor_position_update(0, yyleng);
+  return yytext[0];
+}
+
+\n|\r {
+  cursor_position_update(1, 0);
+  return EOL;
+}
+
+[ \t]|"//".* {
+  cursor_position_update(0, yyleng);
+  // nao retornar nada significa que ta retornando o epsilon
+}
+
+. {
+  cipl_perror("unexpected character: %s\n", yytext);
+  ++errors_count;
+  cursor_position_update(0, yyleng);
+}
 
 %%

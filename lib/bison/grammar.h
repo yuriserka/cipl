@@ -49,15 +49,9 @@ extern int yydebug;
 # define YYTOKENTYPE
   enum yytokentype
   {
-    NUMBER = 258,
-    ADD = 259,
-    SUB = 260,
-    MUL = 261,
-    DIV = 262,
-    ABS = 263,
-    EOL = 264,
-    OP = 265,
-    CP = 266
+    NUMBER_INT = 258,
+    NUMBER_REAL = 259,
+    EOL = 260
   };
 #endif
 
@@ -65,11 +59,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 11 "src/bison/math.y"
+#line 21 "src/bison/math.y"
 
-	int value;
+	struct cipl_ast *ast;
+	double real;
+	int integer;
 
-#line 73 "lib/bison/grammar.h"
+#line 69 "lib/bison/grammar.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
