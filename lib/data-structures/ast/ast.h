@@ -35,3 +35,8 @@ double ast_number_eval(AST *ast);
 double ast_binop_eval(AST *ast);
 double ast_uniop_eval(AST *ast);
 double ast_eval(AST *ast);
+
+void ast_number_print(AST *ast);
+void ast_binop_print(AST *ast);
+void ast_uniop_print(AST *ast);
+void ast_print(AST *ast);

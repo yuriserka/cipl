@@ -28,3 +28,19 @@ double ast_eval(AST *ast) {
   }
   return 0;
 }
+
+void ast_print(AST *ast) {
+  switch (ast->type) {
+    case AST_NUMBER_INT:
+    case AST_NUMBER_REAL:
+      ast_number_print(ast);
+      break;
+    case AST_BIN_OP:
+      ast_binop_print(ast);
+      break;
+    case AST_UNI_OP:
+      ast_uniop_print(ast);
+      break;
+  }
+  printf(", ");
+}

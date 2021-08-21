@@ -36,7 +36,10 @@
 %%
 
 calclist: %empty /* noop on epsilon */
-    | calclist expr EOL { printf("expr_total = %lf\n", ast_eval($2)); }
+    | calclist expr EOL {
+        printf("expr_total = %lf\n", ast_eval($2));
+        printf("{ ast: { "); ast_print($2); printf("}, }\n");
+    }
     | calclist EOL /* blank line or a comment */
     ;
 

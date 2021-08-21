@@ -27,3 +27,11 @@ double ast_binop_eval(AST *ast) {
   }
   return 0;
 }
+
+void ast_binop_print(AST *ast) {
+  BinOpAST *binop_ast = (BinOpAST *)ast;
+  printf("bin_op: { op: %c, ", binop_ast->op);
+  ast_print(ast->children->data);
+  ast_print(ast->children->next->data);
+  printf("}");
+}

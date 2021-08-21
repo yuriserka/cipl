@@ -18,3 +18,5 @@ double ast_number_eval(AST *ast) {
   return num_ast->num_type == REAL ? num_ast->value.real
                                    : (double)(num_ast->value.integer);
 }
+
+void ast_number_print(AST *ast) { printf("number: %lf", ast_number_eval(ast)); }

@@ -1371,7 +1371,7 @@ yyreduce:
 #line 39 "src/bison/math.y"
                         {
         printf("expr_total = %lf\n", ast_eval((yyvsp[-1].ast)));
-        // ast_print($2);
+        printf("{ ast: { "); ast_print((yyvsp[-1].ast)); printf("}, }\n");
     }
 #line 1377 "src/main.c"
     break;
