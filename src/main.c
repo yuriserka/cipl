@@ -524,8 +524,8 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int8 yyrline[] =
 {
-       0,    38,    38,    39,    43,    46,    47,    48,    51,    52,
-      53,    56,    57,    58,    59,    60
+       0,    38,    38,    39,    45,    48,    49,    50,    53,    54,
+      55,    58,    59,    60,    61,    62
 };
 #endif
 
@@ -1370,68 +1370,70 @@ yyreduce:
   case 3:
 #line 39 "src/bison/math.y"
                         {
-        printf("expr_total = %lf\n", ast_eval((yyvsp[-1].ast)));
-        printf("{ ast: { "); ast_print((yyvsp[-1].ast)); printf("}, }\n");
+        AST *ast = (yyvsp[-1].ast);
+        printf("expr_total = %lf\n", ast_eval(ast));
+        printf("{ ast: { "); ast_print(ast); printf("}, }\n");
+        ast_free(ast);
     }
-#line 1377 "src/main.c"
+#line 1379 "src/main.c"
     break;
 
   case 6:
-#line 47 "src/bison/math.y"
+#line 49 "src/bison/math.y"
                       { (yyval.ast) = ast_binop_init('+', (yyvsp[-2].ast), (yyvsp[0].ast)); }
-#line 1383 "src/main.c"
+#line 1385 "src/main.c"
     break;
 
   case 7:
-#line 48 "src/bison/math.y"
+#line 50 "src/bison/math.y"
                       { (yyval.ast) = ast_binop_init('-', (yyvsp[-2].ast), (yyvsp[0].ast)); }
-#line 1389 "src/main.c"
+#line 1391 "src/main.c"
     break;
 
   case 9:
-#line 52 "src/bison/math.y"
+#line 54 "src/bison/math.y"
                       { (yyval.ast) = ast_binop_init('*', (yyvsp[-2].ast), (yyvsp[0].ast)); }
-#line 1395 "src/main.c"
+#line 1397 "src/main.c"
     break;
 
   case 10:
-#line 53 "src/bison/math.y"
+#line 55 "src/bison/math.y"
                       { (yyval.ast) = ast_binop_init('/', (yyvsp[-2].ast), (yyvsp[0].ast)); }
-#line 1401 "src/main.c"
+#line 1403 "src/main.c"
     break;
 
   case 11:
-#line 56 "src/bison/math.y"
+#line 58 "src/bison/math.y"
                   { (yyval.ast) = ast_number_init(REAL, (NumberValue){ .real=(yyvsp[0].real) }); }
-#line 1407 "src/main.c"
+#line 1409 "src/main.c"
     break;
 
   case 12:
-#line 57 "src/bison/math.y"
+#line 59 "src/bison/math.y"
                  { (yyval.ast) = ast_number_init(INTEGER, (NumberValue){ .integer=(yyvsp[0].integer) }); }
-#line 1413 "src/main.c"
+#line 1415 "src/main.c"
     break;
 
   case 13:
-#line 58 "src/bison/math.y"
+#line 60 "src/bison/math.y"
                { (yyval.ast) = ast_uniop_init('!', (yyvsp[0].ast)); }
-#line 1419 "src/main.c"
+#line 1421 "src/main.c"
     break;
 
   case 14:
-#line 59 "src/bison/math.y"
+#line 61 "src/bison/math.y"
                { (yyval.ast) = ast_uniop_init('-', (yyvsp[0].ast)); }
-#line 1425 "src/main.c"
+#line 1427 "src/main.c"
     break;
 
   case 15:
-#line 60 "src/bison/math.y"
+#line 62 "src/bison/math.y"
                    { (yyval.ast) = (yyvsp[-1].ast); }
-#line 1431 "src/main.c"
+#line 1433 "src/main.c"
     break;
 
 
-#line 1435 "src/main.c"
+#line 1437 "src/main.c"
 
       default: break;
     }
@@ -1663,7 +1665,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 63 "src/bison/math.y"
+#line 65 "src/bison/math.y"
 
 
 int main(int argc, char **argv) {

@@ -10,17 +10,17 @@ ListNode *list_node_init(void *data) {
   return node;
 }
 
-void list_node_destroy(ListNode *node) {
-  free(node->data);
+void list_node_free(ListNode *node, list_free_fn cb) {
+  cb ? cb(node) : free(node->data);
   free(node);
 }
 
-void list_destroy(ListNode *head) {
+void list_free(ListNode *head, list_free_fn free_fn) {
   ListNode *temp;
   while (head) {
     temp = head;
     head = head->next;
-    list_node_destroy(temp);
+    list_node_free(temp, free_fn);
   }
   free(head);
 }
@@ -38,11 +38,11 @@ void list_push(ListNode **head, void *data) {
   last->next = new_node;
 }
 
-void list_pop(ListNode **head) {
+void list_pop(ListNode **head, list_free_fn fn) {
   ListNode *last = *head;
 
   while (last->next) last = last->next;
-  list_node_destroy(last);
+  list_node_free(last, fn);
 }
 
 void *list_peek(ListNode **head, unsigned int index) {

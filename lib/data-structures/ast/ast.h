@@ -14,7 +14,6 @@ typedef enum cipl_ast_types {
   AST_UNI_OP,
 } AstTypes;
 
-// melhor tentar isso ou cast?
 typedef union cipl_ast_node_value {
   NumberAST *number;
   BinOpAST *binop;
@@ -24,9 +23,20 @@ typedef union cipl_ast_node_value {
 typedef struct cipl_ast {
   AstTypes type;
   ListNode *children;
+  AstNodeValue value;
 } AST;
 
-AST *ast_cast(AST *ast, AstTypes type, int n, ...);
+void ast_child_free(ListNode *node);
+void ast_free(AST *ast);
+void ast_uniop_free(AST *ast);
+void ast_binop_free(AST *ast);
+void ast_number_free(AST *ast);
+
+/*
+ * 1st variadic arg = the actual value (some of AstNodeValue) that node should have 
+ * 2nd+ variadic arg = children nodes
+ */
+AST *ast_cast(AstTypes type, int n_children, ...);
 AST *ast_number_init(NumberType type, NumberValue value);
 AST *ast_binop_init(char op, AST *l, AST *r);
 AST *ast_uniop_init(char op, AST *l);

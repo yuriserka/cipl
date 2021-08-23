@@ -5,14 +5,16 @@ typedef struct cipl_list_node {
   struct cipl_list_node *next;
 } ListNode;
 
-void list_destroy(ListNode *head);
+typedef void (*list_free_fn)(ListNode *);
+
+void list_free(ListNode *head, list_free_fn free_cb);
 
 ListNode *list_node_init(void *data);
-void list_node_destroy(ListNode *node);
+void list_node_free(ListNode *node, list_free_fn free_cb);
 
 void list_push(ListNode **head, void *data);
 
-void list_pop(ListNode **head);
+void list_pop(ListNode **head, list_free_fn free_cb);
 
 void *list_peek(ListNode **head, unsigned int index);
 
