@@ -1,7 +1,9 @@
 #pragma once
 
+#include "data-structures/ast/types/types-def.h"
+
 typedef struct cipl_ast_uniop {
-  int type;
+  AstTypes type;
   char op;
 } UniOpAST;
 

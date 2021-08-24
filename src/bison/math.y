@@ -4,35 +4,50 @@
 	#include <stdio.h>
 
     #include "data-structures/ast/ast.h"
+    #include "data-structures/symbol-table/symbol-table.h"
     #include "utils/io.h"
-    #include "core.h"
+    #include "core/globals.h"
 %}
 
 %union {
 	struct cipl_ast *ast;
+    struct cipl_symbol *sym;
 	double real;
 	int integer;
 }
 
 %token<integer> NUMBER_INT
 %token<real> NUMBER_REAL
-%token EOL
+%token EOL LET
+%token<sym> NAME
 
-%type<ast> expr factor term
+%type<ast> expr factor term stmt calclist
 
+%right '!' '='
 %left '+' '-'
 %left '*' '/'
-%right '!'
+
+%start calclist
 %%
 
-calclist: %empty /* noop on epsilon */
-    | calclist expr EOL {
+calclist: %empty { $$ = NULL; }
+    | calclist stmt EOL {
         AST *ast = $2;
         printf("expr_total = %lf\n", ast_eval(ast));
         printf("{ ast: { "); ast_print(ast); printf("}, }\n");
         ast_free(ast);
     }
+    | calclist LET NAME '=' stmt EOL {
+        AST *ast = $$;
+        ast = ast_assign_init(ast_symref_init($3), $5);
+        printf("defined %s = %lf\n", $3->name, ast_eval(ast)); 
+        printf("{ ast: { "); ast_print(ast); printf("}, }\n");
+        ast_free(ast);
+    }
     | calclist EOL /* blank line or a comment */
+    ;
+
+stmt: expr
     ;
 
 expr: factor

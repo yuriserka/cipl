@@ -1,5 +1,7 @@
 #pragma once
 
+#include "data-structures/ast/types/types-def.h"
+
 typedef enum cipl_ast_number_type {
   INTEGER,
   REAL,
@@ -11,7 +13,7 @@ typedef union cipl_ast_number_value {
 } NumberValue;
 
 typedef struct cipl_ast_number {
-  int type;
+  AstTypes type;
   NumberType num_type;
   NumberValue value;
 } NumberAST;

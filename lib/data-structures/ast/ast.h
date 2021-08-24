@@ -5,22 +5,24 @@
 // fast-forward definition of AST structure to use in each node type header
 typedef struct cipl_ast AST;
 
-#include "data-structures/ast/bin-op.h"
-#include "data-structures/ast/num.h"
-#include "data-structures/ast/uni-op.h"
+#include "data-structures/ast/types/assign.h"
+#include "data-structures/ast/types/bin-op.h"
+#include "data-structures/ast/types/builtin-fn.h"
+#include "data-structures/ast/types/flow.h"
+#include "data-structures/ast/types/num.h"
+#include "data-structures/ast/types/symbol-ref.h"
+#include "data-structures/ast/types/types-def.h"
+#include "data-structures/ast/types/uni-op.h"
 #include "data-structures/list.h"
 
-typedef enum cipl_ast_types {
-  AST_NUMBER_INT,
-  AST_NUMBER_REAL,
-  AST_BIN_OP,
-  AST_UNI_OP,
-} AstTypes;
-
 typedef union cipl_ast_node_value {
+  AssignAST *assignop;
+  SymbolRefAST *symref;
   NumberAST *number;
   BinOpAST *binop;
   UniOpAST *uniop;
+  BuiltinFuncAST *builtinfn;
+  FlowAST *flow;
 } AstNodeValue;
 
 struct cipl_ast {
@@ -32,8 +34,8 @@ struct cipl_ast {
 void ast_child_free(ListNode *node);
 void ast_free(AST *ast);
 /*
- * 1st variadic arg = the actual value (some of AstNodeValue) that node should have 
- * 2nd+ variadic arg = children nodes
+ * 1st variadic arg = the actual value (some of AstNodeValue) that node should
+ * have 2nd+ variadic arg = children nodes
  */
 AST *ast_cast(AstTypes type, int n_children, ...);
 double ast_eval(AST *ast);

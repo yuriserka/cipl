@@ -1,4 +1,4 @@
-#include "data-structures/ast/uni-op.h"
+#include "data-structures/ast/types/uni-op.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -18,7 +18,7 @@ void ast_uniop_free(AST *ast) {
 
 double ast_uniop_eval(AST *ast) {
   UniOpAST *uniop_ast = ast->value.uniop;
-  AST *lhs = ast->children->data;
+  AST *lhs = list_peek(&ast->children, 0);
   switch (uniop_ast->op) {
     case '!':
       return fabs(ast_eval(lhs));

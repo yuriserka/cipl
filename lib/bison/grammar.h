@@ -51,7 +51,9 @@ extern int yydebug;
   {
     NUMBER_INT = 258,
     NUMBER_REAL = 259,
-    EOL = 260
+    EOL = 260,
+    LET = 261,
+    NAME = 262
   };
 #endif
 
@@ -59,13 +61,14 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 11 "src/bison/math.y"
+#line 12 "src/bison/math.y"
 
 	struct cipl_ast *ast;
+    struct cipl_symbol *sym;
 	double real;
 	int integer;
 
-#line 69 "lib/bison/grammar.h"
+#line 72 "lib/bison/grammar.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

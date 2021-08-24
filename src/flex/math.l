@@ -7,6 +7,7 @@
   #include "bison/grammar.h"
   #include "utils/cursor-position.h"
   #include "utils/io.h"
+  #include "data-structures/symbol-table/symbol-table.h"
 
   int errors_count = 0;
   char *filename;
@@ -27,9 +28,20 @@
   return NUMBER_REAL;
 }
 
-"+"|"-"|"*"|"/"|"!"|"("|")" {
+"+"|"-"|"*"|"/"|"="|"!"|"("|")"|","|";" {
   cursor_position_update(0, yyleng);
   return yytext[0];
+}
+
+"let" {
+  cursor_position_update(0, yyleng);
+  return LET;
+}
+
+[a-zA-Z_][a-zA-Z0-9_]* {
+  yylval.sym = symbol_table_lookup(yytext);
+  cursor_position_update(0, yyleng);
+  return NAME;
 }
 
 \n|\r {

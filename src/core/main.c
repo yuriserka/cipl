@@ -1,8 +1,9 @@
-#include "core.h"
+#include "core/main.h"
 
 #include <stdio.h>
 #include <string.h>
 
+#include "core/globals.h"
 #include "utils/io.h"
 
 int cipl_main(int argc, char *argv[]) {

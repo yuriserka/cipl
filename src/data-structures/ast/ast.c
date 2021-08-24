@@ -23,6 +23,18 @@ AST *ast_cast(AstTypes type, int n_children, ...) {
     case AST_UNI_OP:
       ast->value = (AstNodeValue){.uniop = va_arg(ptr, UniOpAST *)};
       break;
+    case AST_ASSIGN_OP:
+      ast->value = (AstNodeValue){.assignop = va_arg(ptr, AssignAST *)};
+      break;
+    case AST_BUILTIN_FUNC:
+      ast->value = (AstNodeValue){.builtinfn = va_arg(ptr, BuiltinFuncAST *)};
+      break;
+    case AST_FLOW:
+      ast->value = (AstNodeValue){.flow = va_arg(ptr, FlowAST *)};
+      break;
+    case AST_SYM_REF:
+      ast->value = (AstNodeValue){.symref = va_arg(ptr, SymbolRefAST *)};
+      break;
   }
 
   --n_children;
@@ -50,6 +62,15 @@ void ast_free(AST *ast) {
     case AST_UNI_OP:
       ast_uniop_free(ast);
       break;
+    case AST_ASSIGN_OP:
+      ast_assign_free(ast);
+      break;
+    case AST_SYM_REF:
+      ast_symref_free(ast);
+      break;
+    default:
+      printf("AST type: %d free not implemented yet", ast->type);
+      break;
   }
   free(ast);
 }
@@ -63,8 +84,13 @@ double ast_eval(AST *ast) {
       return ast_binop_eval(ast);
     case AST_UNI_OP:
       return ast_uniop_eval(ast);
+    case AST_ASSIGN_OP:
+      return ast_assign_eval(ast);
+    case AST_SYM_REF:
+      return ast_symref_eval(ast);
     default:
-      printf("internal error: bad node %d\n", ast->type);
+      printf("AST type: %d eval not implemented yet", ast->type);
+      break;
   }
   return 0;
 }
@@ -80,6 +106,15 @@ void ast_print(AST *ast) {
       break;
     case AST_UNI_OP:
       ast_uniop_print(ast);
+      break;
+    case AST_ASSIGN_OP:
+      ast_assign_print(ast);
+      break;
+    case AST_SYM_REF:
+      ast_symref_print(ast);
+      break;
+    default:
+      printf("AST type: %d print not implemented yet", ast->type);
       break;
   }
   printf(", ");

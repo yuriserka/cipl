@@ -1,4 +1,4 @@
-#include "data-structures/ast/bin-op.h"
+#include "data-structures/ast/types/bin-op.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,8 +17,8 @@ void ast_binop_free(AST *ast) {
 
 double ast_binop_eval(AST *ast) {
   BinOpAST *binop_ast = ast->value.binop;
-  AST *lhs = ast->children->data;
-  AST *rhs = ast->children->next->data;
+  AST *lhs = list_peek(&ast->children, 0);
+  AST *rhs = list_peek(&ast->children, 1);
   switch (binop_ast->op) {
     case '+':
       return ast_eval(lhs) + ast_eval(rhs);

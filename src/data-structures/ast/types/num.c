@@ -1,4 +1,4 @@
-#include "data-structures/ast/num.h"
+#include "data-structures/ast/types/num.h"
 
 #include <stdio.h>
 #include <stdlib.h>

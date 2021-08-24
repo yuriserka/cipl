@@ -1,9 +1,10 @@
 #pragma once
 
+#include <stdio.h>
+
+#include "core/globals.h"
 #include "utils/color-codes.h"
 #include "utils/cursor-position.h"
-
-extern char *filename;
 
 #define cipl_printf_color(__cipl_out_color_code, __cipl_out_fmt, ...) \
   printf(__cipl_out_color_code __cipl_out_fmt RESET, ##__VA_ARGS__);
