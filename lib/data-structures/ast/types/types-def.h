@@ -9,6 +9,7 @@ typedef enum cipl_ast_types {
   AST_SYM_REF,
   AST_BIN_OP,
   AST_UNI_OP,
+  AST_CMP_OP,
 } AstTypes;
 
-const char *ast_type2str(AstTypes type);
+#define ast_type2str(type) #type

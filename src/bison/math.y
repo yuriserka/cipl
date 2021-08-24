@@ -1,5 +1,5 @@
 %define lr.type canonical-lr
-
+%define api.header.include {"bison/grammar.h"}
 %{
 	#include <stdio.h>
 

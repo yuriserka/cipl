@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.5.1.  */
+/* A Bison parser, made by GNU Bison 3.7.5.  */
 
 /* Bison interface for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2020 Free Software Foundation,
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2021 Free Software Foundation,
    Inc.
 
    This program is free software: you can redistribute it and/or modify
@@ -31,8 +31,9 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
-/* Undocumented macros, especially those whose name start with YY_,
-   are private implementation details.  Do not rely on them.  */
+/* DO NOT RELY ON FEATURES THAT ARE NOT DOCUMENTED in the manual,
+   especially those whose name start with YY_ or yy_.  They are
+   private implementation details that can be changed or removed.  */
 
 #ifndef YY_YY_LIB_BISON_GRAMMAR_H_INCLUDED
 # define YY_YY_LIB_BISON_GRAMMAR_H_INCLUDED
@@ -44,17 +45,22 @@
 extern int yydebug;
 #endif
 
-/* Token type.  */
+/* Token kinds.  */
 #ifndef YYTOKENTYPE
 # define YYTOKENTYPE
   enum yytokentype
   {
-    NUMBER_INT = 258,
-    NUMBER_REAL = 259,
-    EOL = 260,
-    LET = 261,
-    NAME = 262
+    YYEMPTY = -2,
+    YYEOF = 0,                     /* "end of file"  */
+    YYerror = 256,                 /* error  */
+    YYUNDEF = 257,                 /* "invalid token"  */
+    NUMBER_INT = 258,              /* NUMBER_INT  */
+    NUMBER_REAL = 259,             /* NUMBER_REAL  */
+    EOL = 260,                     /* EOL  */
+    LET = 261,                     /* LET  */
+    NAME = 262                     /* NAME  */
   };
+  typedef enum yytokentype yytoken_kind_t;
 #endif
 
 /* Value type.  */
@@ -68,7 +74,7 @@ union YYSTYPE
 	double real;
 	int integer;
 
-#line 72 "lib/bison/grammar.h"
+#line 78 "lib/bison/grammar.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

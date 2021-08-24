@@ -5,6 +5,8 @@
 #include "core/globals.h"
 #include "utils/io.h"
 
+SymbolTable symbol_tb;
+
 static unsigned symbol_table_hash(char *sym_name) {
   unsigned int hash = 0;
   unsigned c;
@@ -44,4 +46,5 @@ void symbol_table_delete(char *sym_name) {
   }
 
   cipl_perror("symbol: %s not found\n", sym_name);
+  ++errors_count;
 }

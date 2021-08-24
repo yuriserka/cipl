@@ -6,9 +6,8 @@
 AST *ast_number_init(NumberType number_type, NumberValue value) {
   NumberAST *ast = calloc(1, sizeof(NumberAST));
   ast->num_type = number_type;
-  ast->type = number_type == INTEGER ? AST_NUMBER_INT : AST_NUMBER_REAL;
   ast->value = value;
-  return ast_cast(ast->type, 0, ast);
+  return ast_cast(INTEGER ? AST_NUMBER_INT : AST_NUMBER_REAL, 0, ast);
 }
 
 void ast_number_free(AST *ast) { free(ast->value.number); }

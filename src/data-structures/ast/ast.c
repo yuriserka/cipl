@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define AST_ASSIGN(MEM, TGT) \
+  (AstNodeValue) { .MEM = va_arg(ptr, TGT *) }
+
 AST *ast_cast(AstTypes type, int n_children, ...) {
   AST *ast = calloc(1, sizeof(AST));
   ast->type = type;
@@ -15,25 +18,28 @@ AST *ast_cast(AstTypes type, int n_children, ...) {
   switch (type) {
     case AST_NUMBER_INT:
     case AST_NUMBER_REAL:
-      ast->value = (AstNodeValue){.number = va_arg(ptr, NumberAST *)};
+      ast->value = AST_ASSIGN(number, NumberAST);
       break;
     case AST_BIN_OP:
-      ast->value = (AstNodeValue){.binop = va_arg(ptr, BinOpAST *)};
+      ast->value = AST_ASSIGN(binop, BinOpAST);
       break;
     case AST_UNI_OP:
-      ast->value = (AstNodeValue){.uniop = va_arg(ptr, UniOpAST *)};
+      ast->value = AST_ASSIGN(uniop, UniOpAST);
       break;
     case AST_ASSIGN_OP:
-      ast->value = (AstNodeValue){.assignop = va_arg(ptr, AssignAST *)};
+      ast->value = AST_ASSIGN(assignop, AssignAST);
       break;
     case AST_BUILTIN_FUNC:
-      ast->value = (AstNodeValue){.builtinfn = va_arg(ptr, BuiltinFuncAST *)};
+      ast->value = AST_ASSIGN(builtinfn, BuiltinFuncAST);
       break;
     case AST_FLOW:
-      ast->value = (AstNodeValue){.flow = va_arg(ptr, FlowAST *)};
+      ast->value = AST_ASSIGN(flow, FlowAST);
       break;
     case AST_SYM_REF:
-      ast->value = (AstNodeValue){.symref = va_arg(ptr, SymbolRefAST *)};
+      ast->value = AST_ASSIGN(symref, SymbolRefAST);
+      break;
+    case AST_CMP_OP:
+      ast->value = AST_ASSIGN(cmpop, ComparisonAST);
       break;
   }
 
@@ -68,6 +74,9 @@ void ast_free(AST *ast) {
     case AST_SYM_REF:
       ast_symref_free(ast);
       break;
+    case AST_CMP_OP:
+      ast_cmpop_free(ast);
+      break;
     default:
       printf("AST type: %d free not implemented yet", ast->type);
       break;
@@ -88,6 +97,8 @@ double ast_eval(AST *ast) {
       return ast_assign_eval(ast);
     case AST_SYM_REF:
       return ast_symref_eval(ast);
+    case AST_CMP_OP:
+      return ast_cmpop_eval(ast);
     default:
       printf("AST type: %d eval not implemented yet", ast->type);
       break;
@@ -112,6 +123,9 @@ void ast_print(AST *ast) {
       break;
     case AST_SYM_REF:
       ast_symref_print(ast);
+      break;
+    case AST_CMP_OP:
+      ast_cmpop_print(ast);
       break;
     default:
       printf("AST type: %d print not implemented yet", ast->type);

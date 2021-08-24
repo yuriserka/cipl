@@ -2,12 +2,13 @@
 
 #include <stdarg.h>
 
-// fast-forward definition of AST structure to use in each node type header
+// fast-forward definition of AST structure to use in each ast node type header
 typedef struct cipl_ast AST;
 
 #include "data-structures/ast/types/assign.h"
 #include "data-structures/ast/types/bin-op.h"
 #include "data-structures/ast/types/builtin-fn.h"
+#include "data-structures/ast/types/cmp-op.h"
 #include "data-structures/ast/types/flow.h"
 #include "data-structures/ast/types/num.h"
 #include "data-structures/ast/types/symbol-ref.h"
@@ -20,6 +21,7 @@ typedef union cipl_ast_node_value {
   SymbolRefAST *symref;
   NumberAST *number;
   BinOpAST *binop;
+  ComparisonAST *cmpop;
   UniOpAST *uniop;
   BuiltinFuncAST *builtinfn;
   FlowAST *flow;
@@ -32,11 +34,12 @@ struct cipl_ast {
 };
 
 void ast_child_free(ListNode *node);
-void ast_free(AST *ast);
+
 /*
- * 1st variadic arg = the actual value (some of AstNodeValue) that node should
- * have 2nd+ variadic arg = children nodes
+ * 1st variadic arg = the actual value (some of AstNodeValue)
+ * 2nd+ variadic arg = children nodes
  */
 AST *ast_cast(AstTypes type, int n_children, ...);
+void ast_free(AST *ast);
 double ast_eval(AST *ast);
 void ast_print(AST *ast);

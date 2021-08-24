@@ -3,7 +3,6 @@
 #include "data-structures/ast/types/types-def.h"
 
 typedef struct cipl_ast_assign {
-  AstTypes type;
   char op;
 } AssignAST;
 

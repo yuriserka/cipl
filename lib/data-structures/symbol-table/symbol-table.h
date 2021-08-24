@@ -7,7 +7,5 @@
 
 typedef Symbol SymbolTable[NHASH];
 
-SymbolTable symbol_tb;
-
 Symbol *symbol_table_lookup(char *sym_name);
 void symbol_table_delete(char *sym_name);

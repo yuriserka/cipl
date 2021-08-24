@@ -1,13 +1,10 @@
 #pragma once
 
-#include "data-structures/ast/types/types-def.h"
-
 typedef struct cipl_ast_symbol_ref SymbolRefAST;
 
 #include "data-structures/symbol-table/symbol.h"
 
 struct cipl_ast_symbol_ref {
-  AstTypes type;
   Symbol *symbol;
 };
 

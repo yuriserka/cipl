@@ -1,7 +1,5 @@
 #pragma once
 
-#include "data-structures/ast/types/types-def.h"
-
 typedef enum cipl_builtin_fn_types {
   BUILTIN_FN_SQRT = 1,
   BUILTIN_FN_EXP,
@@ -10,7 +8,6 @@ typedef enum cipl_builtin_fn_types {
 } BuiltInFuncTypes;
 
 typedef struct cipl_ast_builtin_fn {
-  AstTypes type;
   BuiltInFuncTypes func_type;
 } BuiltinFuncAST;
 

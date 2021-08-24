@@ -1,11 +1,7 @@
 #pragma once
 
-#pragma once
-
-#include "data-structures/ast/types/types-def.h"
-
 typedef struct cipl_ast_flow {
-  AstTypes type;
+  char dummy;
 } FlowAST;
 
 #include "data-structures/ast/ast.h"
