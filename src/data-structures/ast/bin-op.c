@@ -3,8 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "data-structures/ast/ast.h"
-
 AST *ast_binop_init(char op, AST *l, AST *r) {
   BinOpAST *ast = calloc(1, sizeof(BinOpAST));
   ast->op = op;

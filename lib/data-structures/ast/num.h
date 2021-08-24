@@ -15,3 +15,10 @@ typedef struct cipl_ast_number {
   NumberType num_type;
   NumberValue value;
 } NumberAST;
+
+#include "data-structures/ast/ast.h"
+
+void ast_number_free(AST *ast);
+AST *ast_number_init(NumberType type, NumberValue value);
+double ast_number_eval(AST *ast);
+void ast_number_print(AST *ast);

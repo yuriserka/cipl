@@ -4,8 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "data-structures/ast/ast.h"
-
 AST *ast_uniop_init(char op, AST *l) {
   UniOpAST *ast = calloc(1, sizeof(UniOpAST));
   ast->op = op;

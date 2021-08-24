@@ -3,8 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "data-structures/ast/ast.h"
-
 AST *ast_number_init(NumberType number_type, NumberValue value) {
   NumberAST *ast = calloc(1, sizeof(NumberAST));
   ast->num_type = number_type;
