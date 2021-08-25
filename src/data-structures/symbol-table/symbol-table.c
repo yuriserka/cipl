@@ -29,8 +29,7 @@ Symbol *symbol_table_lookup(char *sym_name) {
     if (++sp >= symbol_tb + NHASH) sp = symbol_tb;  // back to head of array
   }
 
-  cipl_perror("symbol_table overflow\n");
-  ++errors_count;
+  CIPL_PERROR("symbol_table overflow\n");
   return NULL;
 }
 
@@ -45,6 +44,5 @@ void symbol_table_delete(char *sym_name) {
     }
   }
 
-  cipl_perror("symbol: %s not found\n", sym_name);
-  ++errors_count;
+  CIPL_PERROR("symbol: %s not found\n", sym_name);
 }

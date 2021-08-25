@@ -1,6 +1,7 @@
 %define lr.type canonical-lr
 %define api.header.include {"bison/grammar.h"}
 %{
+    #include <stdarg.h>
 	#include <stdio.h>
 
     #include "data-structures/ast/ast.h"
@@ -9,6 +10,7 @@
     #include "core/globals.h"
 
     AST *root;
+    cursor_position error_cursor;
 %}
 
 %union {
@@ -49,8 +51,9 @@ declaration: LET declarator '=' eq_expr ';' {
         list_push(&root->children, ast_assign_init($2, $4));
     }
     | LET declarator '=' error ';' {
-        cipl_perror("expected expression before ‘;’ token");
+        CIPL_PERROR_CURSOR("expected expression before ‘;’ token\n", error_cursor);
         yyerrok;
+        ast_free($2);
     }
     ;
 
@@ -117,7 +120,7 @@ constant: NUMBER_REAL { $$ = ast_number_init(REAL, (NumberValue){ .real=$1 }); }
 
 %%
 
-void yyerror(char *s) {
- 	cipl_perror("sintatic error: %s\n", s);
- 	++errors_count;
+void yyerror(char *s, ...) {
+    /* just save where the error points to */
+    error_cursor = cursor;
 }

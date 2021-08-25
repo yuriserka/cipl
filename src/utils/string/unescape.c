@@ -61,8 +61,7 @@ char *str_unescape(char *s) {
           ++s;
           int hexval = str_hex2int(&s);
           if (hexval == HEX_ESCAPE_OOR) {
-            ++errors_count;
-            cipl_perror("hex escape sequence out of range\n");
+            CIPL_PERROR("hex escape sequence out of range\n");
             goto end_str;
           } else {
             sprintf(str, "%s%c", sstr, hexval);
@@ -73,15 +72,14 @@ char *str_unescape(char *s) {
           if (isdigit(*s)) {
             int octval = str_oct2int(&s);
             if (octval == OCT_ESCAPE_OOR) {
-              ++errors_count;
-              cipl_perror("octal escape sequence out of range\n");
+              CIPL_PERROR("octal escape sequence out of range\n");
               goto end_str;
             } else {
               sprintf(str, "%s%c", sstr, octval);
               if (!octval) goto end_str;
             }
           } else {
-            cipl_perror("invalid escape sequence\n");
+            CIPL_PERROR("invalid escape sequence\n");
             goto end_str;
           }
         }

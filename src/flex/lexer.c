@@ -865,17 +865,16 @@ case 14:
 YY_RULE_SETUP
 #line 86 "src/flex/math.l"
 {
-  cipl_perror("unexpected character: %s\n", yytext);
-  ++errors_count;
+  CIPL_PERROR("unexpected character: %s\n", yytext);
   cursor_position_update(0, yyleng);
 }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 92 "src/flex/math.l"
+#line 91 "src/flex/math.l"
 ECHO;
 	YY_BREAK
-#line 879 "src/flex/lexer.c"
+#line 878 "src/flex/lexer.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1843,5 +1842,5 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 92 "src/flex/math.l"
+#line 91 "src/flex/math.l"
 

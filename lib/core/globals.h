@@ -14,7 +14,7 @@ extern cursor_position cursor;
 
 extern int yylex();
 extern int yyparse();
-extern void yyerror(char *message);
+extern void yyerror(char *message, ...);
 extern int yylex_destroy();
 extern FILE *yyin;
 

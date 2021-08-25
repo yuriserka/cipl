@@ -84,8 +84,7 @@
 }
 
 . {
-  cipl_perror("unexpected character: %s\n", yytext);
-  ++errors_count;
+  CIPL_PERROR("unexpected character: %s\n", yytext);
   cursor_position_update(0, yyleng);
 }
 
