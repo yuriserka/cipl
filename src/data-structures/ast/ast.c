@@ -41,6 +41,8 @@ AST *ast_cast(AstTypes type, int n_children, ...) {
     case AST_CMP_OP:
       ast->value = AST_ASSIGN(cmpop, ComparisonAST);
       break;
+    case AST_PROG:
+      break;
   }
 
   --n_children;
@@ -77,6 +79,9 @@ void ast_free(AST *ast) {
     case AST_CMP_OP:
       ast_cmpop_free(ast);
       break;
+    case AST_PROG:
+      list_free(ast->children, ast_child_free);
+      break;
     default:
       printf("AST type: %d free not implemented yet", ast->type);
       break;
@@ -99,12 +104,16 @@ double ast_eval(AST *ast) {
       return ast_symref_eval(ast);
     case AST_CMP_OP:
       return ast_cmpop_eval(ast);
+    case AST_PROG:
+      return ast_eval(ast->children->data);
     default:
       printf("AST type: %d eval not implemented yet", ast->type);
       break;
   }
   return 0;
 }
+
+static void ast_children_fe_print(ListNode *node) { ast_print(node->data); }
 
 void ast_print(AST *ast) {
   switch (ast->type) {
@@ -127,6 +136,9 @@ void ast_print(AST *ast) {
     case AST_CMP_OP:
       ast_cmpop_print(ast);
       break;
+    case AST_PROG:
+      list_for_each(ast->children, ast_children_fe_print);
+      return;
     default:
       printf("AST type: %d print not implemented yet", ast->type);
       break;

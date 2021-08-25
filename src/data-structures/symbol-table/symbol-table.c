@@ -40,7 +40,7 @@ void symbol_table_delete(char *sym_name) {
 
   while (--scount >= 0) {
     if (sp->name && !strcmp(sp->name, sym_name)) {
-      sp = NULL;
+      symbol_free(sp);
       return;
     }
   }

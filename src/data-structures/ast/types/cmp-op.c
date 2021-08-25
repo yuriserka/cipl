@@ -21,7 +21,8 @@ AST *ast_cmpop_init(char *op, AST *l, AST *r) {
     ast->type = CMP_EQ;
   else if (str_eq(op, "!="))
     ast->type = CMP_NE;
-  return ast_cast(AST_ASSIGN_OP, 2, ast, l, r);
+
+  return ast_cast(AST_CMP_OP, 2, ast, l, r);
 }
 
 void ast_cmpop_free(AST *ast) {
@@ -54,7 +55,7 @@ double ast_cmpop_eval(AST *ast) {
   return 0;
 }
 
-static void ast_assign_print_aux(const char *label, AST *ast) {
+static void ast_cmp_print_aux(const char *label, AST *ast) {
   printf("%s: { ", label);
   if (ast) ast_print(ast);
   printf("}, ");
@@ -65,7 +66,7 @@ void ast_cmpop_print(AST *ast) {
   AST *lhs = list_peek(&ast->children, 0);
   AST *rhs = list_peek(&ast->children, 1);
   printf("compare_op: { op: %s, ", cmp_ast->op);
-  ast_assign_print_aux("lhs", lhs);
-  ast_assign_print_aux("rhs", rhs);
+  ast_cmp_print_aux("lhs", lhs);
+  ast_cmp_print_aux("rhs", rhs);
   printf("}");
 }

@@ -38,6 +38,36 @@
   return LET;
 }
 
+"<" {
+  cursor_position_update(0, yyleng);
+  return LT;
+}
+
+"<=" {
+  cursor_position_update(0, yyleng);
+  return LE;
+}
+
+">" {
+  cursor_position_update(0, yyleng);
+  return GT;
+}
+
+">=" {
+  cursor_position_update(0, yyleng);
+  return GE;
+}
+
+"==" {
+  cursor_position_update(0, yyleng);
+  return EQ;
+}
+
+"!=" {
+  cursor_position_update(0, yyleng);
+  return NE;
+}
+
 [a-zA-Z_][a-zA-Z0-9_]* {
   yylval.sym = symbol_table_lookup(yytext);
   cursor_position_update(0, yyleng);
@@ -46,7 +76,6 @@
 
 \n|\r {
   cursor_position_update(1, 0);
-  return EOL;
 }
 
 [ \t]|"//".* {

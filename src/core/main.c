@@ -1,12 +1,15 @@
 #include "core/main.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "core/globals.h"
 #include "utils/io.h"
 
 int cipl_main(int argc, char *argv[]) {
+  root = ast_cast(AST_PROG, 0);
+
   if (argc < 2) {
     cipl_printf_color(RED, "error: ");
     cipl_printf("usage: %s <filename>\n", argv[0]);
@@ -33,6 +36,12 @@ int cipl_main(int argc, char *argv[]) {
 
   fclose(yyin);
   yylex_destroy();
+
+  printf("{ ast: { ");
+  ast_print(root);
+  printf("}, }\n");
+
+  ast_free(root);
 
   return errors_count > 0;
 }

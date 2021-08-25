@@ -1,5 +1,5 @@
-1+45*(5/2)
-1+4.3*2
+let a = 2;
+let var = (1+2)*(3/2);
 // this is a comment and should be skipped
-let a = 5+2
-let myvar = (5 + 6)/2 * !(-5 * 10 - 6)
+
+let x = 1 >= 3;

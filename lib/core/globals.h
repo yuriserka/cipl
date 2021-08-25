@@ -17,3 +17,6 @@ extern int yyparse();
 extern void yyerror(char *message);
 extern int yylex_destroy();
 extern FILE *yyin;
+
+// from grammar.y
+extern AST *root;

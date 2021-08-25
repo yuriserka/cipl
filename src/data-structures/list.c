@@ -16,13 +16,12 @@ void list_node_free(ListNode *node, list_free_fn cb) {
 }
 
 void list_free(ListNode *head, list_free_fn free_fn) {
-  ListNode *temp;
-  while (head) {
-    temp = head;
-    head = head->next;
-    list_node_free(temp, free_fn);
+  ListNode *it = head;
+  while (it) {
+    ListNode *tmp = it->next;
+    list_node_free(it, free_fn);
+    it = tmp;
   }
-  free(head);
 }
 
 void list_push(ListNode **head, void *data) {
@@ -56,7 +55,8 @@ void *list_peek(ListNode **head, unsigned int index) {
 void list_for_each(ListNode *head, void (*cb)(ListNode *node)) {
   ListNode *it = head;
   while (it) {
+    ListNode *tmp = it->next;
     cb(it);
-    it = it->next;
+    it = tmp;
   }
 }
