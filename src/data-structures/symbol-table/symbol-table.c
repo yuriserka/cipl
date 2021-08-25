@@ -14,7 +14,7 @@ static unsigned symbol_table_hash(char *sym_name) {
   return hash;
 }
 
-Symbol *symbol_table_lookup(char *sym_name) {
+Symbol *symbol_table_lookup(SymbolTable symbol_tb, char *sym_name) {
   Symbol *sp = &symbol_tb[symbol_table_hash(sym_name) % NHASH];
   int scount = NHASH;
 
@@ -23,7 +23,6 @@ Symbol *symbol_table_lookup(char *sym_name) {
       return sp;
     }
     if (!sp->name) {
-      symbol_init(sp, sym_name, 0, cursor);
       return sp;
     }
     if (++sp >= symbol_tb + NHASH) sp = symbol_tb;  // back to head of array
@@ -45,4 +44,10 @@ void symbol_table_delete(char *sym_name) {
   }
 
   CIPL_PERROR("symbol: %s not found\n", sym_name);
+}
+
+void symbol_table_free(SymbolTable symbol_tb) {
+  for (int i = 0; i < NHASH; ++i) {
+    if (symbol_tb[i].name) symbol_free(&symbol_tb[i]);
+  }
 }

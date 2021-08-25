@@ -1,11 +1,11 @@
 #pragma once
 
-#include "data-structures/ast/ast.h"
-#include "data-structures/symbol-table/symbol.h"
-
 #define NHASH 9997
+
+#include "data-structures/symbol-table/symbol.h"
 
 typedef Symbol SymbolTable[NHASH];
 
-Symbol *symbol_table_lookup(char *sym_name);
+Symbol *symbol_table_lookup(SymbolTable symbol_tb, char *sym_name);
 void symbol_table_delete(char *sym_name);
+void symbol_table_free(SymbolTable symbol_tb);

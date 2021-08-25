@@ -3,7 +3,6 @@
 // fast-forward definition of Symbol
 typedef struct cipl_symbol Symbol;
 
-#include "data-structures/ast/ast.h"
 #include "data-structures/list.h"
 #include "utils/cursor-position.h"
 

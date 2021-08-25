@@ -2,10 +2,11 @@
 
 #include <stdio.h>
 
+#include "data-structures/scope.h"
+#include "data-structures/list.h"
 #include "data-structures/symbol-table/symbol-table.h"
 #include "utils/cursor-position.h"
-
-extern SymbolTable symbol_tb;
+#include "data-structures/ast/ast.h"
 
 // from lexer.l
 extern int errors_count;
@@ -20,3 +21,5 @@ extern FILE *yyin;
 
 // from grammar.y
 extern AST *root;
+extern Scope *current_scope;
+extern ListNode *scopes;

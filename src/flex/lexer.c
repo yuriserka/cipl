@@ -474,12 +474,13 @@ char *yytext;
   #include "utils/cursor-position.h"
   #include "utils/io.h"
   #include "data-structures/symbol-table/symbol-table.h"
+  #include "data-structures/scope.h"
 
   int errors_count = 0;
   char *filename;
   cursor_position cursor = {.line=1, .col=1};
-#line 482 "src/flex/lexer.c"
 #line 483 "src/flex/lexer.c"
+#line 484 "src/flex/lexer.c"
 
 #define INITIAL 0
 
@@ -694,10 +695,10 @@ YY_DECL
 		}
 
 	{
-#line 17 "src/flex/math.l"
+#line 18 "src/flex/math.l"
 
 
-#line 701 "src/flex/lexer.c"
+#line 702 "src/flex/lexer.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -756,7 +757,7 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 19 "src/flex/math.l"
+#line 20 "src/flex/math.l"
 {
   cursor_position_update(0, yyleng);
   yylval.integer = atoi(yytext);
@@ -765,7 +766,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 25 "src/flex/math.l"
+#line 26 "src/flex/math.l"
 {
   cursor_position_update(0, yyleng);
   yylval.real = atof(yytext);
@@ -774,7 +775,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 31 "src/flex/math.l"
+#line 32 "src/flex/math.l"
 {
   cursor_position_update(0, yyleng);
   return yytext[0];
@@ -782,7 +783,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 36 "src/flex/math.l"
+#line 37 "src/flex/math.l"
 {
   cursor_position_update(0, yyleng);
   return LET;
@@ -790,7 +791,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 41 "src/flex/math.l"
+#line 42 "src/flex/math.l"
 {
   cursor_position_update(0, yyleng);
   return LT;
@@ -798,7 +799,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 46 "src/flex/math.l"
+#line 47 "src/flex/math.l"
 {
   cursor_position_update(0, yyleng);
   return LE;
@@ -806,7 +807,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 51 "src/flex/math.l"
+#line 52 "src/flex/math.l"
 {
   cursor_position_update(0, yyleng);
   return GT;
@@ -814,7 +815,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 56 "src/flex/math.l"
+#line 57 "src/flex/math.l"
 {
   cursor_position_update(0, yyleng);
   return GE;
@@ -822,7 +823,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 61 "src/flex/math.l"
+#line 62 "src/flex/math.l"
 {
   cursor_position_update(0, yyleng);
   return EQ;
@@ -830,7 +831,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 66 "src/flex/math.l"
+#line 67 "src/flex/math.l"
 {
   cursor_position_update(0, yyleng);
   return NE;
@@ -838,9 +839,9 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 71 "src/flex/math.l"
+#line 72 "src/flex/math.l"
 {
-  yylval.sym = symbol_table_lookup(yytext);
+  yylval.sym = scope_lookup(current_scope, yytext);
   cursor_position_update(0, yyleng);
   return NAME;
 }
@@ -848,14 +849,14 @@ YY_RULE_SETUP
 case 12:
 /* rule 12 can match eol */
 YY_RULE_SETUP
-#line 77 "src/flex/math.l"
+#line 78 "src/flex/math.l"
 {
   cursor_position_update(1, 0);
 }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 81 "src/flex/math.l"
+#line 82 "src/flex/math.l"
 {
   cursor_position_update(0, yyleng);
   // nao retornar nada significa que ta retornando o epsilon
@@ -863,7 +864,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 86 "src/flex/math.l"
+#line 87 "src/flex/math.l"
 {
   CIPL_PERROR("unexpected character: %s\n", yytext);
   cursor_position_update(0, yyleng);
@@ -871,10 +872,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 91 "src/flex/math.l"
+#line 92 "src/flex/math.l"
 ECHO;
 	YY_BREAK
-#line 878 "src/flex/lexer.c"
+#line 879 "src/flex/lexer.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1842,5 +1843,5 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 91 "src/flex/math.l"
+#line 92 "src/flex/math.l"
 

@@ -14,7 +14,9 @@ typedef struct cipl_ast AST;
 #include "data-structures/ast/types/symbol-ref.h"
 #include "data-structures/ast/types/types-def.h"
 #include "data-structures/ast/types/uni-op.h"
+#include "data-structures/ast/types/user-func.h"
 #include "data-structures/list.h"
+#include "data-structures/ast/types/params.h"
 
 typedef union cipl_ast_node_value {
   AssignAST *assignop;
@@ -25,6 +27,8 @@ typedef union cipl_ast_node_value {
   UniOpAST *uniop;
   BuiltinFuncAST *builtinfn;
   FlowAST *flow;
+  UserFuncAST *userfunc;
+  ParamsAST *params;
 } AstNodeValue;
 
 struct cipl_ast {
@@ -34,6 +38,8 @@ struct cipl_ast {
 };
 
 void ast_child_free(ListNode *node);
+void ast_child_print(ListNode *node);
+
 
 /*
  * 1st variadic arg = the actual value (some of AstNodeValue)

@@ -8,6 +8,7 @@
   #include "utils/cursor-position.h"
   #include "utils/io.h"
   #include "data-structures/symbol-table/symbol-table.h"
+  #include "data-structures/scope.h"
 
   int errors_count = 0;
   char *filename;
@@ -69,7 +70,7 @@
 }
 
 [a-zA-Z_][a-zA-Z0-9_]* {
-  yylval.sym = symbol_table_lookup(yytext);
+  yylval.sym = scope_lookup(current_scope, yytext);
   cursor_position_update(0, yyleng);
   return NAME;
 }

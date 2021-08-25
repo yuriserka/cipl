@@ -72,14 +72,15 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 16 "src/bison/math.y"
+#line 19 "src/bison/math.y"
 
 	struct cipl_ast *ast;
     struct cipl_symbol *sym;
+    struct cipl_list_node *list;
 	double real;
 	int integer;
 
-#line 83 "lib/bison/grammar.h"
+#line 84 "lib/bison/grammar.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

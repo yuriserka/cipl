@@ -41,6 +41,12 @@ AST *ast_cast(AstTypes type, int n_children, ...) {
     case AST_CMP_OP:
       ast->value = AST_ASSIGN(cmpop, ComparisonAST);
       break;
+    case AST_USER_FUNC:
+      ast->value = AST_ASSIGN(userfunc, UserFuncAST);
+      break;
+    case AST_PARAMS:
+      ast->value = AST_ASSIGN(params, ParamsAST);
+      break;
     case AST_PROG:
       break;
   }
@@ -79,6 +85,12 @@ void ast_free(AST *ast) {
     case AST_CMP_OP:
       ast_cmpop_free(ast);
       break;
+    case AST_USER_FUNC:
+      ast_userfunc_free(ast);
+      break;
+    case AST_PARAMS:
+      ast_params_free(ast);
+      break;
     case AST_PROG:
       list_free(ast->children, ast_child_free);
       break;
@@ -104,6 +116,10 @@ double ast_eval(AST *ast) {
       return ast_symref_eval(ast);
     case AST_CMP_OP:
       return ast_cmpop_eval(ast);
+    case AST_USER_FUNC:
+      return ast_userfunc_eval(ast);
+    case AST_PARAMS:
+      return ast_params_eval(ast);
     case AST_PROG:
       return ast_eval(ast->children->data);
     default:
@@ -113,7 +129,7 @@ double ast_eval(AST *ast) {
   return 0;
 }
 
-static void ast_children_fe_print(ListNode *node) { ast_print(node->data); }
+void ast_child_print(ListNode *node) { ast_print(node->data); }
 
 void ast_print(AST *ast) {
   switch (ast->type) {
@@ -136,8 +152,14 @@ void ast_print(AST *ast) {
     case AST_CMP_OP:
       ast_cmpop_print(ast);
       break;
+    case AST_USER_FUNC:
+      ast_userfunc_print(ast);
+      break;
+    case AST_PARAMS:
+      ast_params_print(ast);
+      break;
     case AST_PROG:
-      list_for_each(ast->children, ast_children_fe_print);
+      list_for_each(ast->children, ast_child_print);
       return;
     default:
       printf("AST type: %d print not implemented yet", ast->type);

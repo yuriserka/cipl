@@ -13,6 +13,8 @@ typedef enum cipl_ast_types {
   AST_UNI_OP,
   AST_CMP_OP,
   AST_PROG,
+  AST_USER_FUNC,
+  AST_PARAMS,
 } AstTypes;
 
 static inline const char *ast_type2str(AstTypes type) {
@@ -37,6 +39,10 @@ static inline const char *ast_type2str(AstTypes type) {
       return "AST_CMP_OP";
     case AST_PROG:
       return "AST_PROG";
+    case AST_USER_FUNC:
+      return "AST_USER_FUNC";
+    case AST_PARAMS:
+      return "AST_PARAMS";
     default:
       return NULL;
   }

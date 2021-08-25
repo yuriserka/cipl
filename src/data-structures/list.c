@@ -3,10 +3,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-ListNode *list_node_init(void *data) {
+ListNode *list_node_init(void *data) { return list_node_init_next(data, NULL); }
+
+ListNode *list_node_init_next(void *data, ListNode *next) {
   ListNode *node = calloc(1, sizeof(ListNode));
   node->data = data;
-  node->next = NULL;
+  node->next = next;
   return node;
 }
 
@@ -25,6 +27,8 @@ void list_free(ListNode *head, list_free_fn free_fn) {
 }
 
 void list_push(ListNode **head, void *data) {
+  if (!data) return;
+
   ListNode *new_node = list_node_init(data);
   ListNode *last = *head;
 
@@ -52,7 +56,7 @@ void *list_peek(ListNode **head, unsigned int index) {
   return NULL;
 }
 
-void list_for_each(ListNode *head, void (*cb)(ListNode *node)) {
+void list_for_each(ListNode *head, list_for_each_cb cb) {
   ListNode *it = head;
   while (it) {
     ListNode *tmp = it->next;

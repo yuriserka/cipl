@@ -5,17 +5,21 @@
 	#include <stdio.h>
 
     #include "data-structures/ast/ast.h"
+    #include "data-structures/scope.h"
     #include "data-structures/symbol-table/symbol-table.h"
     #include "utils/io.h"
     #include "core/globals.h"
 
     AST *root;
+    Scope *current_scope;
     cursor_position error_cursor;
+    ListNode *scopes;
 %}
 
 %union {
 	struct cipl_ast *ast;
     struct cipl_symbol *sym;
+    struct cipl_list_node *list;
 	double real;
 	int integer;
 }
@@ -26,9 +30,11 @@
 %token LT LE GT GE EQ NE
 %token<sym> NAME
 
-%type<ast> external_declaration declaration declarator
+%type<ast> external_declaration declaration declarator func_declaration
 %type<ast> expression assign_expr eq_expr rel_expr add_expr primary_expr id constant
 %type<ast> mult_expr cast_expr postfix_expr arg_expr_list arg_expr_list.opt
+
+%type<list> id_list.opt id_list
 
 %right '!' '='
 %left '+' '-'
@@ -45,6 +51,7 @@ declarations: external_declaration declarations
     ;
 
 external_declaration: declaration
+    | func_declaration
     ;
 
 declaration: LET declarator '=' eq_expr ';' {
@@ -57,7 +64,30 @@ declaration: LET declarator '=' eq_expr ';' {
     }
     ;
 
+func_declaration: LET declarator '(' id_list.opt ')' '=' eq_expr ';' {
+        Scope *func_scope = scope_init();
+        scope_add_child(current_scope, func_scope);
+        list_push(&scopes, func_scope);
+        AST *func = ast_userfunc_init(func_scope, $2, ast_params_init($4));
+        list_push(&root->children, ast_assign_init(func, $7));
+    }
+    | LET declarator '(' id_list.opt ')' '=' error ';' {
+        CIPL_PERROR_CURSOR("expected expression before ‘;’ token\n", error_cursor);
+        yyerrok;
+        ast_free($2);
+        list_free($4, ast_child_free);
+    }
+    ;
+
 declarator: id
+    ;
+
+id_list: id_list ',' id { list_push(&$$, $3); }
+    | id { $$ = list_node_init($1); }
+    ;
+
+id_list.opt: %empty { }
+    | id_list
     ;
 
 expression: assign_expr
@@ -123,4 +153,5 @@ constant: NUMBER_REAL { $$ = ast_number_init(REAL, (NumberValue){ .real=$1 }); }
 void yyerror(char *s, ...) {
     /* just save where the error points to */
     error_cursor = cursor;
+    /* CIPL_PERROR("%s\n", s); */
 }
