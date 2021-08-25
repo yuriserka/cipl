@@ -77,10 +77,11 @@ union YYSTYPE
 	struct cipl_ast *ast;
     struct cipl_symbol *sym;
     struct cipl_list_node *list;
+    char *identifier;
 	double real;
 	int integer;
 
-#line 84 "lib/bison/grammar.h"
+#line 85 "lib/bison/grammar.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

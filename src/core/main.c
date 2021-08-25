@@ -7,16 +7,11 @@
 #include "core/globals.h"
 #include "utils/io.h"
 
-void scope_list_free(ListNode *scope) {
-  Scope *s = scope->data;
-  scope_free(s);
-  free(s);
-}
+void scope_stack_free(StackNode *scope) { scope_free(scope->data); }
 
 int cipl_main(int argc, char *argv[]) {
   root = ast_cast(AST_PROG, 0);
-  current_scope = scope_init();
-  scopes = list_node_init(current_scope);
+  scopes = list_node_init(scope_init());
 
   if (argc < 2) {
     CIPL_PRINTF_COLOR(RED, "error: ");
@@ -50,7 +45,7 @@ int cipl_main(int argc, char *argv[]) {
   printf("}, }\n");
 
   ast_free(root);
-  list_free(scopes, scope_list_free);
+  list_free(scopes, scope_stack_free);
 
   return errors_count > 0;
 }

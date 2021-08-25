@@ -22,5 +22,6 @@ struct cipl_symbol {
   // SymbolTypes type;
 };
 
-void symbol_init(Symbol *sym, char *name, int scope, cursor_position position);
+Symbol *symbol_init(char *name, int scope, cursor_position pos);
+void symbol_update(Symbol *sym, char *name, int scope, cursor_position pos);
 void symbol_free(Symbol *sym);

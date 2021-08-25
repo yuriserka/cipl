@@ -29,7 +29,7 @@
   return NUMBER_REAL;
 }
 
-"+"|"-"|"*"|"/"|"="|"!"|"("|")"|","|";" {
+"+"|"-"|"*"|"/"|"="|"!"|"("|")"|","|";"|"{"|"}" {
   cursor_position_update(0, yyleng);
   return yytext[0];
 }
@@ -70,7 +70,7 @@
 }
 
 [a-zA-Z_][a-zA-Z0-9_]* {
-  yylval.sym = scope_lookup(current_scope, yytext);
+  yylval.identifier = strdup(yytext);
   cursor_position_update(0, yyleng);
   return NAME;
 }

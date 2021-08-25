@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "core/globals.h"
+#include "utils/io.h"
 
 Scope *scope_init() {
   Scope *scope = calloc(1, sizeof(Scope));
@@ -12,18 +13,33 @@ Scope *scope_init() {
 
 void scope_free(Scope *scope) {
   for (int i = 0; i < NHASH; ++i) {
-    if (scope->symbol_table[i].name) {
-      free(scope->symbol_table[i].name);
+    Symbol *sym = &scope->symbol_table[i];
+    if (sym && sym->name) {
+      free(sym->name);
     }
   }
+  free(scope);
 }
 
-void scope_add_child(Scope *curr, Scope *child) {
+Scope *scope_add(Scope *curr) {
+  Scope * child = scope_init();
   child->index = curr->index + 1;
+  stack_push(&scopes, child);
+  return child;
 }
 
 Symbol *scope_lookup(Scope *scope, char *sym_name) {
-  Symbol *sym_entry = symbol_table_lookup(scope->symbol_table, sym_name);
-  if (!sym_entry->name) symbol_init(sym_entry, sym_name, scope->index, cursor);
-  return sym_entry;
+  StackNode *it = scopes;
+  while (it) {
+    StackNode *tmp = it->next;
+    Symbol *sym_entry = symbol_table_lookup(scope->symbol_table, sym_name);
+    if (!sym_entry->name)
+      symbol_update(sym_entry, sym_name, scope->index, cursor);
+    return sym_entry;
+    it = tmp;
+  }
+
+  CIPL_PERROR("'%s' undeclared (first use in this function)\n", sym_name);
+
+  return NULL;
 }

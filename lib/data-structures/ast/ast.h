@@ -7,16 +7,18 @@ typedef struct cipl_ast AST;
 
 #include "data-structures/ast/types/assign.h"
 #include "data-structures/ast/types/bin-op.h"
+#include "data-structures/ast/types/block_items.h"
 #include "data-structures/ast/types/builtin-fn.h"
 #include "data-structures/ast/types/cmp-op.h"
+#include "data-structures/ast/types/declaration.h"
 #include "data-structures/ast/types/flow.h"
 #include "data-structures/ast/types/num.h"
+#include "data-structures/ast/types/params.h"
 #include "data-structures/ast/types/symbol-ref.h"
 #include "data-structures/ast/types/types-def.h"
 #include "data-structures/ast/types/uni-op.h"
 #include "data-structures/ast/types/user-func.h"
 #include "data-structures/list.h"
-#include "data-structures/ast/types/params.h"
 
 typedef union cipl_ast_node_value {
   AssignAST *assignop;
@@ -25,10 +27,12 @@ typedef union cipl_ast_node_value {
   BinOpAST *binop;
   ComparisonAST *cmpop;
   UniOpAST *uniop;
+  DeclarationAST *declaration;
   BuiltinFuncAST *builtinfn;
   FlowAST *flow;
   UserFuncAST *userfunc;
   ParamsAST *params;
+  BlockItemListAST *blockitems;
 } AstNodeValue;
 
 struct cipl_ast {
@@ -39,7 +43,6 @@ struct cipl_ast {
 
 void ast_child_free(ListNode *node);
 void ast_child_print(ListNode *node);
-
 
 /*
  * 1st variadic arg = the actual value (some of AstNodeValue)

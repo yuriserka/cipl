@@ -47,6 +47,12 @@ AST *ast_cast(AstTypes type, int n_children, ...) {
     case AST_PARAMS:
       ast->value = AST_ASSIGN(params, ParamsAST);
       break;
+    case AST_BLOCK_ITEM_LIST:
+      ast->value = AST_ASSIGN(blockitems, BlockItemListAST);
+      break;
+    case AST_DECLARATION:
+      ast->value = AST_ASSIGN(declaration, DeclarationAST);
+      break;
     case AST_PROG:
       break;
   }
@@ -91,6 +97,12 @@ void ast_free(AST *ast) {
     case AST_PARAMS:
       ast_params_free(ast);
       break;
+    case AST_BLOCK_ITEM_LIST:
+      ast_blockitems_free(ast);
+      break;
+    case AST_DECLARATION:
+      ast_declaration_free(ast);
+      break;
     case AST_PROG:
       list_free(ast->children, ast_child_free);
       break;
@@ -120,6 +132,10 @@ double ast_eval(AST *ast) {
       return ast_userfunc_eval(ast);
     case AST_PARAMS:
       return ast_params_eval(ast);
+    case AST_BLOCK_ITEM_LIST:
+      return ast_blockitems_eval(ast);
+    case AST_DECLARATION:
+      return ast_declaration_eval(ast);
     case AST_PROG:
       return ast_eval(ast->children->data);
     default:
@@ -157,6 +173,12 @@ void ast_print(AST *ast) {
       break;
     case AST_PARAMS:
       ast_params_print(ast);
+      break;
+    case AST_BLOCK_ITEM_LIST:
+      ast_blockitems_print(ast);
+      break;
+    case AST_DECLARATION:
+      ast_declaration_print(ast);
       break;
     case AST_PROG:
       list_for_each(ast->children, ast_child_print);

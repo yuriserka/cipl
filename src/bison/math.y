@@ -5,7 +5,7 @@
 	#include <stdio.h>
 
     #include "data-structures/ast/ast.h"
-    #include "data-structures/scope.h"
+    #include "data-structures/stack.h"
     #include "data-structures/symbol-table/symbol-table.h"
     #include "utils/io.h"
     #include "core/globals.h"
@@ -13,13 +13,14 @@
     AST *root;
     Scope *current_scope;
     cursor_position error_cursor;
-    ListNode *scopes;
+    StackNode *scopes;
 %}
 
 %union {
 	struct cipl_ast *ast;
     struct cipl_symbol *sym;
     struct cipl_list_node *list;
+    char *identifier;
 	double real;
 	int integer;
 }
@@ -28,13 +29,14 @@
 %token<real> NUMBER_REAL
 %token LET
 %token LT LE GT GE EQ NE
-%token<sym> NAME
+%token<identifier> NAME
 
-%type<ast> external_declaration declaration declarator func_declaration
+%type<ast> external_declaration declaration declarator func_declaration block_item statement
 %type<ast> expression assign_expr eq_expr rel_expr add_expr primary_expr id constant
-%type<ast> mult_expr cast_expr postfix_expr arg_expr_list arg_expr_list.opt
+%type<ast> mult_expr cast_expr postfix_expr arg_expr_list arg_expr_list.opt compound_stmt
+%type<ast> expression_stmt
 
-%type<list> id_list.opt id_list
+%type<list> id_list.opt id_list block_item_list block_item_list.opt prog
 
 %right '!' '='
 %left '+' '-'
@@ -43,58 +45,80 @@
 %start prog
 %%
 
-prog: declarations
+prog: prog external_declaration { list_push(&root->children, $2); }
+    | external_declaration { list_push(&root->children, $1); }
     ;
 
-declarations: external_declaration declarations
-    | %empty
+external_declaration: func_declaration
+    | declaration
     ;
 
-external_declaration: declaration
-    | func_declaration
-    ;
-
-declaration: LET declarator '=' eq_expr ';' {
-        list_push(&root->children, ast_assign_init($2, $4));
+declaration: LET declarator ';' {
+        printf("found a variable\n");
+        $$ = ast_declaration_init($2);
     }
-    | LET declarator '=' error ';' {
+    /* | LET declarator '=' error ';' {
         CIPL_PERROR_CURSOR("expected expression before ‘;’ token\n", error_cursor);
         yyerrok;
         ast_free($2);
-    }
+    } */
     ;
 
-func_declaration: LET declarator '(' id_list.opt ')' '=' eq_expr ';' {
-        Scope *func_scope = scope_init();
-        scope_add_child(current_scope, func_scope);
-        list_push(&scopes, func_scope);
-        AST *func = ast_userfunc_init(func_scope, $2, ast_params_init($4));
-        list_push(&root->children, ast_assign_init(func, $7));
+func_declaration: LET declarator '(' id_list.opt ')' compound_stmt {
+        printf("found a function\n");
+        Scope *parent_scope = stack_peek(&scopes);
+        symbol_table_insert(parent_scope->symbol_table, $2->value.symref->symbol->name);
+        $$ = ast_userfunc_init(scope_add(parent_scope), $2, ast_params_init($4), $6);
     }
-    | LET declarator '(' id_list.opt ')' '=' error ';' {
+    /* | LET declarator '(' id_list.opt ')' ';' {
         CIPL_PERROR_CURSOR("expected expression before ‘;’ token\n", error_cursor);
         yyerrok;
         ast_free($2);
         list_free($4, ast_child_free);
-    }
+    } */
+    ;
+
+compound_stmt: '{' block_item_list.opt '}' { $$ = ast_blockitems_init($2); }
+    ;
+
+block_item_list.opt: block_item_list { $$ = $1; }
+    | %empty { $$ = NULL; }
+    ;
+
+block_item_list: block_item_list block_item { list_push(&$$, $2); }
+    | block_item { $$ = list_node_init($1); }
+    ;
+
+block_item: declaration { $$ = $1; }
+    | statement 
+    ;
+
+statement: expression_stmt
     ;
 
 declarator: id
+    | '(' declarator ')' { $$ = $2; }
     ;
 
 id_list: id_list ',' id { list_push(&$$, $3); }
     | id { $$ = list_node_init($1); }
     ;
 
-id_list.opt: %empty { }
+id_list.opt: %empty { $$ = NULL; }
     | id_list
+    ;
+
+expression_stmt: expression ';'
     ;
 
 expression: assign_expr
     ;
 
 assign_expr: eq_expr
-    | cast_expr '=' assign_expr
+    | cast_expr '=' assign_expr {
+        printf("found assignment\n");
+        $$ = ast_assign_init($1, $3);
+    }
     ;
 
 eq_expr: rel_expr
@@ -141,7 +165,11 @@ primary_expr: id
     | '(' expression ')' { $$ = $2; }
     ;
 
-id: NAME { $$ = ast_symref_init($1); }
+id: NAME {
+        Scope *scope = stack_peek(&scopes);
+        $$ = ast_symref_init(symbol_init($1, scope->index, cursor));
+        free($1);
+    }
     ;
 
 constant: NUMBER_REAL { $$ = ast_number_init(REAL, (NumberValue){ .real=$1 }); }
@@ -153,5 +181,5 @@ constant: NUMBER_REAL { $$ = ast_number_init(REAL, (NumberValue){ .real=$1 }); }
 void yyerror(char *s, ...) {
     /* just save where the error points to */
     error_cursor = cursor;
-    /* CIPL_PERROR("%s\n", s); */
+    CIPL_PERROR("%s\n", s);
 }

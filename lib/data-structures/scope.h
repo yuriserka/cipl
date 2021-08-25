@@ -1,6 +1,7 @@
 #pragma once
 
 #include "data-structures/symbol-table/symbol-table.h"
+#include "data-structures/stack.h"
 
 typedef struct cipl_scope {
   int index;
@@ -8,6 +9,6 @@ typedef struct cipl_scope {
 } Scope;
 
 Scope *scope_init();
-void scope_add_child(Scope *curr, Scope *child);
+Scope *scope_add(Scope *curr);
 void scope_free(Scope *scope);
 Symbol *scope_lookup(Scope *scope, char *sym_name);

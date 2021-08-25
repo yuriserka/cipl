@@ -1,3 +1,6 @@
-let x = (1-5) * 10;
+let y;
 
-let sum(a,b) = a + 10 * (b - 35) >= x;
+let main(a, b) {
+    let x;
+    x = 15 + 2 * a;
+}

@@ -3,7 +3,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-void symbol_init(Symbol *sym, char *name, int scope, cursor_position pos) {
+Symbol *symbol_init(char *name, int scope, cursor_position pos) {
+  Symbol *sym = calloc(1, sizeof(Symbol));
+  symbol_update(sym, name, scope, pos);
+  return sym;
+}
+
+void symbol_update(Symbol *sym, char *name, int scope, cursor_position pos) {
   sym->name = strdup(name);
   sym->scope = scope;
   sym->value = 0;
@@ -11,7 +17,6 @@ void symbol_init(Symbol *sym, char *name, int scope, cursor_position pos) {
 }
 
 void symbol_free(Symbol *sym) {
-  if (sym && sym->name) free(sym->name);
-  // Symbols are stored statically in the symbol_tb array
-  // free(sym);
+  free(sym->name);
+  free(sym);
 }

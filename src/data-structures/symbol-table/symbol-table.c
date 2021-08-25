@@ -22,7 +22,24 @@ Symbol *symbol_table_lookup(SymbolTable symbol_tb, char *sym_name) {
     if (sp->name && !strcmp(sp->name, sym_name)) {
       return sp;
     }
+    if (++sp >= symbol_tb + NHASH) sp = symbol_tb;  // back to head of array
+  }
+
+  CIPL_PERROR("'%s' undeclared (first use in this function)\n", sym_name);
+  return NULL;
+}
+
+Symbol *symbol_table_insert(SymbolTable symbol_tb, char *sym_name) {
+  Symbol *sp = &symbol_tb[symbol_table_hash(sym_name) % NHASH];
+  int scount = NHASH;
+
+  while (--scount >= 0) {
+    if (sp->name && !strcmp(sp->name, sym_name)) {
+      return sp;
+    }
     if (!sp->name) {
+      Scope *curr_scope = stack_peek(&scopes);
+      symbol_update(sp, sym_name, curr_scope->index, cursor);
       return sp;
     }
     if (++sp >= symbol_tb + NHASH) sp = symbol_tb;  // back to head of array
