@@ -12,6 +12,7 @@ void scope_stack_free(StackNode *scope) { scope_free(scope->data); }
 int cipl_main(int argc, char *argv[]) {
   root = ast_cast(AST_PROG, 0);
   scopes = list_node_init(scope_init());
+  current_scope = stack_peek(&scopes);
 
   if (argc < 2) {
     CIPL_PRINTF_COLOR(RED, "error: ");

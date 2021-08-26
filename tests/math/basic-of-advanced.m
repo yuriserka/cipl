@@ -1,6 +1,16 @@
 let y;
 
+// no identifier
+let () {
+    let w;
+}
+
 let main(a, b) {
     let x;
-    x = 15 + 2 * a;
+    // empty declaration
+    let ;
+    {
+        let z;
+        x = 10;
+    }
 }

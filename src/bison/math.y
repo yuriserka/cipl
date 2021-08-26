@@ -12,6 +12,7 @@
 
     AST *root;
     Scope *current_scope;
+    Scope *previous_scope;
     cursor_position error_cursor;
     StackNode *scopes;
 %}
@@ -34,7 +35,7 @@
 %type<ast> external_declaration declaration declarator func_declaration block_item statement
 %type<ast> expression assign_expr eq_expr rel_expr add_expr primary_expr id constant
 %type<ast> mult_expr cast_expr postfix_expr arg_expr_list arg_expr_list.opt compound_stmt
-%type<ast> expression_stmt
+%type<ast> expr_stmt
 
 %type<list> id_list.opt id_list block_item_list block_item_list.opt prog
 
@@ -54,31 +55,44 @@ external_declaration: func_declaration
     ;
 
 declaration: LET declarator ';' {
-        printf("found a variable\n");
+        /*Symbol *sym = */symbol_table_insert(current_scope->symbol_table, $2->value.symref->symbol->name);
+        // printf("declared variable '%s' at scope: %d\n", sym->name, current_scope->index);
         $$ = ast_declaration_init($2);
+        
     }
-    /* | LET declarator '=' error ';' {
-        CIPL_PERROR_CURSOR("expected expression before ‘;’ token\n", error_cursor);
+    | LET error ';' {
+        CIPL_PERROR_CURSOR("useless let in empty declaration\n", error_cursor);
+        $$ = NULL;
         yyerrok;
-        ast_free($2);
-    } */
+    }
     ;
 
-func_declaration: LET declarator '(' id_list.opt ')' compound_stmt {
-        printf("found a function\n");
-        Scope *parent_scope = stack_peek(&scopes);
-        symbol_table_insert(parent_scope->symbol_table, $2->value.symref->symbol->name);
-        $$ = ast_userfunc_init(scope_add(parent_scope), $2, ast_params_init($4), $6);
+func_declaration: LET declarator '(' {
+        previous_scope = current_scope;
+        current_scope = scope_add(previous_scope);
+    } id_list.opt ')' '{' block_item_list.opt '}' {
+        // printf("found a function\n");
+        symbol_table_insert(previous_scope->symbol_table, $2->value.symref->symbol->name);
+        $$ = ast_userfunc_init(current_scope, $2, ast_params_init($5), ast_blockitems_init($8));
     }
-    /* | LET declarator '(' id_list.opt ')' ';' {
-        CIPL_PERROR_CURSOR("expected expression before ‘;’ token\n", error_cursor);
-        yyerrok;
-        ast_free($2);
+    | LET error '{' block_item_list.opt '}' {
+        CIPL_PERROR_CURSOR("expected identifier before '(' token\n", error_cursor);
         list_free($4, ast_child_free);
-    } */
+        $$ = NULL;
+        yyerrok;
+    }
     ;
 
-compound_stmt: '{' block_item_list.opt '}' { $$ = ast_blockitems_init($2); }
+compound_stmt: '{' {
+        // printf("found a code block on line:%d\n", cursor.line);
+        previous_scope = current_scope;
+        current_scope = scope_add(previous_scope);
+        // printf("starting scope: %d\n", current_scope->index);
+    } block_item_list.opt '}' {
+        // printf("leaving scope: %d on line:%d\n", current_scope->index, cursor.line);
+        current_scope = previous_scope;
+        $$ = ast_blockitems_init($3);
+    }
     ;
 
 block_item_list.opt: block_item_list { $$ = $1; }
@@ -93,7 +107,8 @@ block_item: declaration { $$ = $1; }
     | statement 
     ;
 
-statement: expression_stmt
+statement: expr_stmt
+    | compound_stmt
     ;
 
 declarator: id
@@ -108,7 +123,7 @@ id_list.opt: %empty { $$ = NULL; }
     | id_list
     ;
 
-expression_stmt: expression ';'
+expr_stmt: expression ';' { $$ = $1; }
     ;
 
 expression: assign_expr
@@ -116,7 +131,7 @@ expression: assign_expr
 
 assign_expr: eq_expr
     | cast_expr '=' assign_expr {
-        printf("found assignment\n");
+        // printf("found an assignment\n");
         $$ = ast_assign_init($1, $3);
     }
     ;
@@ -166,8 +181,8 @@ primary_expr: id
     ;
 
 id: NAME {
-        Scope *scope = stack_peek(&scopes);
-        $$ = ast_symref_init(symbol_init($1, scope->index, cursor));
+        Symbol *sym = symbol_init($1, current_scope->index, cursor);
+        $$ = ast_symref_init(sym);
         free($1);
     }
     ;
@@ -181,5 +196,5 @@ constant: NUMBER_REAL { $$ = ast_number_init(REAL, (NumberValue){ .real=$1 }); }
 void yyerror(char *s, ...) {
     /* just save where the error points to */
     error_cursor = cursor;
-    CIPL_PERROR("%s\n", s);
+    /* CIPL_PERROR_CURSOR("%s\n", error_cursor, s); */
 }

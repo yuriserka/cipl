@@ -3,12 +3,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-ListNode *list_node_init(void *data) { return list_node_init_next(data, NULL); }
+ListNode *list_node_init(void *data) {
+  return list_node_init_extra(data, NULL, NULL);
+}
 
-ListNode *list_node_init_next(void *data, ListNode *next) {
+ListNode *list_node_init_extra(void *data, ListNode *next, ListNode *parent) {
   ListNode *node = calloc(1, sizeof(ListNode));
   node->data = data;
   node->next = next;
+  node->parent = parent;
   return node;
 }
 

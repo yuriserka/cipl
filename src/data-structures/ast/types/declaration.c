@@ -7,9 +7,9 @@
 
 AST *ast_declaration_init(AST *name) {
   DeclarationAST *ast = calloc(1, sizeof(DeclarationAST));
-  Scope *scope = stack_peek(&scopes);
-  symbol_table_insert(scope->symbol_table, name->value.symref->symbol->name);
-  UPDATE_SCOPE(name->children, scope->index);
+  // Scope *scope = stack_peek(&scopes);
+  // symbol_table_insert(scope->symbol_table, name->value.symref->symbol->name);
+  // UPDATE_SCOPE(name->children, scope->index);
   return ast_cast(AST_DECLARATION, 1, ast, name);
 }
 

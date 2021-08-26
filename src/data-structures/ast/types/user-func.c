@@ -9,7 +9,7 @@
 AST *ast_userfunc_init(Scope *scope, AST *declarator, AST *params, AST *stmts) {
   UserFuncAST *ast = calloc(1, sizeof(UserFuncAST));
   ast->scope = scope;
-  UPDATE_SCOPE(params->value.params->value, ast->scope->index);
+  // UPDATE_SCOPE(params->value.params->value, ast->scope->index);
   return ast_cast(AST_USER_FUNC, 3, ast, declarator, params, stmts);
 }
 
