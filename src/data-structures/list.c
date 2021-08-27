@@ -58,12 +58,3 @@ void *list_peek(ListNode **head, unsigned int index) {
   }
   return NULL;
 }
-
-void list_for_each(ListNode *head, list_for_each_cb cb) {
-  ListNode *it = head;
-  while (it) {
-    ListNode *tmp = it->next;
-    cb(it);
-    it = tmp;
-  }
-}

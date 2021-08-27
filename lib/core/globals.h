@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "data-structures/ast/ast.h"
+#include "data-structures/context.h"
 #include "data-structures/list.h"
 #include "data-structures/scope.h"
 #include "data-structures/symbol-table/symbol-table.h"
@@ -22,15 +23,6 @@ extern FILE *yyin;
 // from grammar.y
 extern AST *root;
 extern Scope *current_scope;
+extern Context *current_context;
 extern ListNode *scopes;
-
-#define UPDATE_SCOPE(__CHILD_IT, __SCOPE_IDX)              \
-  {                                                        \
-    ListNode *__IT = __CHILD_IT;                           \
-    while (__IT) {                                         \
-      ListNode *__TMP = __IT->next;                        \
-      AST *__SYMREF = __IT->data;                          \
-      __SYMREF->value.symref->symbol->scope = __SCOPE_IDX; \
-      __IT = __TMP;                                        \
-    }                                                      \
-  }
+extern ListNode *contexts;

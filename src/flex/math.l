@@ -70,7 +70,7 @@
 }
 
 [a-zA-Z_][a-zA-Z0-9_]* {
-  yylval.identifier = strdup(yytext);
+  yylval.sym = symbol_init(yytext, current_scope->index, cursor);
   cursor_position_update(0, yyleng);
   return NAME;
 }

@@ -20,6 +20,6 @@ double ast_blockitems_eval(AST *ast) { return 0; }
 void ast_blockitems_print(AST *ast) {
   BlockItemListAST *blockitems_ast = ast->value.blockitems;
   printf("block_items: { ");
-  list_for_each(blockitems_ast->value, ast_child_print);
+  LIST_FOR_EACH(blockitems_ast->value, { ast_child_print(__MAP_IT__); });
   printf("}");
 }

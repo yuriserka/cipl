@@ -841,7 +841,7 @@ case 11:
 YY_RULE_SETUP
 #line 72 "src/flex/math.l"
 {
-  yylval.identifier = strdup(yytext);
+  yylval.sym = symbol_init(yytext, current_scope->index, cursor);
   cursor_position_update(0, yyleng);
   return NAME;
 }

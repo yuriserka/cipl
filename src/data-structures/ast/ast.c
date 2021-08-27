@@ -181,7 +181,7 @@ void ast_print(AST *ast) {
       ast_declaration_print(ast);
       break;
     case AST_PROG:
-      list_for_each(ast->children, ast_child_print);
+      LIST_FOR_EACH(ast->children, { ast_child_print(__MAP_IT__); });
       return;
     default:
       printf("AST type: %d print not implemented yet", ast->type);

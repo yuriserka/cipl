@@ -7,12 +7,23 @@
 #include "core/globals.h"
 #include "utils/io.h"
 
-void scope_stack_free(StackNode *scope) { scope_free(scope->data); }
+void symbol_table_scope_print() {
+  printf("{ symbol_tables: [ ");
+  LIST_FOR_EACH_REVERSE(scopes, {
+    Scope *s = __MAP_IT__->data;
+    printf("{ index: %d, entries: [ ", s->index);
+    symbol_table_print(s->symbol_table);
+    printf("], }, ");
+  });
+  printf("], }\n");
+}
 
 int cipl_main(int argc, char *argv[]) {
   root = ast_cast(AST_PROG, 0);
   scopes = list_node_init(scope_init());
   current_scope = stack_peek(&scopes);
+  // contexts = list_node_init(context_init());
+  // current_context = list_peek(&contexts, 0);
 
   if (argc < 2) {
     CIPL_PRINTF_COLOR(RED, "error: ");
@@ -45,8 +56,12 @@ int cipl_main(int argc, char *argv[]) {
   ast_print(root);
   printf("}, }\n");
 
+  symbol_table_scope_print();
+
   ast_free(root);
-  list_free(scopes, scope_stack_free);
+  LIST_FREE_REVERSE(scopes, { scope_free(__MAP_IT__->data); });
+
+  // context_free(current_context);
 
   return errors_count > 0;
 }

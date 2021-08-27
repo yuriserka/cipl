@@ -6,13 +6,15 @@
 
 void stack_push(StackNode **top, void *data) {
   StackNode *new_node = list_node_init(data);
-  new_node->next = *top;
+  new_node->parent = *top;
+  (*top)->next = new_node;
   *top = new_node;
 }
 
 void stack_pop(StackNode **top, list_free_fn cb) {
   StackNode *node = *top;
-  *top = (*top)->next;
+  *top = (*top)->parent;
+  (*top)->next = NULL;
   list_node_free(node, cb);
 }
 

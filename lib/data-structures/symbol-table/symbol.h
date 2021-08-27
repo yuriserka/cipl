@@ -23,5 +23,7 @@ struct cipl_symbol {
 };
 
 Symbol *symbol_init(char *name, int scope, cursor_position pos);
+Symbol *symbol_init_copy(Symbol *other);
 void symbol_update(Symbol *sym, char *name, int scope, cursor_position pos);
 void symbol_free(Symbol *sym);
+void symbol_print(Symbol *sym);

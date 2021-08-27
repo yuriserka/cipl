@@ -5,44 +5,43 @@
 #include "core/globals.h"
 #include "utils/io.h"
 
-SymbolTable symbol_tb;
+SymbolTable symbol_table;
 
 static unsigned symbol_table_hash(char *sym_name) {
   unsigned int hash = 0;
+  char *pname = sym_name;
   unsigned c;
-  while ((c = *sym_name++)) hash = hash * 9 ^ c;
+  while ((c = *pname++)) hash = hash * 9 ^ c;
   return hash;
 }
 
-Symbol *symbol_table_lookup(SymbolTable symbol_tb, char *sym_name) {
-  Symbol *sp = &symbol_tb[symbol_table_hash(sym_name) % NHASH];
+Symbol *symbol_table_lookup(SymbolTable symbol_table, char *sym_name) {
+  Symbol *sp = &symbol_table[symbol_table_hash(sym_name) % NHASH];
   int scount = NHASH;
 
   while (--scount >= 0) {
     if (sp->name && !strcmp(sp->name, sym_name)) {
       return sp;
     }
-    if (++sp >= symbol_tb + NHASH) sp = symbol_tb;  // back to head of array
+    if (++sp >= symbol_table + NHASH) sp = symbol_table;
   }
-
-  CIPL_PERROR("'%s' undeclared (first use in this function)\n", sym_name);
   return NULL;
 }
 
-Symbol *symbol_table_insert(SymbolTable symbol_tb, char *sym_name) {
-  Symbol *sp = &symbol_tb[symbol_table_hash(sym_name) % NHASH];
+Symbol *symbol_table_insert(SymbolTable symbol_table, AST *ast) {
+  Symbol *symref = ast->value.symref->symbol;
+  Symbol *sp = &symbol_table[symbol_table_hash(symref->name) % NHASH];
   int scount = NHASH;
 
   while (--scount >= 0) {
-    if (sp->name && !strcmp(sp->name, sym_name)) {
-      return sp;
+    if (sp->name && !strcmp(sp->name, symref->name)) {
+      return NULL;
     }
     if (!sp->name) {
-      Scope *curr_scope = stack_peek(&scopes);
-      symbol_update(sp, sym_name, curr_scope->index, cursor);
+      symbol_update(sp, symref->name, current_scope->index, symref->def_pos);
       return sp;
     }
-    if (++sp >= symbol_tb + NHASH) sp = symbol_tb;  // back to head of array
+    if (++sp >= symbol_table + NHASH) sp = symbol_table;
   }
 
   CIPL_PERROR("symbol_table overflow\n");
@@ -50,7 +49,7 @@ Symbol *symbol_table_insert(SymbolTable symbol_tb, char *sym_name) {
 }
 
 void symbol_table_delete(char *sym_name) {
-  Symbol *sp = &symbol_tb[symbol_table_hash(sym_name) % NHASH];
+  Symbol *sp = &symbol_table[symbol_table_hash(sym_name) % NHASH];
   int scount = NHASH;
 
   while (--scount >= 0) {
@@ -63,8 +62,14 @@ void symbol_table_delete(char *sym_name) {
   CIPL_PERROR("symbol: %s not found\n", sym_name);
 }
 
-void symbol_table_free(SymbolTable symbol_tb) {
+void symbol_table_free(SymbolTable symbol_table) {
   for (int i = 0; i < NHASH; ++i) {
-    if (symbol_tb[i].name) symbol_free(&symbol_tb[i]);
+    if (symbol_table[i].name) symbol_free(&symbol_table[i]);
+  }
+}
+
+void symbol_table_print(SymbolTable symbol_table) {
+  for (int i = 0; i < NHASH; ++i) {
+    if (symbol_table[i].name) symbol_print(&symbol_table[i]);
   }
 }

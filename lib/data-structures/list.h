@@ -22,4 +22,44 @@ void list_pop(ListNode **head, list_free_fn free_cb);
 
 void *list_peek(ListNode **head, unsigned int index);
 
-void list_for_each(ListNode *head, list_for_each_cb cb);
+#define LIST_FOR_EACH(__FE_ARG__, __MAP_CODE__) \
+  {                                             \
+    ListNode *__MAP_IT__ = __FE_ARG__;          \
+    while (__MAP_IT__) {                        \
+      ListNode *__MAP_TMP__ = __MAP_IT__->next; \
+      __MAP_CODE__;                             \
+      __MAP_IT__ = __MAP_TMP__;                 \
+    }                                           \
+  }
+
+#define LIST_FOR_EACH_REVERSE(__FE_ARG__, __MAP_CODE__) \
+  {                                                     \
+    ListNode *__MAP_IT__ = __FE_ARG__;                  \
+    while (__MAP_IT__) {                                \
+      ListNode *__MAP_TMP__ = __MAP_IT__->parent;       \
+      __MAP_CODE__;                                     \
+      __MAP_IT__ = __MAP_TMP__;                         \
+    }                                                   \
+  }
+
+#define LIST_FREE(__F_ARG__, __MAP_CODE__)      \
+  {                                             \
+    ListNode *__MAP_IT__ = __F_ARG__;           \
+    while (__MAP_IT__) {                        \
+      ListNode *__MAP_TMP__ = __MAP_IT__->next; \
+      __MAP_CODE__;                             \
+      free(__MAP_IT__);                         \
+      __MAP_IT__ = __MAP_TMP__;                 \
+    }                                           \
+  }
+
+#define LIST_FREE_REVERSE(__FE_ARG__, __MAP_CODE__) \
+  {                                                 \
+    ListNode *__MAP_IT__ = __FE_ARG__;              \
+    while (__MAP_IT__) {                            \
+      ListNode *__MAP_TMP__ = __MAP_IT__->parent;   \
+      __MAP_CODE__;                                 \
+      free(__MAP_IT__);                             \
+      __MAP_IT__ = __MAP_TMP__;                     \
+    }                                               \
+  }

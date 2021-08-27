@@ -22,24 +22,17 @@ void scope_free(Scope *scope) {
 }
 
 Scope *scope_add(Scope *curr) {
-  Scope * child = scope_init();
+  Scope *child = scope_init();
   child->index = curr->index + 1;
   stack_push(&scopes, child);
   return child;
 }
 
-Symbol *scope_lookup(Scope *scope, char *sym_name) {
-  StackNode *it = scopes;
-  while (it) {
-    StackNode *tmp = it->next;
+Symbol *scope_lookup(char *sym_name) {
+  LIST_FOR_EACH_REVERSE(scopes, {
+    Scope *scope = __MAP_IT__->data;
     Symbol *sym_entry = symbol_table_lookup(scope->symbol_table, sym_name);
-    if (!sym_entry->name)
-      symbol_update(sym_entry, sym_name, scope->index, cursor);
-    return sym_entry;
-    it = tmp;
-  }
-
-  CIPL_PERROR("'%s' undeclared (first use in this function)\n", sym_name);
-
+    if (sym_entry) return sym_entry;
+  });
   return NULL;
 }

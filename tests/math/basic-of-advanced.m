@@ -1,16 +1,14 @@
-let y;
+let a;
 
-// no identifier
-let () {
-    let w;
+let fn() {
+    let x;
 }
 
-let main(a, b) {
-    let x;
-    // empty declaration
-    let ;
+let b(c) {
+    let d;
     {
-        let z;
-        x = 10;
+        let d;
+        let e;
     }
+    d = 1 + 2;
 }

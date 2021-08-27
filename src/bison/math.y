@@ -6,15 +6,19 @@
 
     #include "data-structures/ast/ast.h"
     #include "data-structures/stack.h"
+    #include "data-structures/context.h"
     #include "data-structures/symbol-table/symbol-table.h"
     #include "utils/io.h"
     #include "core/globals.h"
 
     AST *root;
+    StackNode *scopes;
+    ListNode *contexts;
+    cursor_position error_cursor;
     Scope *current_scope;
     Scope *previous_scope;
-    cursor_position error_cursor;
-    StackNode *scopes;
+    Context *current_context;
+    Context *previous_context;
 %}
 
 %union {
@@ -30,7 +34,7 @@
 %token<real> NUMBER_REAL
 %token LET
 %token LT LE GT GE EQ NE
-%token<identifier> NAME
+%token<sym> NAME
 
 %type<ast> external_declaration declaration declarator func_declaration block_item statement
 %type<ast> expression assign_expr eq_expr rel_expr add_expr primary_expr id constant
@@ -54,11 +58,15 @@ external_declaration: func_declaration
     | declaration
     ;
 
-declaration: LET declarator ';' {
-        /*Symbol *sym = */symbol_table_insert(current_scope->symbol_table, $2->value.symref->symbol->name);
-        // printf("declared variable '%s' at scope: %d\n", sym->name, current_scope->index);
+declaration: LET declarator {
+        Symbol *sym = symbol_table_insert(current_scope->symbol_table, $2);
+        if (!sym) {
+            yyerror(NULL);
+            CIPL_PERROR_CURSOR("redeclaration of '%s'\n", error_cursor, $2->value.symref->symbol->name);
+        }
+    } ';' {
+        // the best we can do is show the error, but still push to AST
         $$ = ast_declaration_init($2);
-        
     }
     | LET error ';' {
         CIPL_PERROR_CURSOR("useless let in empty declaration\n", error_cursor);
@@ -68,19 +76,30 @@ declaration: LET declarator ';' {
     ;
 
 func_declaration: LET declarator '(' {
+        if (current_scope->index) {
+            yyerror(NULL);
+            CIPL_PERROR_CURSOR("CIPL forbids nested functions\n", error_cursor);
+            $<ast>$ = NULL;
+            yyerrok;
+        }
+        symbol_table_insert(current_scope->symbol_table, $2);
         previous_scope = current_scope;
         current_scope = scope_add(previous_scope);
-    } id_list.opt ')' '{' block_item_list.opt '}' {
+    } id_list.opt ')' {
+        LIST_FOR_EACH($5, {
+            symbol_table_insert(current_scope->symbol_table, __MAP_IT__->data);
+        });
+    } '{' block_item_list.opt '}' {
         // printf("found a function\n");
-        symbol_table_insert(previous_scope->symbol_table, $2->value.symref->symbol->name);
-        $$ = ast_userfunc_init(current_scope, $2, ast_params_init($5), ast_blockitems_init($8));
+        $$ = ast_userfunc_init(current_scope, $2, ast_params_init($5), ast_blockitems_init($9));
+        current_scope = previous_scope;
     }
-    | LET error '{' block_item_list.opt '}' {
+    /* | LET error '(' id_list.opt ')' {
         CIPL_PERROR_CURSOR("expected identifier before '(' token\n", error_cursor);
         list_free($4, ast_child_free);
         $$ = NULL;
         yyerrok;
-    }
+    } */
     ;
 
 compound_stmt: '{' {
@@ -103,8 +122,8 @@ block_item_list: block_item_list block_item { list_push(&$$, $2); }
     | block_item { $$ = list_node_init($1); }
     ;
 
-block_item: declaration { $$ = $1; }
-    | statement 
+block_item: declaration
+    | statement
     ;
 
 statement: expr_stmt
@@ -175,16 +194,22 @@ arg_expr_list.opt: arg_expr_list
     | %empty { $$ = NULL; }
     ;
 
-primary_expr: id
+primary_expr: id {
+        Symbol *sym = $1->value.symref->symbol;
+        Symbol *definedSym = scope_lookup(sym->name);
+        if (!definedSym) {
+            yyerror(NULL);
+            CIPL_PERROR("'%s' undeclared (first use in this function)\n", sym->name);
+        }
+        $1->value.symref->symbol = symbol_init_copy(definedSym ? definedSym : sym);
+        symbol_free(sym);
+        $$ = $1;
+    }
     | constant
     | '(' expression ')' { $$ = $2; }
     ;
 
-id: NAME {
-        Symbol *sym = symbol_init($1, current_scope->index, cursor);
-        $$ = ast_symref_init(sym);
-        free($1);
-    }
+id: NAME { $$ = ast_symref_init($1); }
     ;
 
 constant: NUMBER_REAL { $$ = ast_number_init(REAL, (NumberValue){ .real=$1 }); }
