@@ -58,3 +58,9 @@ void *list_peek(ListNode **head, unsigned int index) {
   }
   return NULL;
 }
+
+void *list_peek_last(ListNode **head) {
+  ListNode *it = *head;
+  while (it->next) it = it->next;
+  return it->data;
+}

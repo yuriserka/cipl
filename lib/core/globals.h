@@ -22,7 +22,13 @@ extern FILE *yyin;
 
 // from grammar.y
 extern AST *root;
-extern Scope *current_scope;
 extern Context *current_context;
-extern ListNode *scopes;
 extern ListNode *contexts;
+
+#define SWAP(__X__, __Y__)        \
+  {                               \
+    typeof(__X__) __X1__ = __X__; \
+    typeof(__Y__) __Y1__ = __Y__; \
+    __X__ = __Y1__;               \
+    __Y__ = __X1__;               \
+  }

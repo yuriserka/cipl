@@ -15,8 +15,6 @@
     StackNode *scopes;
     ListNode *contexts;
     cursor_position error_cursor;
-    Scope *current_scope;
-    Scope *previous_scope;
     Context *current_context;
     Context *previous_context;
 %}
@@ -58,15 +56,20 @@ external_declaration: func_declaration
     | declaration
     ;
 
-declaration: LET declarator {
-        Symbol *sym = symbol_table_insert(current_scope->symbol_table, $2);
-        if (!sym) {
+declaration: LET declarator <ast>{
+        Symbol *sym = context_has_symbol(current_context, $2->value.symref->symbol);
+        if (sym) {
             yyerror(NULL);
             CIPL_PERROR_CURSOR("redeclaration of '%s'\n", error_cursor, $2->value.symref->symbol->name);
+            $$ = NULL;
+        } else {
+            $$ = ast_symref_init(
+                symbol_init_copy(context_declare_variable(current_context, $2->value.symref))
+            );
         }
+        ast_free($2);
     } ';' {
-        // the best we can do is show the error, but still push to AST
-        $$ = ast_declaration_init($2);
+        $$ = $3 ? ast_declaration_init($3) : NULL;
     }
     | LET error ';' {
         CIPL_PERROR_CURSOR("useless let in empty declaration\n", error_cursor);
@@ -75,24 +78,34 @@ declaration: LET declarator {
     }
     ;
 
-func_declaration: LET declarator '(' {
-        if (current_scope->index) {
+func_declaration: LET declarator '(' <ast>{
+        if (current_context->current_scope) {
             yyerror(NULL);
             CIPL_PERROR_CURSOR("CIPL forbids nested functions\n", error_cursor);
-            $<ast>$ = NULL;
-            yyerrok;
+            $$ = NULL;
+        } else {
+            Symbol *sym = context_has_symbol(current_context, $2->value.symref->symbol);
+            if (sym) {
+                yyerror(NULL);
+                CIPL_PERROR_CURSOR("redefinition of '%s'\n", error_cursor, $2->value.symref->symbol->name);
+                $$ = NULL;
+            } else {
+                previous_context = current_context;
+                list_push(&contexts, context_init($2->value.symref->symbol->name));
+                current_context = list_peek_last(&contexts);
+                $$ = ast_symref_init(
+                    symbol_init_copy(context_declare_function(previous_context, $2->value.symref))
+                );
+            }
         }
-        symbol_table_insert(current_scope->symbol_table, $2);
-        previous_scope = current_scope;
-        current_scope = scope_add(previous_scope);
+        ast_free($2);
     } id_list.opt ')' {
         LIST_FOR_EACH($5, {
-            symbol_table_insert(current_scope->symbol_table, __MAP_IT__->data);
+            context_declare_variable(current_context, ((AST *)__IT__->data)->value.symref);
         });
     } '{' block_item_list.opt '}' {
-        // printf("found a function\n");
-        $$ = ast_userfunc_init(current_scope, $2, ast_params_init($5), ast_blockitems_init($9));
-        current_scope = previous_scope;
+        $$ = ast_userfunc_init(current_context, $4, ast_params_init($5), ast_blockitems_init($9));
+        current_context = list_peek(&contexts, 0);
     }
     /* | LET error '(' id_list.opt ')' {
         CIPL_PERROR_CURSOR("expected identifier before '(' token\n", error_cursor);
@@ -104,12 +117,12 @@ func_declaration: LET declarator '(' {
 
 compound_stmt: '{' {
         // printf("found a code block on line:%d\n", cursor.line);
-        previous_scope = current_scope;
-        current_scope = scope_add(previous_scope);
+        // previous_scope = current_scope;
+        // current_scope = scope_add(previous_scope);
         // printf("starting scope: %d\n", current_scope->index);
     } block_item_list.opt '}' {
         // printf("leaving scope: %d on line:%d\n", current_scope->index, cursor.line);
-        current_scope = previous_scope;
+        // current_scope = previous_scope;
         $$ = ast_blockitems_init($3);
     }
     ;
@@ -149,10 +162,7 @@ expression: assign_expr
     ;
 
 assign_expr: eq_expr
-    | cast_expr '=' assign_expr {
-        // printf("found an assignment\n");
-        $$ = ast_assign_init($1, $3);
-    }
+    | cast_expr '=' assign_expr { $$ = ast_assign_init($1, $3); }
     ;
 
 eq_expr: rel_expr
@@ -195,15 +205,16 @@ arg_expr_list.opt: arg_expr_list
     ;
 
 primary_expr: id {
-        Symbol *sym = $1->value.symref->symbol;
-        Symbol *definedSym = scope_lookup(sym->name);
-        if (!definedSym) {
+        Symbol *sym = context_has_symbol(current_context, $1->value.symref->symbol);
+        if (!sym) {
             yyerror(NULL);
-            CIPL_PERROR("'%s' undeclared (first use in this function)\n", sym->name);
+            CIPL_PERROR_CURSOR("'%s' undeclared (first use in this function)\n", $1->value.symref->symbol->def_pos, $1->value.symref->symbol->name);
+            // $$ Cant be NULL because crash everything up, the solution is push to AST an undeclared variable
+            $$ = ast_symref_init(symbol_init_copy($1->value.symref->symbol)); // NULL
+        } else {
+            $$ = ast_symref_init(symbol_init_copy(sym));
         }
-        $1->value.symref->symbol = symbol_init_copy(definedSym ? definedSym : sym);
-        symbol_free(sym);
-        $$ = $1;
+        ast_free($1);
     }
     | constant
     | '(' expression ')' { $$ = $2; }

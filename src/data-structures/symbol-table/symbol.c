@@ -6,18 +6,22 @@
 
 #include "core/globals.h"
 
-Symbol *symbol_init(char *name, int scope, cursor_position pos) {
+Symbol *symbol_init(char *name, int scope, char *ctx_name,
+                    cursor_position pos) {
   Symbol *sym = calloc(1, sizeof(Symbol));
-  symbol_update(sym, name, scope, pos);
+  symbol_update(sym, name, scope, ctx_name, pos);
   return sym;
 }
 
 Symbol *symbol_init_copy(Symbol *other) {
-  return symbol_init(other->name, other->scope, other->def_pos);
+  return symbol_init(other->name, other->scope, other->context_name,
+                     other->def_pos);
 }
 
-void symbol_update(Symbol *sym, char *name, int scope, cursor_position pos) {
+void symbol_update(Symbol *sym, char *name, int scope, char *ctx_name,
+                   cursor_position pos) {
   sym->name = strdup(name);
+  sym->context_name = strdup(ctx_name);
   sym->scope = scope;
   sym->value = 0;
   sym->def_pos = pos;
@@ -25,6 +29,7 @@ void symbol_update(Symbol *sym, char *name, int scope, cursor_position pos) {
 
 void symbol_free(Symbol *sym) {
   free(sym->name);
+  free(sym->context_name);
   free(sym);
 }
 

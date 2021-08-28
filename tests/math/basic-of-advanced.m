@@ -1,14 +1,9 @@
-let a;
+let x;
 
 let fn() {
-    let x;
+    x = 1;
 }
 
-let b(c) {
-    let d;
-    {
-        let d;
-        let e;
-    }
-    d = 1 + 2;
+let main(a) {
+    x = 5 * a;
 }

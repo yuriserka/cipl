@@ -21,6 +21,7 @@ void ast_symref_print(AST *ast) {
   Symbol *sym = ast->value.symref->symbol;
   cursor_position pos = sym->def_pos;
   printf(
-      "symbol_ref: { name: %s, defined_at: { scope: %d, line: %d, col: %d, }, }",
-      sym->name, sym->scope, pos.line, pos.col);
+      "symbol_ref: { name: %s, defined_at: { context: %s, scope: %d, line: %d, "
+      "col: %d, }, }",
+      sym->name, sym->context_name, sym->scope, pos.line, pos.col);
 }

@@ -11,6 +11,7 @@ void symbol_table_delete(char *sym_name);
 void symbol_table_free(SymbolTable symbol_table);
 void symbol_table_print(SymbolTable symbol_table);
 
-struct cipl_ast;
+struct cipl_ast_symbol_ref;
 
-Symbol *symbol_table_insert(SymbolTable symbol_table, struct cipl_ast *symref);
+Symbol *symbol_table_get_valid_entry(SymbolTable symbol_table,
+                                     struct cipl_ast_symbol_ref *symref);

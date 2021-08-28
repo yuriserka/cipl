@@ -16,14 +16,16 @@ typedef struct cipl_symbol Symbol;
 
 struct cipl_symbol {
   char *name;
+  char *context_name;
   double value;
   int scope;
   cursor_position def_pos;
   // SymbolTypes type;
 };
 
-Symbol *symbol_init(char *name, int scope, cursor_position pos);
+Symbol *symbol_init(char *name, int scope, char *ctx_name, cursor_position pos);
 Symbol *symbol_init_copy(Symbol *other);
-void symbol_update(Symbol *sym, char *name, int scope, cursor_position pos);
+void symbol_update(Symbol *sym, char *name, int scope, char *ctx_name,
+                   cursor_position pos);
 void symbol_free(Symbol *sym);
 void symbol_print(Symbol *sym);

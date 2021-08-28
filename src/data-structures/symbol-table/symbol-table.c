@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "core/globals.h"
+#include "data-structures/ast/types/symbol-ref.h"
 #include "utils/io.h"
 
 SymbolTable symbol_table;
@@ -28,8 +29,8 @@ Symbol *symbol_table_lookup(SymbolTable symbol_table, char *sym_name) {
   return NULL;
 }
 
-Symbol *symbol_table_insert(SymbolTable symbol_table, AST *ast) {
-  Symbol *symref = ast->value.symref->symbol;
+Symbol *symbol_table_get_valid_entry(SymbolTable symbol_table, SymbolRefAST *ast) {
+  Symbol *symref = ast->symbol;
   Symbol *sp = &symbol_table[symbol_table_hash(symref->name) % NHASH];
   int scount = NHASH;
 
@@ -38,7 +39,6 @@ Symbol *symbol_table_insert(SymbolTable symbol_table, AST *ast) {
       return NULL;
     }
     if (!sp->name) {
-      symbol_update(sp, symref->name, current_scope->index, symref->def_pos);
       return sp;
     }
     if (++sp >= symbol_table + NHASH) sp = symbol_table;

@@ -9,6 +9,8 @@ typedef struct cipl_scope {
 } Scope;
 
 Scope *scope_init();
-Scope *scope_add(Scope *curr);
+Scope *scope_init_copy(Scope *other);
 void scope_free(Scope *scope);
-Symbol *scope_lookup(char *sym_name);
+
+Scope *scope_add(StackNode **scopes, Scope *curr);
+Symbol *scope_lookup(StackNode *scopes, char *sym_name);

@@ -20,6 +20,6 @@ double ast_params_eval(AST *ast) { return 0; }
 void ast_params_print(AST *ast) {
   ParamsAST *params_ast = ast->value.params;
   printf("params: { ");
-  LIST_FOR_EACH(params_ast->value, { ast_child_print(__MAP_IT__); });
+  LIST_FOR_EACH(params_ast->value, { ast_child_print(__IT__); });
   printf("}");
 }
