@@ -22,18 +22,12 @@ double ast_assign_eval(AST *ast) {
   return lhs->value.symref->symbol->value;
 }
 
-static void ast_assign_print_aux(const char *label, AST *ast) {
-  printf("%s: { ", label);
-  ast_print(ast);
-  printf("}, ");
-}
-
 void ast_assign_print(AST *ast) {
   AssignAST *assign_ast = ast->value.assignop;
   AST *lhs = ast->children->data;
   AST *rhs = ast->children->next->data;
   printf("assing_op: { op: %c, ", assign_ast->op);
-  ast_assign_print_aux("lhs", lhs);
-  ast_assign_print_aux("rhs", rhs);
+  ast_child_print_aux_label("lhs", lhs);
+  ast_child_print_aux_label("rhs", rhs);
   printf("}");
 }

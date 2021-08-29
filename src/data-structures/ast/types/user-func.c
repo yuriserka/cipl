@@ -12,6 +12,7 @@ AST *ast_userfunc_init(Context *context, AST *declarator, AST *params,
                        AST *stmts) {
   UserFuncAST *ast = calloc(1, sizeof(UserFuncAST));
   ast->context = context;
+  // update params scope_idx and context_name
   LIST_FOR_EACH(params->value.params->value, {
     Symbol *sym = ((AST *)__IT__->data)->value.symref->symbol;
     free(sym->context_name);
@@ -35,7 +36,7 @@ void ast_userfunc_print(AST *ast) {
   AST *params = list_peek(&ast->children, 1);
   AST *statements = list_peek(&ast->children, 2);
   printf("user_func: { ");
-  ast_print(name);
+  ast_child_print_aux_label("name", name);
   ast_print(params);
   ast_print(statements);
   printf("}");

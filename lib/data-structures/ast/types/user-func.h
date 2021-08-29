@@ -1,12 +1,10 @@
 #pragma once
 
-typedef struct cipl_ast_userfunc UserFuncAST;
-
 struct cipl_context;
 
-struct cipl_ast_userfunc {
+typedef struct cipl_ast_userfunc {
   struct cipl_context *context;
-};
+} UserFuncAST;
 
 #include "data-structures/ast/ast.h"
 

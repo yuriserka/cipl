@@ -39,8 +39,7 @@ void context_free(Context *ctx) {
 }
 
 Scope *context_push_scope(Context *ctx) {
-  Scope *scope =
-      scope_add(&ctx->scopes, stack_peek(&ctx->scopes));
+  Scope *scope = scope_add(&ctx->scopes, stack_peek(&ctx->scopes));
   ctx->current_scope = scope->index;
   return scope;
 }

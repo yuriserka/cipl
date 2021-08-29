@@ -3,6 +3,7 @@
 %{
     #include <stdarg.h>
 	#include <stdio.h>
+    #include <string.h>
 
     #include "data-structures/ast/ast.h"
     #include "data-structures/stack.h"
@@ -30,20 +31,23 @@
 
 %token<integer> NUMBER_INT
 %token<real> NUMBER_REAL
-%token LET
+%token LET IF RETURN ELSE FOR
 %token LT LE GT GE EQ NE
 %token<sym> NAME
 
 %type<ast> external_declaration declaration declarator func_declaration block_item statement
 %type<ast> expression assign_expr eq_expr rel_expr add_expr primary_expr id constant
-%type<ast> mult_expr cast_expr postfix_expr arg_expr_list arg_expr_list.opt compound_stmt
-%type<ast> expr_stmt
+%type<ast> mult_expr unary_expr postfix_expr compound_stmt
+%type<ast> expr_stmt jmp_stmt cond_stmt expression.opt iter_stmt
 
-%type<list> id_list.opt id_list block_item_list block_item_list.opt prog
+%type<list> id_list.opt id_list block_item_list block_item_list.opt prog arg_expr_list arg_expr_list.opt
 
 %right '!' '='
 %left '+' '-'
 %left '*' '/'
+
+%nonassoc THEN
+%nonassoc ELSE
 
 %start prog
 %%
@@ -79,7 +83,7 @@ declaration: LET declarator <ast>{
     ;
 
 func_declaration: LET declarator '(' <ast>{
-        if (current_context->current_scope) {
+        if (current_context->current_scope > 1) {
             yyerror(NULL);
             CIPL_PERROR_CURSOR("CIPL forbids nested functions\n", error_cursor);
             $$ = NULL;
@@ -115,15 +119,11 @@ func_declaration: LET declarator '(' <ast>{
     } */
     ;
 
-compound_stmt: '{' {
-        // printf("found a code block on line:%d\n", cursor.line);
-        // previous_scope = current_scope;
-        // current_scope = scope_add(previous_scope);
-        // printf("starting scope: %d\n", current_scope->index);
-    } block_item_list.opt '}' {
-        // printf("leaving scope: %d on line:%d\n", current_scope->index, cursor.line);
-        // current_scope = previous_scope;
-        $$ = ast_blockitems_init($3);
+/* uma das coisas mais bugadas do mundo....... */
+compound_stmt: '{' block_item_list.opt '}' {
+        // printf("dei match aqui?\n");
+        $$ = ast_blockitems_init($2);
+        current_context = list_peek(&contexts, current_context->current_scope - 1);
     }
     ;
 
@@ -141,6 +141,9 @@ block_item: declaration
 
 statement: expr_stmt
     | compound_stmt
+    | cond_stmt
+    | jmp_stmt
+    | iter_stmt
     ;
 
 declarator: id
@@ -158,11 +161,31 @@ id_list.opt: %empty { $$ = NULL; }
 expr_stmt: expression ';' { $$ = $1; }
     ;
 
+cond_stmt: IF '(' expression ')' statement %prec THEN {
+        $$ = ast_flow_init(current_context, $3, $5, NULL);
+    }
+    | IF '(' expression ')' statement ELSE statement {
+        $$ = ast_flow_init(current_context, $3, $5, $7);
+    }
+    ;
+
+jmp_stmt: RETURN expression ';' { $$ = ast_jmp_init($2); }
+    ;
+
+iter_stmt: FOR '(' expression.opt ';' expression.opt ';' expression.opt ')' statement {
+        $$ = ast_iter_init(current_context, $3, $5, $7, $9);
+    }
+    ;
+
 expression: assign_expr
     ;
 
+expression.opt: %empty { $$ = NULL; }
+    | expression
+    ;
+
 assign_expr: eq_expr
-    | cast_expr '=' assign_expr { $$ = ast_assign_init($1, $3); }
+    | unary_expr '=' assign_expr { $$ = ast_assign_init($1, $3); }
     ;
 
 eq_expr: rel_expr
@@ -182,22 +205,25 @@ add_expr: mult_expr
     | add_expr '-' mult_expr { $$ = ast_binop_init('-', $1, $3); }
     ;
 
-mult_expr: cast_expr
-    | mult_expr '*' cast_expr { $$ = ast_binop_init('*', $1, $3); }
-    | mult_expr '/' cast_expr { $$ = ast_binop_init('/', $1, $3); }
+mult_expr: unary_expr
+    | mult_expr '*' unary_expr { $$ = ast_binop_init('*', $1, $3); }
+    | mult_expr '/' unary_expr { $$ = ast_binop_init('/', $1, $3); }
     ;
 
-cast_expr: postfix_expr
-    | '!' cast_expr { $$ = ast_uniop_init('!', $2); }
-    | '-' cast_expr { $$ = ast_uniop_init('-', $2); }
+unary_expr: postfix_expr
+    | '!' unary_expr { $$ = ast_uniop_init('!', $2); }
+    | '-' unary_expr { $$ = ast_uniop_init('-', $2); }
     ;
 
 postfix_expr: primary_expr
-    | postfix_expr '(' arg_expr_list.opt ')'
+    | postfix_expr '(' arg_expr_list.opt ')' {
+        printf("function call!\n");
+        $$ = NULL;
+    }
     ;
 
-arg_expr_list: assign_expr
-    | arg_expr_list ',' assign_expr
+arg_expr_list: assign_expr { $$ = list_node_init($1); }
+    | arg_expr_list ',' assign_expr { list_push(&$$, $3); }
     ;
 
 arg_expr_list.opt: arg_expr_list
@@ -232,5 +258,5 @@ constant: NUMBER_REAL { $$ = ast_number_init(REAL, (NumberValue){ .real=$1 }); }
 void yyerror(char *s, ...) {
     /* just save where the error points to */
     error_cursor = cursor;
-    /* CIPL_PERROR_CURSOR("%s\n", error_cursor, s); */
+    CIPL_PERROR_CURSOR("%s\n", error_cursor, s);
 }

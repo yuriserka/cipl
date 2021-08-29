@@ -39,6 +39,26 @@
   return LET;
 }
 
+"if" {
+  cursor_position_update(0, yyleng);
+  return IF;
+}
+
+"else" {
+  cursor_position_update(0, yyleng);
+  return ELSE;
+}
+
+"return" {
+  cursor_position_update(0, yyleng);
+  return RETURN;
+}
+
+"for" {
+  cursor_position_update(0, yyleng);
+  return FOR;
+}
+
 "<" {
   cursor_position_update(0, yyleng);
   return LT;

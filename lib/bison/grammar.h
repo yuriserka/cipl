@@ -57,13 +57,18 @@ extern int yydebug;
     NUMBER_INT = 258,              /* NUMBER_INT  */
     NUMBER_REAL = 259,             /* NUMBER_REAL  */
     LET = 260,                     /* LET  */
-    LT = 261,                      /* LT  */
-    LE = 262,                      /* LE  */
-    GT = 263,                      /* GT  */
-    GE = 264,                      /* GE  */
-    EQ = 265,                      /* EQ  */
-    NE = 266,                      /* NE  */
-    NAME = 267                     /* NAME  */
+    IF = 261,                      /* IF  */
+    RETURN = 262,                  /* RETURN  */
+    ELSE = 263,                    /* ELSE  */
+    FOR = 264,                     /* FOR  */
+    LT = 265,                      /* LT  */
+    LE = 266,                      /* LE  */
+    GT = 267,                      /* GT  */
+    GE = 268,                      /* GE  */
+    EQ = 269,                      /* EQ  */
+    NE = 270,                      /* NE  */
+    NAME = 271,                    /* NAME  */
+    THEN = 272                     /* THEN  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -72,7 +77,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 22 "src/bison/math.y"
+#line 23 "src/bison/math.y"
 
 	struct cipl_ast *ast;
     struct cipl_symbol *sym;
@@ -81,7 +86,7 @@ union YYSTYPE
 	double real;
 	int integer;
 
-#line 85 "lib/bison/grammar.h"
+#line 90 "lib/bison/grammar.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

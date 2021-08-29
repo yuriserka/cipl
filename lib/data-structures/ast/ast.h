@@ -12,6 +12,8 @@ typedef struct cipl_ast AST;
 #include "data-structures/ast/types/cmp-op.h"
 #include "data-structures/ast/types/declaration.h"
 #include "data-structures/ast/types/flow.h"
+#include "data-structures/ast/types/iteration.h"
+#include "data-structures/ast/types/jmp.h"
 #include "data-structures/ast/types/num.h"
 #include "data-structures/ast/types/params.h"
 #include "data-structures/ast/types/symbol-ref.h"
@@ -33,6 +35,8 @@ typedef union cipl_ast_node_value {
   UserFuncAST *userfunc;
   ParamsAST *params;
   BlockItemListAST *blockitems;
+  JumpAST *jmp;
+  IterationAST *iteration;
 } AstNodeValue;
 
 struct cipl_ast {
@@ -43,6 +47,7 @@ struct cipl_ast {
 
 void ast_child_free(ListNode *node);
 void ast_child_print(ListNode *node);
+void ast_child_print_aux_label(const char *label, AST *ast);
 
 /*
  * 1st variadic arg = the actual value (some of AstNodeValue)
