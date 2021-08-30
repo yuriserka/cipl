@@ -14,6 +14,8 @@ Symbol *symbol_init(char *name, int scope, char *ctx_name,
   return sym;
 }
 
+void symbol_update_type(Symbol *sym, SymbolTypes type) { sym->type = type; }
+
 Symbol *symbol_init_copy(Symbol *other) {
   return symbol_init(other->name, other->scope, other->context_name,
                      other->def_pos);

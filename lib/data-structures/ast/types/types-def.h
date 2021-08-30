@@ -11,7 +11,6 @@ typedef enum cipl_ast_types {
   AST_SYM_REF,
   AST_BIN_OP,
   AST_UNI_OP,
-  AST_CMP_OP,
   AST_PROG,
   AST_USER_FUNC,
   AST_PARAMS,
@@ -39,8 +38,6 @@ static inline const char *ast_type2str(AstTypes type) {
       return "AST_BIN_OP";
     case AST_UNI_OP:
       return "AST_UNI_OP";
-    case AST_CMP_OP:
-      return "AST_CMP_OP";
     case AST_PROG:
       return "AST_PROG";
     case AST_USER_FUNC:

@@ -56,19 +56,28 @@ extern int yydebug;
     YYUNDEF = 257,                 /* "invalid token"  */
     NUMBER_INT = 258,              /* NUMBER_INT  */
     NUMBER_REAL = 259,             /* NUMBER_REAL  */
-    LET = 260,                     /* LET  */
-    IF = 261,                      /* IF  */
-    RETURN = 262,                  /* RETURN  */
-    ELSE = 263,                    /* ELSE  */
-    FOR = 264,                     /* FOR  */
-    LT = 265,                      /* LT  */
-    LE = 266,                      /* LE  */
-    GT = 267,                      /* GT  */
-    GE = 268,                      /* GE  */
-    EQ = 269,                      /* EQ  */
-    NE = 270,                      /* NE  */
-    NAME = 271,                    /* NAME  */
-    THEN = 272                     /* THEN  */
+    NAME = 260,                    /* NAME  */
+    BUILT_IN = 261,                /* BUILT_IN  */
+    MULT = 262,                    /* MULT  */
+    ADD = 263,                     /* ADD  */
+    REL = 264,                     /* REL  */
+    AND = 265,                     /* AND  */
+    OR = 266,                      /* OR  */
+    EQ = 267,                      /* EQ  */
+    COLON = 268,                   /* COLON  */
+    DL_DG = 269,                   /* DL_DG  */
+    EXCLAMATION = 270,             /* EXCLAMATION  */
+    PERCENT = 271,                 /* PERCENT  */
+    QUESTION = 272,                /* QUESTION  */
+    STR_LITERAL = 273,             /* STR_LITERAL  */
+    IF = 274,                      /* IF  */
+    ELSE = 275,                    /* ELSE  */
+    FOR = 276,                     /* FOR  */
+    RETURN = 277,                  /* RETURN  */
+    LET = 278,                     /* LET  */
+    NIL = 279,                     /* NIL  */
+    TYPE = 280,                    /* TYPE  */
+    THEN = 281                     /* THEN  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -82,11 +91,12 @@ union YYSTYPE
 	struct cipl_ast *ast;
     struct cipl_symbol *sym;
     struct cipl_list_node *list;
-    char *identifier;
+    char *literal;
+    char *operator;
 	double real;
 	int integer;
 
-#line 90 "lib/bison/grammar.h"
+#line 100 "lib/bison/grammar.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

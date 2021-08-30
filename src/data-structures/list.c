@@ -30,8 +30,6 @@ void list_free(ListNode *head, list_free_fn free_fn) {
 }
 
 void list_push(ListNode **head, void *data) {
-  if (!data) return;
-
   ListNode *new_node = list_node_init(data);
   ListNode *last = *head;
 

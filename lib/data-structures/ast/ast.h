@@ -9,7 +9,6 @@ typedef struct cipl_ast AST;
 #include "data-structures/ast/types/bin-op.h"
 #include "data-structures/ast/types/block_items.h"
 #include "data-structures/ast/types/builtin-fn.h"
-#include "data-structures/ast/types/cmp-op.h"
 #include "data-structures/ast/types/declaration.h"
 #include "data-structures/ast/types/flow.h"
 #include "data-structures/ast/types/iteration.h"
@@ -27,7 +26,6 @@ typedef union cipl_ast_node_value {
   SymbolRefAST *symref;
   NumberAST *number;
   BinOpAST *binop;
-  ComparisonAST *cmpop;
   UniOpAST *uniop;
   DeclarationAST *declaration;
   BuiltinFuncAST *builtinfn;

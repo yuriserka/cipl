@@ -51,7 +51,7 @@ Scope *context_pop_scope(Context *ctx) {
 }
 
 Symbol *context_declare_variable(Context *ctx, SymbolRefAST *symref) {
-  Scope *current_scope = stack_peek(&ctx->scopes);
+  Scope *current_scope = context_found_scope(ctx);
   Symbol *entry =
       symbol_table_get_valid_entry(current_scope->symbol_table, symref);
   symbol_update(entry, symref->symbol->name, current_scope->index, ctx->name,
@@ -60,7 +60,7 @@ Symbol *context_declare_variable(Context *ctx, SymbolRefAST *symref) {
 }
 
 Symbol *context_declare_function(Context *ctx, SymbolRefAST *symref) {
-  Scope *current_scope = stack_peek(&ctx->scopes);
+  Scope *current_scope = context_found_scope(ctx);
   Symbol *entry =
       symbol_table_get_valid_entry(current_scope->symbol_table, symref);
   symbol_update(entry, symref->symbol->name, current_scope->index, ctx->name,
@@ -72,4 +72,12 @@ void context_print(Context *ctx) {
   printf("{ name: %s, scopes: [ ", ctx->name);
   LIST_FOR_EACH_REVERSE(ctx->scopes, { scope_print(__IT__->data); });
   printf("], }, ");
+}
+
+Scope *context_found_scope(Context *ctx) {
+  LIST_FOR_EACH_REVERSE(ctx->scopes, {
+    Scope *scope = __IT__->data;
+    if (scope->index == ctx->current_scope) return scope;
+  });
+  return NULL;
 }

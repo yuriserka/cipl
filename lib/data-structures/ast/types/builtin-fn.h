@@ -1,10 +1,9 @@
 #pragma once
 
 typedef enum cipl_builtin_fn_types {
-  BUILTIN_FN_SQRT = 1,
-  BUILTIN_FN_EXP,
-  BUILTIN_FN_LOG,
-  BUILTIN_FN_PRINT,
+  BUILTIN_FN_WRITE = 1,
+  BUILTIN_FN_WRITELN,
+  BUILTIN_FN_READ,
 } BuiltInFuncTypes;
 
 typedef struct cipl_ast_builtin_fn {

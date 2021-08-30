@@ -38,9 +38,6 @@ AST *ast_cast(AstTypes type, int n_children, ...) {
     case AST_SYM_REF:
       ast->value = AST_INIT_UNION(symref, SymbolRefAST);
       break;
-    case AST_CMP_OP:
-      ast->value = AST_INIT_UNION(cmpop, ComparisonAST);
-      break;
     case AST_USER_FUNC:
       ast->value = AST_INIT_UNION(userfunc, UserFuncAST);
       break;
@@ -77,6 +74,8 @@ AST *ast_cast(AstTypes type, int n_children, ...) {
 void ast_child_free(ListNode *node) { ast_free(node->data); }
 
 void ast_free(AST *ast) {
+  if (!ast) return;
+
   switch (ast->type) {
     case AST_NUMBER_INT:
     case AST_NUMBER_REAL:
@@ -93,9 +92,6 @@ void ast_free(AST *ast) {
       break;
     case AST_SYM_REF:
       ast_symref_free(ast);
-      break;
-    case AST_CMP_OP:
-      ast_cmpop_free(ast);
       break;
     case AST_USER_FUNC:
       ast_userfunc_free(ast);
@@ -129,6 +125,8 @@ void ast_free(AST *ast) {
 }
 
 double ast_eval(AST *ast) {
+  if (!ast) return 0;
+
   switch (ast->type) {
     case AST_NUMBER_INT:
     case AST_NUMBER_REAL:
@@ -141,8 +139,6 @@ double ast_eval(AST *ast) {
       return ast_assign_eval(ast);
     case AST_SYM_REF:
       return ast_symref_eval(ast);
-    case AST_CMP_OP:
-      return ast_cmpop_eval(ast);
     case AST_USER_FUNC:
       return ast_userfunc_eval(ast);
     case AST_PARAMS:
@@ -175,6 +171,8 @@ void ast_child_print_aux_label(const char *label, AST *ast) {
 }
 
 void ast_print(AST *ast) {
+  if (!ast) return;
+
   switch (ast->type) {
     case AST_NUMBER_INT:
     case AST_NUMBER_REAL:
@@ -191,9 +189,6 @@ void ast_print(AST *ast) {
       break;
     case AST_SYM_REF:
       ast_symref_print(ast);
-      break;
-    case AST_CMP_OP:
-      ast_cmpop_print(ast);
       break;
     case AST_USER_FUNC:
       ast_userfunc_print(ast);

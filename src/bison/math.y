@@ -28,21 +28,26 @@
 	struct cipl_ast *ast;
     struct cipl_symbol *sym;
     struct cipl_list_node *list;
-    char *identifier;
+    char *literal;
+    char *operator;
 	double real;
 	int integer;
 }
 
 %token<integer> NUMBER_INT
 %token<real> NUMBER_REAL
-%token LET IF RETURN ELSE FOR
-%token LT LE GT GE EQ NE
-%token<sym> NAME
+%token<sym> NAME BUILT_IN
+%token<operator> MULT ADD REL AND OR EQ COLON DL_DG EXCLAMATION PERCENT QUESTION
+%token<literal> STR_LITERAL
+%token IF ELSE FOR RETURN LET NIL
+%token TYPE
+
+%type<operator> unary_ops
 
 %type<ast> external_declaration declaration declarator func_declaration block_item statement
 %type<ast> expression assign_expr eq_expr rel_expr add_expr primary_expr id constant
-%type<ast> mult_expr unary_expr postfix_expr compound_stmt
-%type<ast> expr_stmt jmp_stmt cond_stmt expression.opt iter_stmt
+%type<ast> mult_expr unary_expr postfix_expr compound_stmt logical_and_expr logical_or_expr
+%type<ast> expr_stmt jmp_stmt cond_stmt expression.opt iter_stmt dl_dg_expr list_ctr_expr
 
 %type<list> id_list.opt id_list block_item_list block_item_list.opt prog arg_expr_list arg_expr_list.opt
 
@@ -141,6 +146,7 @@ compound_stmt: '{' {
         }
     } block_item_list.opt '}' {
         $$ = ast_blockitems_init($3);
+        context_pop_scope(current_context);
     }
     ;
 
@@ -180,11 +186,9 @@ expr_stmt: expression ';' { $$ = $1; }
 
 cond_stmt: IF '(' expression ')' statement %prec THEN {
         $$ = ast_flow_init(current_context, $3, $5, NULL);
-        context_pop_scope(current_context);
     }
     | IF '(' expression ')' statement ELSE statement {
         $$ = ast_flow_init(current_context, $3, $5, $7);
-        context_pop_scope(current_context);
     }
     ;
 
@@ -193,7 +197,6 @@ jmp_stmt: RETURN expression ';' { $$ = ast_jmp_init($2); }
 
 iter_stmt: FOR '(' expression.opt ';' expression.opt ';' expression.opt ')' statement {
         $$ = ast_iter_init(current_context, $3, $5, $7, $9);
-        context_pop_scope(current_context);
     }
     ;
 
@@ -204,35 +207,77 @@ expression.opt: %empty { $$ = NULL; }
     | expression
     ;
 
-assign_expr: eq_expr
+assign_expr: dl_dg_expr
     | unary_expr '=' assign_expr { $$ = ast_assign_init($1, $3); }
     ;
 
+dl_dg_expr: list_ctr_expr
+    | dl_dg_expr DL_DG list_ctr_expr {
+        $$ = ast_binop_init($2, $1, $3);
+        free($2);
+    }
+    ;
+
+list_ctr_expr: logical_or_expr
+    | list_ctr_expr COLON logical_or_expr {
+        $$ = ast_binop_init($2, $1, $3);
+        free($2);
+    }
+    ;
+
+logical_or_expr: logical_and_expr
+    | logical_or_expr OR logical_and_expr {
+        $$ = ast_binop_init($2, $1, $3);
+        free($2);
+    }
+    ;
+
+logical_and_expr: eq_expr
+    | logical_and_expr AND eq_expr {
+        $$ = ast_binop_init($2, $1, $3);
+        free($2);
+    }
+    ;
+
 eq_expr: rel_expr
-    | eq_expr EQ rel_expr { $$ = ast_cmpop_init("==", $1, $3); }
-    | eq_expr NE rel_expr { $$ = ast_cmpop_init("!=", $1, $3); }
+    | eq_expr EQ rel_expr {
+        $$ = ast_binop_init($2, $1, $3);
+        free($2);
+    }
     ;
 
 rel_expr: add_expr
-    | rel_expr LT add_expr { $$ = ast_cmpop_init("<", $1, $3); }
-    | rel_expr LE add_expr { $$ = ast_cmpop_init("<=", $1, $3); }
-    | rel_expr GT add_expr { $$ = ast_cmpop_init(">", $1, $3); }
-    | rel_expr GE add_expr { $$ = ast_cmpop_init(">=", $1, $3); }
+    | rel_expr REL add_expr {
+        $$ = ast_binop_init($2, $1, $3);
+        free($2);
+    }
     ;
 
 add_expr: mult_expr
-    | add_expr '+' mult_expr { $$ = ast_binop_init('+', $1, $3); }
-    | add_expr '-' mult_expr { $$ = ast_binop_init('-', $1, $3); }
+    | add_expr ADD mult_expr {
+        $$ = ast_binop_init($2, $1, $3);
+        free($2);
+    }
     ;
 
 mult_expr: unary_expr
-    | mult_expr '*' unary_expr { $$ = ast_binop_init('*', $1, $3); }
-    | mult_expr '/' unary_expr { $$ = ast_binop_init('/', $1, $3); }
+    | mult_expr MULT unary_expr {
+        $$ = ast_binop_init($2, $1, $3);
+        free($2);
+    }
     ;
 
 unary_expr: postfix_expr
-    | '!' unary_expr { $$ = ast_uniop_init('!', $2); }
-    | '-' unary_expr { $$ = ast_uniop_init('-', $2); }
+    | unary_ops unary_expr {
+        $$ = ast_uniop_init($1, $2);
+        free($1);
+    }
+    ;
+
+unary_ops: EXCLAMATION
+    | PERCENT
+    | ADD
+    | QUESTION
     ;
 
 postfix_expr: primary_expr
@@ -267,10 +312,12 @@ primary_expr: id {
     ;
 
 id: NAME { $$ = ast_symref_init($1); }
+    | BUILT_IN { $$ = ast_symref_init($1); }
     ;
 
 constant: NUMBER_REAL { $$ = ast_number_init(REAL, (NumberValue){ .real=$1 }); }
     | NUMBER_INT { $$ = ast_number_init(INTEGER, (NumberValue){ .integer=$1 }); }
+    | NIL { }
     ;
 
 %%

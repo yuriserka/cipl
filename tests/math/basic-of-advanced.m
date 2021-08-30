@@ -1,5 +1,30 @@
 let global_var;
 
+let filter(integer) {
+    return integer <= 10;
+}
+
+let map(integer) {
+    return integer * 2;
+}
+
+let operators() {
+    let x;
+    let list;
+    x = (x || 15) && (x != 4);
+    if (x == 10) {
+        let x;
+        x = 1 > 2 <= 3 >= 0 < -5;
+    } else {
+        list = (x = +1 + -2 - !(x == 1) * 4 / 5) : list;
+        list = filter << (map >> list);
+        x = x + -?list;
+        let tail;
+        tail = !list;
+        tail = %list;
+    }
+}
+
 let conditional(a) {
     if (1) {
         let a;
@@ -32,22 +57,18 @@ let iteration(it, max) {
     return ret;
 }
 
-// let panic() {
-//     writeln("panic! something went wrong\n");
-// }
-
 let main(argc, argv) {
     if (argc < 2 + !argv) {
-        // panic();
         return 1;
     }
 
     global_var = 0;
-    // conditional(global_var);
-    // iteration(it, max);
-
     let i;
+
     for (i = 2; ; ) {}
-    for (; i < 10 ;)
+    for (; i < 10 ;) {}
     for (;;i = i + 1) {}
+    for (;;) {
+        let loop;
+    }
 }
