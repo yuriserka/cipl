@@ -47,7 +47,7 @@
 %type<ast> external_declaration declaration declarator func_declaration block_item statement
 %type<ast> expression assign_expr eq_expr rel_expr add_expr primary_expr id constant
 %type<ast> mult_expr unary_expr postfix_expr compound_stmt logical_and_expr logical_or_expr
-%type<ast> expr_stmt jmp_stmt cond_stmt expression.opt iter_stmt dl_dg_expr list_ctr_expr
+%type<ast> expr_stmt jmp_stmt cond_stmt expression.opt iter_stmt dl_dg_expr
 
 %type<list> id_list.opt id_list block_item_list block_item_list.opt prog arg_expr_list arg_expr_list.opt
 
@@ -207,22 +207,8 @@ expression.opt: %empty { $$ = NULL; }
     | expression
     ;
 
-assign_expr: dl_dg_expr
+assign_expr: logical_or_expr
     | unary_expr '=' assign_expr { $$ = ast_assign_init($1, $3); }
-    ;
-
-dl_dg_expr: list_ctr_expr
-    | dl_dg_expr DL_DG list_ctr_expr {
-        $$ = ast_binop_init($2, $1, $3);
-        free($2);
-    }
-    ;
-
-list_ctr_expr: logical_or_expr
-    | list_ctr_expr COLON logical_or_expr {
-        $$ = ast_binop_init($2, $1, $3);
-        free($2);
-    }
     ;
 
 logical_or_expr: logical_and_expr
@@ -246,8 +232,19 @@ eq_expr: rel_expr
     }
     ;
 
-rel_expr: add_expr
-    | rel_expr REL add_expr {
+rel_expr: dl_dg_expr
+    | rel_expr REL dl_dg_expr {
+        $$ = ast_binop_init($2, $1, $3);
+        free($2);
+    }
+    ;
+
+dl_dg_expr: add_expr
+    | add_expr DL_DG dl_dg_expr {
+        $$ = ast_binop_init($2, $1, $3);
+        free($2);
+    }
+    | add_expr COLON dl_dg_expr {
         $$ = ast_binop_init($2, $1, $3);
         free($2);
     }
