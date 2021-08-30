@@ -90,8 +90,7 @@
 }
 
 [a-zA-Z_][a-zA-Z0-9_]* {
-  Scope *cs = stack_peek(&current_context->scopes);
-  yylval.sym = symbol_init(yytext, cs->index, current_context->name, cursor);
+  yylval.sym = symbol_found(yytext, cursor);
   cursor_position_update(0, yyleng);
   return NAME;
 }

@@ -56,3 +56,9 @@ Symbol *scope_lookup(StackNode *scopes, char *sym_name) {
   });
   return NULL;
 }
+
+void scope_print(Scope *scope) {
+  printf("{ index: %d, symbol_table_entries: [ ", scope->index);
+  symbol_table_print(scope->symbol_table);
+  printf("], }, ");
+}

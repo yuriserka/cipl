@@ -1,4 +1,5 @@
 %define lr.type canonical-lr
+%define parse.error verbose
 %define api.header.include {"bison/grammar.h"}
 %{
     #include <stdarg.h>
@@ -18,6 +19,9 @@
     cursor_position error_cursor;
     Context *current_context;
     Context *previous_context;
+    Scope *params_scope;
+
+    void free_scope_cb(StackNode *node) { scope_free(node->data); }
 %}
 
 %union {
@@ -42,10 +46,6 @@
 
 %type<list> id_list.opt id_list block_item_list block_item_list.opt prog arg_expr_list arg_expr_list.opt
 
-%right '!' '='
-%left '+' '-'
-%left '*' '/'
-
 %nonassoc THEN
 %nonassoc ELSE
 
@@ -61,21 +61,25 @@ external_declaration: func_declaration
     ;
 
 declaration: LET declarator <ast>{
-        Symbol *sym = context_has_symbol(current_context, $2->value.symref->symbol);
-        if (sym) {
-            yyerror(NULL);
-            CIPL_PERROR_CURSOR("redeclaration of '%s'\n", error_cursor, $2->value.symref->symbol->name);
-            $$ = NULL;
-        } else {
-            $$ = ast_symref_init(
-                symbol_init_copy(context_declare_variable(current_context, $2->value.symref))
-            );
-        }
+        // Symbol *sym = context_has_symbol(current_context, $2->value.symref->symbol);
+        // if (sym) {
+        //     yyerror(NULL);
+        //     CIPL_PERROR_CURSOR("redeclaration of '%s'\n", error_cursor, $2->value.symref->symbol->name);
+        //     $$ = NULL;
+        // } else {
+        //     $$ = ast_symref_init(
+        //         symbol_init_copy(context_declare_variable(current_context, $2->value.symref))
+        //     );
+        // }
+        $$ = ast_symref_init(
+            symbol_init_copy(context_declare_variable(current_context, $2->value.symref))
+        );
         ast_free($2);
     } ';' {
         $$ = $3 ? ast_declaration_init($3) : NULL;
     }
     | LET error ';' {
+        yyerror(NULL);
         CIPL_PERROR_CURSOR("useless let in empty declaration\n", error_cursor);
         $$ = NULL;
         yyerrok;
@@ -88,42 +92,55 @@ func_declaration: LET declarator '(' <ast>{
             CIPL_PERROR_CURSOR("CIPL forbids nested functions\n", error_cursor);
             $$ = NULL;
         } else {
-            Symbol *sym = context_has_symbol(current_context, $2->value.symref->symbol);
-            if (sym) {
-                yyerror(NULL);
-                CIPL_PERROR_CURSOR("redefinition of '%s'\n", error_cursor, $2->value.symref->symbol->name);
-                $$ = NULL;
-            } else {
-                previous_context = current_context;
-                list_push(&contexts, context_init($2->value.symref->symbol->name));
-                current_context = list_peek_last(&contexts);
-                $$ = ast_symref_init(
-                    symbol_init_copy(context_declare_function(previous_context, $2->value.symref))
-                );
-            }
+            // Symbol *sym = context_has_symbol(current_context, $2->value.symref->symbol);
+            // if (sym) {
+            //     yyerror(NULL);
+            //     CIPL_PERROR_CURSOR("redefinition of '%s'\n", error_cursor, $2->value.symref->symbol->name);
+            //     $$ = NULL;
+            // } else {
+            //     previous_context = current_context;
+            //     list_push(&contexts, context_init($2->value.symref->symbol->name));
+            //     current_context = list_peek_last(&contexts);
+            //     $$ = ast_symref_init(
+            //         symbol_init_copy(context_declare_function(previous_context, $2->value.symref))
+            //     );
+            // }
+            previous_context = current_context;
+            list_push(&contexts, context_init($2->value.symref->symbol->name));
+            current_context = list_peek_last(&contexts);
+            $$ = ast_symref_init(
+                symbol_init_copy(context_declare_function(previous_context, $2->value.symref))
+            );
         }
         ast_free($2);
     } id_list.opt ')' {
+        context_push_scope(current_context);
         LIST_FOR_EACH($5, {
+            symbol_update_context(((AST *)__IT__->data)->value.symref->symbol, current_context);
             context_declare_variable(current_context, ((AST *)__IT__->data)->value.symref);
         });
-    } '{' block_item_list.opt '}' {
-        $$ = ast_userfunc_init(current_context, $4, ast_params_init($5), ast_blockitems_init($9));
-        current_context = list_peek(&contexts, 0);
+        // hack to save the scope of params and append to the scope of the body
+        {
+            params_scope = scope_init_copy(stack_peek(&current_context->scopes));
+            stack_pop(&current_context->scopes, free_scope_cb);
+        }
+    } compound_stmt {
+        $$ = ast_userfunc_init(current_context, $4, ast_params_init($5), $8);
+        current_context = previous_context;
     }
-    /* | LET error '(' id_list.opt ')' {
-        CIPL_PERROR_CURSOR("expected identifier before '(' token\n", error_cursor);
-        list_free($4, ast_child_free);
-        $$ = NULL;
-        yyerrok;
-    } */
     ;
 
-/* uma das coisas mais bugadas do mundo....... */
-compound_stmt: '{' block_item_list.opt '}' {
-        // printf("dei match aqui?\n");
-        $$ = ast_blockitems_init($2);
-        current_context = list_peek(&contexts, current_context->current_scope - 1);
+compound_stmt: '{' {
+        // hack to update the current scope 
+        if (params_scope) {
+            stack_push(&current_context->scopes, params_scope);
+            current_context->current_scope = ((Scope *)stack_peek(&current_context->scopes))->index;
+            params_scope = NULL;
+        } else {
+            context_push_scope(current_context);
+        }
+    } block_item_list.opt '}' {
+        $$ = ast_blockitems_init($3);
     }
     ;
 
@@ -163,9 +180,11 @@ expr_stmt: expression ';' { $$ = $1; }
 
 cond_stmt: IF '(' expression ')' statement %prec THEN {
         $$ = ast_flow_init(current_context, $3, $5, NULL);
+        context_pop_scope(current_context);
     }
     | IF '(' expression ')' statement ELSE statement {
         $$ = ast_flow_init(current_context, $3, $5, $7);
+        context_pop_scope(current_context);
     }
     ;
 
@@ -174,6 +193,7 @@ jmp_stmt: RETURN expression ';' { $$ = ast_jmp_init($2); }
 
 iter_stmt: FOR '(' expression.opt ';' expression.opt ';' expression.opt ')' statement {
         $$ = ast_iter_init(current_context, $3, $5, $7, $9);
+        context_pop_scope(current_context);
     }
     ;
 
@@ -217,7 +237,6 @@ unary_expr: postfix_expr
 
 postfix_expr: primary_expr
     | postfix_expr '(' arg_expr_list.opt ')' {
-        printf("function call!\n");
         $$ = NULL;
     }
     ;
@@ -231,15 +250,16 @@ arg_expr_list.opt: arg_expr_list
     ;
 
 primary_expr: id {
-        Symbol *sym = context_has_symbol(current_context, $1->value.symref->symbol);
-        if (!sym) {
-            yyerror(NULL);
-            CIPL_PERROR_CURSOR("'%s' undeclared (first use in this function)\n", $1->value.symref->symbol->def_pos, $1->value.symref->symbol->name);
-            // $$ Cant be NULL because crash everything up, the solution is push to AST an undeclared variable
-            $$ = ast_symref_init(symbol_init_copy($1->value.symref->symbol)); // NULL
-        } else {
-            $$ = ast_symref_init(symbol_init_copy(sym));
-        }
+        // Symbol *sym = context_search_symbol_scopes(current_context, $1->value.symref->symbol);
+        // if (!sym) {
+        //     yyerror(NULL);
+        //     CIPL_PERROR_CURSOR("'%s' undeclared (first use in this function)\n", $1->value.symref->symbol->def_pos, $1->value.symref->symbol->name);
+        //     $$ = NULL;
+        // } else {
+        //     $$ = ast_symref_init(symbol_init_copy(sym));
+        // }
+        symbol_update_context($1->value.symref->symbol, current_context);
+        $$ = ast_symref_init(symbol_init_copy($1->value.symref->symbol));
         ast_free($1);
     }
     | constant
@@ -255,8 +275,9 @@ constant: NUMBER_REAL { $$ = ast_number_init(REAL, (NumberValue){ .real=$1 }); }
 
 %%
 
-void yyerror(char *s, ...) {
+void yyerror(const char *s, ...) {
     /* just save where the error points to */
     error_cursor = cursor;
-    CIPL_PERROR_CURSOR("%s\n", error_cursor, s);
+    if (s) CIPL_PERROR_CURSOR("%s\n", error_cursor, s);
+    ++errors_count;
 }

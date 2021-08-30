@@ -60,18 +60,21 @@ int cipl_main(int argc, char *argv[]) {
   yyin = pfile;
   (filename = strrchr(argv[1], '/')) ? ++filename : (filename = argv[1]);
 
-  yyparse();
+  int got_erros = yyparse() || errors_count;
 
-  if (errors_count) {
-    CIPL_PRINTF_COLOR(RED, "\n%d error%s generated.\n", errors_count,
+  if (got_erros) {
+    CIPL_PRINTF_COLOR(BRED, "\n%d error%s", errors_count,
                       errors_count > 1 ? "s" : "");
+    CIPL_PRINTF(" generated.\nisn't possible to print the AST.\n");
   }
 
   fclose(yyin);
   yylex_destroy();
 
-  print_ast();
-  print_all_contexts();
+  if (!got_erros) {
+    print_ast();
+    print_all_contexts();
+  }
 
   ast_free(root);
   LIST_FREE(contexts, { context_free(__IT__->data); });

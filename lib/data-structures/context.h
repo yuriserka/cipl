@@ -16,6 +16,8 @@ void context_free(Context *context);
 void context_print(Context *ctx);
 
 Scope *context_push_scope(Context *ctx);
+Scope *context_pop_scope(Context *ctx);
 Symbol *context_has_symbol(Context *ctx, Symbol *sym);
+Symbol *context_search_symbol_scopes(Context *ctx, Symbol *sym);
 Symbol *context_declare_variable(Context *ctx, SymbolRefAST *symref);
 Symbol *context_declare_function(Context *ctx, SymbolRefAST *sym);

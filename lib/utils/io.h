@@ -22,7 +22,6 @@
     CIPL_PRINTF_COLOR(BRED, "error: ");                           \
     CIPL_PRINTF(__cipl_err_out_fmt, ##__VA_ARGS__);               \
     cursor = b4;                                                  \
-    ++errors_count;                                               \
   }
 
 #define CIPL_PWARN(__cipl_wrn_out_fmt, ...) \

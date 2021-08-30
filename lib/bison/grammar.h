@@ -77,7 +77,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 23 "src/bison/math.y"
+#line 27 "src/bison/math.y"
 
 	struct cipl_ast *ast;
     struct cipl_symbol *sym;

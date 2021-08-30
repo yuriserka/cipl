@@ -11,25 +11,26 @@ Context *context_init(char *name) {
   Context *ctx = calloc(1, sizeof(Context));
   Context *global_ctx_defined = list_peek(&contexts, 0);
   ctx->current_scope = 0;
-
-  if (global_ctx_defined) {
-    ctx->scopes =
-        list_node_init(scope_init_copy(global_ctx_defined->scopes->data));
-    context_push_scope(ctx);
-  } else {
-    ctx->scopes = list_node_init(scope_init());
-  }
+  ctx->scopes =
+      global_ctx_defined
+          ? list_node_init(scope_init_copy(global_ctx_defined->scopes->data))
+          : list_node_init(scope_init());
   ctx->name = strdup(name);
   return ctx;
 }
 
-Symbol *context_has_symbol(Context *ctx, Symbol *sym) {
+Symbol *context_search_symbol_scopes(Context *ctx, Symbol *sym) {
   LIST_FOR_EACH_REVERSE(ctx->scopes, {
     Scope *scope = __IT__->data;
     Symbol *sym_entry = symbol_table_lookup(scope->symbol_table, sym->name);
     if (sym_entry) return sym_entry;
   });
   return NULL;
+}
+
+Symbol *context_has_symbol(Context *ctx, Symbol *sym) {
+  Scope *scope = stack_peek(&ctx->scopes);
+  return symbol_table_lookup(scope->symbol_table, sym->name);
 }
 
 void context_free(Context *ctx) {
@@ -42,6 +43,11 @@ Scope *context_push_scope(Context *ctx) {
   Scope *scope = scope_add(&ctx->scopes, stack_peek(&ctx->scopes));
   ctx->current_scope = scope->index;
   return scope;
+}
+
+Scope *context_pop_scope(Context *ctx) {
+  --ctx->current_scope;
+  return list_peek_reverse(&ctx->scopes, ctx->current_scope);
 }
 
 Symbol *context_declare_variable(Context *ctx, SymbolRefAST *symref) {
@@ -64,11 +70,6 @@ Symbol *context_declare_function(Context *ctx, SymbolRefAST *symref) {
 
 void context_print(Context *ctx) {
   printf("{ name: %s, scopes: [ ", ctx->name);
-  LIST_FOR_EACH_REVERSE(ctx->scopes, {
-    Scope *s = __IT__->data;
-    printf("{ index: %d, symbol_table_entries: [ ", s->index);
-    symbol_table_print(s->symbol_table);
-    printf("], }, ");
-  });
+  LIST_FOR_EACH_REVERSE(ctx->scopes, { scope_print(__IT__->data); });
   printf("], }, ");
 }

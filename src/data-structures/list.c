@@ -59,6 +59,14 @@ void *list_peek(ListNode **head, unsigned int index) {
   return NULL;
 }
 
+void *list_peek_reverse(ListNode **head, unsigned int index) {
+  int i = 0;
+  for (ListNode *it = *head; it; it = it->parent, ++i) {
+    if (i == index) return it->data;
+  }
+  return NULL;
+}
+
 void *list_peek_last(ListNode **head) {
   ListNode *it = *head;
   while (it->next) it = it->next;

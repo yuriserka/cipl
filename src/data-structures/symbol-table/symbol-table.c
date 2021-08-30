@@ -9,10 +9,9 @@
 SymbolTable symbol_table;
 
 static unsigned symbol_table_hash(char *sym_name) {
-  unsigned int hash = 0;
-  char *pname = sym_name;
-  unsigned c;
-  while ((c = *pname++)) hash = hash * 9 ^ c;
+  unsigned long hash = 0;
+  int c;
+  while ((c = *sym_name++)) hash = c + (hash << 6) + (hash << 16) - hash;
   return hash;
 }
 
@@ -29,7 +28,8 @@ Symbol *symbol_table_lookup(SymbolTable symbol_table, char *sym_name) {
   return NULL;
 }
 
-Symbol *symbol_table_get_valid_entry(SymbolTable symbol_table, SymbolRefAST *ast) {
+Symbol *symbol_table_get_valid_entry(SymbolTable symbol_table,
+                                     SymbolRefAST *ast) {
   Symbol *symref = ast->symbol;
   Symbol *sp = &symbol_table[symbol_table_hash(symref->name) % NHASH];
   int scount = NHASH;

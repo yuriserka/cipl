@@ -17,6 +17,7 @@ void list_node_free(ListNode *node, list_free_fn free_cb);
 void list_push(ListNode **head, void *data);
 void list_pop(ListNode **head, list_free_fn free_cb);
 void *list_peek(ListNode **head, unsigned int index);
+void *list_peek_reverse(ListNode **head, unsigned int index);
 void *list_peek_last(ListNode **head);
 
 #define LIST_FOR_EACH(__FE_ARG__, __CODE__) \

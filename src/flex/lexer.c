@@ -885,8 +885,7 @@ case 15:
 YY_RULE_SETUP
 #line 92 "src/flex/math.l"
 {
-  Scope *cs = stack_peek(&current_context->scopes);
-  yylval.sym = symbol_init(yytext, cs->index, current_context->name, cursor);
+  yylval.sym = symbol_found(yytext, cursor);
   cursor_position_update(0, yyleng);
   return NAME;
 }
@@ -894,14 +893,14 @@ YY_RULE_SETUP
 case 16:
 /* rule 16 can match eol */
 YY_RULE_SETUP
-#line 99 "src/flex/math.l"
+#line 98 "src/flex/math.l"
 {
   cursor_position_update(1, 0);
 }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 103 "src/flex/math.l"
+#line 102 "src/flex/math.l"
 {
   cursor_position_update(0, yyleng);
   // nao retornar nada significa que ta retornando o epsilon
@@ -909,7 +908,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 108 "src/flex/math.l"
+#line 107 "src/flex/math.l"
 {
   CIPL_PERROR("unexpected character: %s\n", yytext);
   cursor_position_update(0, yyleng);
@@ -917,10 +916,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 113 "src/flex/math.l"
+#line 112 "src/flex/math.l"
 ECHO;
 	YY_BREAK
-#line 924 "src/flex/lexer.c"
+#line 923 "src/flex/lexer.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1888,5 +1887,5 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 113 "src/flex/math.l"
+#line 112 "src/flex/math.l"
 

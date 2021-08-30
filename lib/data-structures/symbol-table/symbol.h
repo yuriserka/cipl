@@ -23,8 +23,13 @@ struct cipl_symbol {
   // SymbolTypes type;
 };
 
+struct cipl_context;
+
 Symbol *symbol_init(char *name, int scope, char *ctx_name, cursor_position pos);
 Symbol *symbol_init_copy(Symbol *other);
+Symbol *symbol_found(char *name, cursor_position pos);
+void symbol_update_context(Symbol *sym, struct cipl_context *ctx);
+
 void symbol_update(Symbol *sym, char *name, int scope, char *ctx_name,
                    cursor_position pos);
 void symbol_free(Symbol *sym);

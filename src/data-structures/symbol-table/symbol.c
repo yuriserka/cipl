@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "core/globals.h"
+#include "data-structures/context.h"
 
 Symbol *symbol_init(char *name, int scope, char *ctx_name,
                     cursor_position pos) {
@@ -16,6 +17,18 @@ Symbol *symbol_init(char *name, int scope, char *ctx_name,
 Symbol *symbol_init_copy(Symbol *other) {
   return symbol_init(other->name, other->scope, other->context_name,
                      other->def_pos);
+}
+
+Symbol *symbol_found(char *name, cursor_position pos) {
+  Symbol *sym = calloc(1, sizeof(Symbol));
+  sym->name = strdup(name);
+  sym->def_pos = pos;
+  return sym;
+}
+
+void symbol_update_context(Symbol *sym, Context *ctx) {
+  sym->context_name = strdup(ctx->name);
+  sym->scope = ctx->current_scope;
 }
 
 void symbol_update(Symbol *sym, char *name, int scope, char *ctx_name,

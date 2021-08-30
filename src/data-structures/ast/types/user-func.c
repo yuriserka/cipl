@@ -12,14 +12,6 @@ AST *ast_userfunc_init(Context *context, AST *declarator, AST *params,
                        AST *stmts) {
   UserFuncAST *ast = calloc(1, sizeof(UserFuncAST));
   ast->context = context;
-  // update params scope_idx and context_name
-  LIST_FOR_EACH(params->value.params->value, {
-    Symbol *sym = ((AST *)__IT__->data)->value.symref->symbol;
-    free(sym->context_name);
-    sym->context_name = strdup(context->name);
-    sym->scope = context->current_scope;
-  });
-
   return ast_cast(AST_USER_FUNC, 3, ast, declarator, params, stmts);
 }
 
