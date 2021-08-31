@@ -40,7 +40,8 @@ REAL_NUMBER ({DIGIT}*[.])?{DIGIT}+([eE][+-]?{DIGIT}+)?
 
 SINGLELINE_COMMENT "//"[^\n]*
 
-RESERVED_KEYWORDS if|else|return|for|NIL|let
+RESERVED_KEYWORDS if|else|return|for|NIL
+BUILTIN_FUNCTIONS read|write|writeln
 
 %x SCANNING_STR_LITERAL
 %x SCANNING_MULTILINE_COMMENT
@@ -70,7 +71,9 @@ RESERVED_KEYWORDS if|else|return|for|NIL|let
     case 'f': return FOR;
     case 'r': return RETURN;
     case 'l': return LET;
-    case 'N': return NIL;
+    case 'N': 
+    yylval.integer = 0;
+    return NIL;
   }
 }
 
@@ -89,12 +92,7 @@ RESERVED_KEYWORDS if|else|return|for|NIL|let
   return LIST;
 }
 
-"NIL" {
-  yylval.integer = 0;
-  return NIL;
-}
-
-{ID} {
+{ID}|{BUILTIN_FUNCTIONS} {
   yylval.sym = symbol_found(yytext, cursor);
   cursor_position_update(0, yyleng);
   return NAME;

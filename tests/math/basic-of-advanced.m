@@ -69,6 +69,37 @@ int test_inner_scopes() {
     float after_two;
 }
 
+int test_builtin() {
+    float nota1;
+    float nota2;
+    float media;
+
+    write("Digite a primeira nota do aluno: ");
+    read(nota1);
+
+    write("Digite a segunda nota do aluno: ");
+    read(nota2);
+
+    media = (nota1 + nota2) / 2;
+
+    write("Media do aluno = ");
+    writeln(media);
+
+    if (media >= 9.0) {
+        writeln("SS");
+    } else {
+        if (media >= 7.0) {
+            writeln("MS");
+        } else {
+            if (media >= 5.0) {
+                writeln("MM");
+            } else {
+                writeln("--Reprovado--");
+            }
+        }
+    }
+}
+
 int main(int argc, int argv) {
     if (argc < 2 + !argv) {
         return 1;
@@ -93,6 +124,8 @@ int main(int argc, int argv) {
 
     int ret;
     ret = conditional(iteration(i, 15));
+
+    test_builtin();
 
     return ret;
 }

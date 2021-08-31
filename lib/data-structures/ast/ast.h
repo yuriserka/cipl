@@ -8,14 +8,15 @@ typedef struct cipl_ast AST;
 #include "data-structures/ast/types/assign.h"
 #include "data-structures/ast/types/bin-op.h"
 #include "data-structures/ast/types/block-items.h"
-#include "data-structures/ast/types/func-call.h"
 #include "data-structures/ast/types/builtin-fn.h"
 #include "data-structures/ast/types/declaration.h"
 #include "data-structures/ast/types/flow.h"
+#include "data-structures/ast/types/func-call.h"
 #include "data-structures/ast/types/iteration.h"
 #include "data-structures/ast/types/jmp.h"
 #include "data-structures/ast/types/num.h"
 #include "data-structures/ast/types/params.h"
+#include "data-structures/ast/types/str-literal.h"
 #include "data-structures/ast/types/symbol-ref.h"
 #include "data-structures/ast/types/types-def.h"
 #include "data-structures/ast/types/uni-op.h"
@@ -37,6 +38,7 @@ typedef union cipl_ast_node_value {
   JumpAST *jmp;
   IterationAST *iteration;
   FunctionCallAST *funcall;
+  StringLiteralAST *str;
 } AstNodeValue;
 
 struct cipl_ast {

@@ -58,6 +58,9 @@ AST *ast_cast(AstTypes type, int n_children, ...) {
     case AST_FUNC_CALL:
       ast->value = AST_INIT_UNION(funcall, FunctionCallAST);
       break;
+    case AST_STR_LITERAL:
+      ast->value = AST_INIT_UNION(str, StringLiteralAST);
+      break;
     case AST_PROG:
       break;
   }
@@ -116,6 +119,9 @@ void ast_free(AST *ast) {
     case AST_FUNC_CALL:
       ast_funcall_free(ast);
       break;
+    case AST_STR_LITERAL:
+      ast_str_free(ast);
+      break;
     case AST_PROG:
       LIST_FREE(ast->children, { ast_free(__IT__->data); });
       break;
@@ -156,6 +162,8 @@ double ast_eval(AST *ast) {
       return ast_iter_eval(ast);
     case AST_FUNC_CALL:
       return ast_funcall_eval(ast);
+    case AST_STR_LITERAL:
+      return ast_str_eval(ast);
     case AST_PROG:
       return ast_eval(ast->children->data);
     default:
@@ -214,6 +222,9 @@ void ast_print(AST *ast) {
     case AST_FUNC_CALL:
       ast_funcall_print(ast);
       break;
+    case AST_STR_LITERAL:
+      ast_str_print(ast);
+      break;
     case AST_PROG:
       LIST_FOR_EACH(ast->children, { ast_print(__IT__->data); });
       return;
@@ -266,6 +277,9 @@ void ast_print_pretty(AST *ast, int depth) {
       break;
     case AST_FUNC_CALL:
       ast_funcall_print_pretty(ast, depth);
+      break;
+    case AST_STR_LITERAL:
+      ast_str_print_pretty(ast, depth);
       break;
     case AST_PROG:
       printf("<root>\n");

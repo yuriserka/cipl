@@ -18,6 +18,7 @@ typedef enum cipl_ast_types {
   AST_DECLARATION,
   AST_ITER,
   AST_FUNC_CALL,
+  AST_STR_LITERAL,
 } AstTypes;
 
 static inline const char *ast_type2str(AstTypes type) {
@@ -46,6 +47,8 @@ static inline const char *ast_type2str(AstTypes type) {
       return "AST_BLOCK_ITEM_LIST";
     case AST_DECLARATION:
       return "AST_DECLARATION";
+    case AST_STR_LITERAL:
+      return "AST_STR_LITERAL";
     default:
       return NULL;
   }

@@ -53,7 +53,7 @@
 %type<pchar> unary_ops type
 
 %type<ast> external_declaration declaration declarator func_declaration block_item statement
-%type<ast> expression assign_expr eq_expr rel_expr add_expr primary_expr id constant
+%type<ast> expression assign_expr eq_expr rel_expr add_expr primary_expr id constant string_literal
 %type<ast> mult_expr unary_expr postfix_expr compound_stmt logical_and_expr logical_or_expr
 %type<ast> expr_stmt jmp_stmt cond_stmt expression.opt iter_stmt dl_dg_expr param_decl
 
@@ -182,8 +182,10 @@ compound_stmt: '{' {
     } block_item_list.opt '}' {
         $$ = ast_blockitems_init($3);
         context_pop_scope(current_context);
-        current_context->current_scope = ((Scope *)parent_stacknode_ref->data)->index;
-        parent_stacknode_ref = parent_stacknode_ref->parent;
+        if (parent_stacknode_ref) {
+            current_context->current_scope = ((Scope *)parent_stacknode_ref->data)->index;
+            parent_stacknode_ref = parent_stacknode_ref->parent;
+        }
     }
     ;
 
@@ -334,6 +336,7 @@ primary_expr: id {
         ast_free($1);
     }
     | constant
+    | string_literal
     | '(' expression ')' { $$ = $2; }
     ;
 
@@ -361,6 +364,12 @@ type: INT
 constant: NUMBER_REAL { $$ = ast_number_init(K_REAL, (NumberValue){ .real=$1 }); }
     | NUMBER_INT { $$ = ast_number_init(K_INTEGER, (NumberValue){ .integer=$1 }); }
     | NIL { $$ = ast_number_init(K_NIL, (NumberValue){ .integer=$1 }); }
+    ;
+
+string_literal: STR_LITERAL {
+        $$ = ast_str_init($1);
+        free($1);
+    }
     ;
 
 %%
