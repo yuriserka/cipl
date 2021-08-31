@@ -20,6 +20,7 @@
     Context *current_context;
     Context *previous_context;
     Scope *params_scope;
+    int parent_scope = 0;
 
     void free_scope_cb(StackNode *node) { scope_free(node->data); }
 %}
@@ -152,6 +153,7 @@ param_decl: declarator
     ;
 
 compound_stmt: '{' {
+        parent_scope = current_context->current_scope;
         // hack to update the current scope 
         if (params_scope) {
             stack_push(&current_context->scopes, params_scope);
@@ -163,6 +165,7 @@ compound_stmt: '{' {
     } block_item_list.opt '}' {
         $$ = ast_blockitems_init($3);
         context_pop_scope(current_context);
+        current_context->current_scope = parent_scope;
     }
     ;
 
