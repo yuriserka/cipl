@@ -57,6 +57,18 @@ float list iteration(int it, int max) {
     return ret;
 }
 
+int test_inner_scopes() {
+    float scope_one;
+    {
+        float list scope_two;
+        {
+            int list scope_three;
+        }
+        int after_three;
+    }
+    float after_two;
+}
+
 int main(int argc, int argv) {
     if (argc < 2 + !argv) {
         return 1;

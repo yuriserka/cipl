@@ -20,9 +20,18 @@
     Context *current_context;
     Context *previous_context;
     Scope *params_scope;
-    int parent_scope = 0;
+    StackNode *parent_stacknode_ref;
 
     void free_scope_cb(StackNode *node) { scope_free(node->data); }
+
+    StackNode *context_get_current_stacknode_ref() {
+        LIST_FOR_EACH_REVERSE(current_context->scopes, {
+            if (((Scope *)__IT__->data)->index == current_context->current_scope) {
+                return __IT__;
+            }
+        });
+        return NULL;
+    }
 %}
 
 %union {
@@ -161,7 +170,7 @@ param_decl: type declarator {
     ;
 
 compound_stmt: '{' {
-        parent_scope = current_context->current_scope;
+        parent_stacknode_ref = context_get_current_stacknode_ref();
         // hack to update the current scope 
         if (params_scope) {
             stack_push(&current_context->scopes, params_scope);
@@ -173,7 +182,8 @@ compound_stmt: '{' {
     } block_item_list.opt '}' {
         $$ = ast_blockitems_init($3);
         context_pop_scope(current_context);
-        current_context->current_scope = parent_scope;
+        current_context->current_scope = ((Scope *)parent_stacknode_ref->data)->index;
+        parent_stacknode_ref = parent_stacknode_ref->parent;
     }
     ;
 
