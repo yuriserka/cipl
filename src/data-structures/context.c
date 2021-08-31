@@ -45,16 +45,14 @@ Scope *context_push_scope(Context *ctx) {
   return scope;
 }
 
-Scope *context_pop_scope(Context *ctx) {
-  return context_found_scope(ctx);
-}
+Scope *context_pop_scope(Context *ctx) { return context_found_scope(ctx); }
 
 Symbol *context_declare_variable(Context *ctx, SymbolRefAST *symref) {
   Scope *current_scope = context_found_scope(ctx);
   Symbol *entry =
       symbol_table_get_valid_entry(current_scope->symbol_table, symref);
-  symbol_update(entry, symref->symbol->name, current_scope->index, ctx->name,
-                symref->symbol->def_pos);
+  symbol_update(entry, symref->symbol->name, symref->symbol->type,
+                current_scope->index, ctx->name, symref->symbol->def_pos);
   return entry;
 }
 
@@ -62,8 +60,8 @@ Symbol *context_declare_function(Context *ctx, SymbolRefAST *symref) {
   Scope *current_scope = context_found_scope(ctx);
   Symbol *entry =
       symbol_table_get_valid_entry(current_scope->symbol_table, symref);
-  symbol_update(entry, symref->symbol->name, current_scope->index, ctx->name,
-                symref->symbol->def_pos);
+  symbol_update(entry, symref->symbol->name, symref->symbol->type,
+                current_scope->index, ctx->name, symref->symbol->def_pos);
   return entry;
 }
 

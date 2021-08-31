@@ -78,10 +78,9 @@ declaration: type declarator <ast>{
         //         symbol_init_copy(context_declare_variable(current_context, $2->value.symref))
         //     );
         // }
-        $$ = ast_symref_init(
-            $1,
-            symbol_init_copy(context_declare_variable(current_context, $2->value.symref))
-        );
+        Symbol *declared = context_declare_variable(current_context, $2->value.symref);
+        symbol_update_type(declared, symbol_type_from_str($1));
+        $$ = ast_symref_init(symbol_init_copy(declared));
         ast_free($2);
         free($1);
     } ';' {
@@ -117,10 +116,10 @@ func_declaration: type declarator '(' <ast>{
             previous_context = current_context;
             list_push(&contexts, context_init($2->value.symref->symbol->name));
             current_context = list_peek_last(&contexts);
-            $$ = ast_symref_init(
-                $1,
-                symbol_init_copy(context_declare_function(previous_context, $2->value.symref))
-            );
+            
+            Symbol *declared = context_declare_function(previous_context, $2->value.symref);
+            symbol_update_type(declared, symbol_type_from_str($1));
+            $$ = ast_symref_init(symbol_init_copy(declared));
         }
         ast_free($2);
         free($1);
@@ -312,14 +311,14 @@ primary_expr: id {
         //     $$ = ast_symref_init(symbol_init_copy(sym));
         // }
         symbol_update_context($1->value.symref->symbol, current_context);
-        $$ = ast_symref_init("int", symbol_init_copy($1->value.symref->symbol));
+        $$ = ast_symref_init(symbol_init_copy($1->value.symref->symbol));
         ast_free($1);
     }
     | constant
     | '(' expression ')' { $$ = $2; }
     ;
 
-id: NAME { $$ = ast_symref_init(NULL, $1); }
+id: NAME { $$ = ast_symref_init($1); }
     ;
 
 type: INT

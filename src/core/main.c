@@ -9,15 +9,14 @@
 
 void init_global_context(Context *global_ctx) {
   cursor_position definition = (cursor_position){.line = 0, .col = 0};
-  AST *write_fnref =
-      ast_symref_init("int", symbol_init("write", global_ctx->current_scope,
-                                         global_ctx->name, definition));
+  SymbolTypes type = symbol_type_from_str("int");
+  AST *write_fnref = ast_symref_init(symbol_init(
+      "write", type, global_ctx->current_scope, global_ctx->name, definition));
   AST *writeln_fnref =
-      ast_symref_init("int", symbol_init("writeln", global_ctx->current_scope,
-                                         global_ctx->name, definition));
-  AST *read_fnref =
-      ast_symref_init("int", symbol_init("read", global_ctx->current_scope,
-                                         global_ctx->name, definition));
+      ast_symref_init(symbol_init("writeln", type, global_ctx->current_scope,
+                                  global_ctx->name, definition));
+  AST *read_fnref = ast_symref_init(symbol_init(
+      "read", type, global_ctx->current_scope, global_ctx->name, definition));
 
   context_declare_function(global_ctx, write_fnref->value.symref);
   context_declare_function(global_ctx, writeln_fnref->value.symref);
@@ -40,9 +39,7 @@ void print_ast() {
   printf("}, }\n");
 }
 
-void print_ast_pretty() {
-  ast_print_pretty(root, 0);
-}
+void print_ast_pretty() { ast_print_pretty(root, 0); }
 
 int cipl_main(int argc, char *argv[]) {
   root = ast_cast(AST_PROG, 0);

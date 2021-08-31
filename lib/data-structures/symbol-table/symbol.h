@@ -7,7 +7,7 @@ typedef struct cipl_symbol Symbol;
 #include "utils/cursor-position.h"
 
 typedef enum cipl_symbol_types {
-  SYM_INVALID = -1,
+  SYM_INVALID,
   SYM_INT,
   SYM_REAL,
   SYM_INT_LIST,
@@ -25,13 +25,17 @@ struct cipl_symbol {
 
 struct cipl_context;
 
-Symbol *symbol_init(char *name, int scope, char *ctx_name, cursor_position pos);
+Symbol *symbol_init(char *name, SymbolTypes type, int scope, char *ctx_name,
+                    cursor_position pos);
 Symbol *symbol_init_copy(Symbol *other);
 Symbol *symbol_found(char *name, cursor_position pos);
 void symbol_update_type(Symbol *sym, SymbolTypes type);
 void symbol_update_context(Symbol *sym, struct cipl_context *ctx);
 
-void symbol_update(Symbol *sym, char *name, int scope, char *ctx_name,
-                   cursor_position pos);
+void symbol_update(Symbol *sym, char *name, SymbolTypes type, int scope,
+                   char *ctx_name, cursor_position pos);
 void symbol_free(Symbol *sym);
 void symbol_print(Symbol *sym);
+
+SymbolTypes symbol_type_from_str(char *type);
+char *symbol_type_from_enum(SymbolTypes type);
