@@ -6,8 +6,7 @@ typedef enum cipl_ast_types {
   AST_ASSIGN_OP,
   AST_BUILTIN_FUNC,
   AST_FLOW,
-  AST_NUMBER_INT,
-  AST_NUMBER_REAL,
+  AST_NUMBER,
   AST_SYM_REF,
   AST_BIN_OP,
   AST_UNI_OP,
@@ -29,10 +28,8 @@ static inline const char *ast_type2str(AstTypes type) {
       return "AST_BUILTIN_FUNC";
     case AST_FLOW:
       return "AST_FLOW";
-    case AST_NUMBER_INT:
-      return "AST_NUMBER_INT";
-    case AST_NUMBER_REAL:
-      return "AST_NUMBER_REAL";
+    case AST_NUMBER:
+      return "AST_NUMBER";
     case AST_SYM_REF:
       return "AST_SYM_REF";
     case AST_BIN_OP:

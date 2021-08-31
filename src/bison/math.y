@@ -34,12 +34,12 @@
 	int integer;
 }
 
-%token<integer> NUMBER_INT
+%token<integer> NUMBER_INT NIL
 %token<real> NUMBER_REAL
 %token<sym> NAME
 %token<pchar> MULT ADD REL AND OR EQ COLON DL_DG EXCLAMATION PERCENT QUESTION STR_LITERAL
 %token<pchar> INT FLOAT LIST
-%token IF ELSE FOR RETURN LET NIL
+%token IF ELSE FOR RETURN LET
 
 %type<pchar> unary_ops type
 
@@ -48,8 +48,8 @@
 %type<ast> mult_expr unary_expr postfix_expr compound_stmt logical_and_expr logical_or_expr
 %type<ast> expr_stmt jmp_stmt cond_stmt expression.opt iter_stmt dl_dg_expr param_decl
 
-%type<list> block_item_list block_item_list.opt prog arg_expr_list arg_expr_list.opt
-%type<list> params_list param_list.opt 
+%type<list> block_item_list block_item_list.opt arg_expr_list arg_expr_list.opt
+%type<list> params_list param_list.opt
 
 %nonassoc THEN
 %nonassoc ELSE
@@ -57,6 +57,9 @@
 %start prog
 
 %destructor { free($$); } <pchar>
+%destructor { symbol_free($$); } <sym>
+/* %destructor { LIST_FREE($$, { ast_free(__IT__->data); }); } <list> */
+%destructor { ast_free($$); } <ast>
 %%
 
 prog: prog external_declaration { list_push(&root->children, $2); }
@@ -126,7 +129,7 @@ func_declaration: type declarator '(' <ast>{
     } param_list.opt ')' {
         context_push_scope(current_context);
         LIST_FOR_EACH($5, {
-            symbol_update_context(((AST *)__IT__->data)->value.symref->symbol, current_context);
+            // symbol_update_context(((AST *)__IT__->data)->value.symref->symbol, current_context);
             context_declare_variable(current_context, ((AST *)__IT__->data)->value.symref);
         });
         // hack to save the scope of params and append to the scope of the body
@@ -148,7 +151,13 @@ params_list: params_list ',' param_decl { list_push(&$$, $3); }
     | param_decl { $$ = list_node_init($1); }
     ;
 
-param_decl: declarator
+param_decl: type declarator {
+        symbol_update_context($2->value.symref->symbol, current_context);
+        symbol_update_type($2->value.symref->symbol, symbol_type_from_str($1));
+        $$ = ast_symref_init(symbol_init_copy($2->value.symref->symbol));
+        ast_free($2);
+        free($1);
+    }
     ;
 
 compound_stmt: '{' {
@@ -339,8 +348,9 @@ type: INT
     }
     ;
 
-constant: NUMBER_REAL { $$ = ast_number_init(REAL, (NumberValue){ .real=$1 }); }
-    | NUMBER_INT { $$ = ast_number_init(INTEGER, (NumberValue){ .integer=$1 }); }
+constant: NUMBER_REAL { $$ = ast_number_init(K_REAL, (NumberValue){ .real=$1 }); }
+    | NUMBER_INT { $$ = ast_number_init(K_INTEGER, (NumberValue){ .integer=$1 }); }
+    | NIL { $$ = ast_number_init(K_NIL, (NumberValue){ .integer=$1 }); }
     ;
 
 %%

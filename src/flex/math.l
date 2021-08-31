@@ -89,6 +89,11 @@ RESERVED_KEYWORDS if|else|return|for|NIL|let
   return LIST;
 }
 
+"NIL" {
+  yylval.integer = 0;
+  return NIL;
+}
+
 {ID} {
   yylval.sym = symbol_found(yytext, cursor);
   cursor_position_update(0, yyleng);

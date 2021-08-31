@@ -16,8 +16,7 @@ AST *ast_cast(AstTypes type, int n_children, ...) {
   va_start(ptr, n_children);
 
   switch (type) {
-    case AST_NUMBER_INT:
-    case AST_NUMBER_REAL:
+    case AST_NUMBER:
       ast->value = AST_INIT_UNION(number, NumberAST);
       break;
     case AST_BIN_OP:
@@ -78,8 +77,7 @@ void ast_free(AST *ast) {
   if (!ast) return;
 
   switch (ast->type) {
-    case AST_NUMBER_INT:
-    case AST_NUMBER_REAL:
+    case AST_NUMBER:
       ast_number_free(ast);
       break;
     case AST_BIN_OP:
@@ -132,8 +130,7 @@ double ast_eval(AST *ast) {
   if (!ast) return 0;
 
   switch (ast->type) {
-    case AST_NUMBER_INT:
-    case AST_NUMBER_REAL:
+    case AST_NUMBER:
       return ast_number_eval(ast);
     case AST_BIN_OP:
       return ast_binop_eval(ast);
@@ -178,8 +175,7 @@ void ast_print(AST *ast) {
   if (!ast) return;
 
   switch (ast->type) {
-    case AST_NUMBER_INT:
-    case AST_NUMBER_REAL:
+    case AST_NUMBER:
       ast_number_print(ast);
       break;
     case AST_BIN_OP:
@@ -232,8 +228,7 @@ void ast_print_pretty(AST *ast, int depth) {
   if (!ast) return;
 
   switch (ast->type) {
-    case AST_NUMBER_INT:
-    case AST_NUMBER_REAL:
+    case AST_NUMBER:
       ast_number_print_pretty(ast, depth);
       break;
     case AST_BIN_OP:
@@ -274,7 +269,8 @@ void ast_print_pretty(AST *ast, int depth) {
       break;
     case AST_PROG:
       printf("<root>\n");
-      LIST_FOR_EACH(ast->children, { ast_print_pretty(__IT__->data, depth + 1); });
+      LIST_FOR_EACH(ast->children,
+                    { ast_print_pretty(__IT__->data, depth + 1); });
       return;
     default:
       printf("AST type: %d print not implemented yet", ast->type);

@@ -1,44 +1,44 @@
 int global_var;
 
-int filter(integer) {
+int filter(int integer) {
     return integer <= 10;
 }
 
-int map(integer) {
-    return integer * 2;
+float map(int integer) {
+    return integer * 2.0;
 }
 
-int operators() {
+int operators(int list l) {
     int x;
-    int list l;
     x = (x || 15) && (x != 4);
     if (x == 10) {
         int x;
         x = 1 > 2 <= 3 >= 0 < -5;
     } else {
         l = 3 : 2 : (+1 + -2 - !(x == 1) * 4 / 5) : l;
-        l = filter << (map >> l);
+        l = filter << map >> l;
         x = x + -?l;
         float list tail;
+        tail = NIL;
         tail = !l;
         tail = %l;
     }
 }
 
-int list conditional(a) {
+int list conditional(float list a) {
     if (1) {
         float a;
         a = 7.5234;
     } else {
-        a = 2;
+        a = 2 : a;
         float b;
-        b = a + 2.72 + 3.14159;
+        b = ?a + 2.72 + 3.14159;
         return b;
     }
     return 0;
 }
 
-float list iteration(it, max) {
+float list iteration(int it, int max) {
     int ret;
     ret = 0;
     for (; it < max; it = it + 1) {
@@ -57,7 +57,7 @@ float list iteration(it, max) {
     return ret;
 }
 
-int main(argc, argv) {
+int main(int argc, int argv) {
     if (argc < 2 + !argv) {
         return 1;
     }

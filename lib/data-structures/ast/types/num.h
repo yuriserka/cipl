@@ -1,8 +1,9 @@
 #pragma once
 
 typedef enum cipl_ast_number_type {
-  INTEGER,
-  REAL,
+  K_INTEGER,
+  K_REAL,
+  K_NIL,
 } NumberType;
 
 typedef union cipl_ast_number_value {
