@@ -20,10 +20,6 @@ DELIM [[:blank:]\n\r]
 LETTER [[:alpha:]_]
 DIGIT [[:digit:]]
 LETTER_OR_DIGIT [[:alnum:]_]
-CORE_TYPES "int"|"float"
-NEW_TYPES "list"
-
-TYPES {CORE_TYPES}|{CORE_TYPES}{NEW_TYPES}
 
 OP_BIN_ARITHMETIC "*"|"/"|"+"|"-"
 OP_BIN_BOOL "&&"|"||"
@@ -45,7 +41,6 @@ REAL_NUMBER ({DIGIT}*[.])?{DIGIT}+([eE][+-]?{DIGIT}+)?
 SINGLELINE_COMMENT "//"[^\n]*
 
 RESERVED_KEYWORDS if|else|return|for|NIL|let
-BUILTIN_FNS read|write|writeln
 
 %x SCANNING_STR_LITERAL
 %x SCANNING_MULTILINE_COMMENT
@@ -67,12 +62,6 @@ BUILTIN_FNS read|write|writeln
   return yytext[0];
 }
 
-{BUILTIN_FNS} {
-  yylval.sym = symbol_found(yytext, cursor);
-  cursor_position_update(0, yyleng);
-  return BUILT_IN;
-}
-
 {RESERVED_KEYWORDS} {
   cursor_position_update(0, yyleng);
   switch (yytext[0]) {
@@ -85,10 +74,19 @@ BUILTIN_FNS read|write|writeln
   }
 }
 
-{TYPES} {
-  printf("<TYPE, `%s`>\n", yytext);
-  cursor_position_update(0, yyleng);
-  return TYPE;
+"int" {
+  yylval.pchar = strdup(yytext);
+  return INT;
+}
+
+"float" {
+  yylval.pchar = strdup(yytext);
+  return FLOAT;
+}
+
+"list" {
+  yylval.pchar = strdup(yytext);
+  return LIST;
 }
 
 {ID} {
@@ -113,7 +111,7 @@ BUILTIN_FNS read|write|writeln
 
 {UNARY_OP} {
   cursor_position_update(0, yyleng);
-  yylval.operator = strdup(yytext);
+  yylval.pchar = strdup(yytext);
   switch(yytext[0]) {
     case '!': return EXCLAMATION;
     case '%': return PERCENT;
@@ -126,7 +124,7 @@ BUILTIN_FNS read|write|writeln
 {BINARY_OP} {
   char *token = yytext;
   cursor_position_update(0, yyleng);
-  yylval.operator = strdup(yytext);
+  yylval.pchar = strdup(yytext);
   switch (token[0]) {
       case ':': return COLON;
       case '*':
@@ -169,7 +167,7 @@ BUILTIN_FNS read|write|writeln
   }
   ["] {
     cursor_position_update(0, yyleng);
-    yylval.literal = strdup(yytext);
+    yylval.pchar = strdup(yytext);
     BEGIN(INITIAL);
     return STR_LITERAL;
   }

@@ -70,14 +70,16 @@ extern int yydebug;
     PERCENT = 271,                 /* PERCENT  */
     QUESTION = 272,                /* QUESTION  */
     STR_LITERAL = 273,             /* STR_LITERAL  */
-    IF = 274,                      /* IF  */
-    ELSE = 275,                    /* ELSE  */
-    FOR = 276,                     /* FOR  */
-    RETURN = 277,                  /* RETURN  */
-    LET = 278,                     /* LET  */
-    NIL = 279,                     /* NIL  */
-    TYPE = 280,                    /* TYPE  */
-    THEN = 281                     /* THEN  */
+    INT = 274,                     /* INT  */
+    FLOAT = 275,                   /* FLOAT  */
+    LIST = 276,                    /* LIST  */
+    IF = 277,                      /* IF  */
+    ELSE = 278,                    /* ELSE  */
+    FOR = 279,                     /* FOR  */
+    RETURN = 280,                  /* RETURN  */
+    LET = 281,                     /* LET  */
+    NIL = 282,                     /* NIL  */
+    THEN = 283                     /* THEN  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -91,12 +93,11 @@ union YYSTYPE
 	struct cipl_ast *ast;
     struct cipl_symbol *sym;
     struct cipl_list_node *list;
-    char *literal;
-    char *operator;
+    char *pchar;
 	double real;
 	int integer;
 
-#line 100 "lib/bison/grammar.h"
+#line 101 "lib/bison/grammar.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

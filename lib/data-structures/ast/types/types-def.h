@@ -18,6 +18,7 @@ typedef enum cipl_ast_types {
   AST_JMP,
   AST_DECLARATION,
   AST_ITER,
+  AST_FUNC_CALL,
 } AstTypes;
 
 static inline const char *ast_type2str(AstTypes type) {

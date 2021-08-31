@@ -7,11 +7,11 @@ typedef struct cipl_symbol Symbol;
 #include "utils/cursor-position.h"
 
 typedef enum cipl_symbol_types {
+  SYM_INVALID = -1,
   SYM_INT,
   SYM_REAL,
   SYM_INT_LIST,
   SYM_REAL_LIST,
-  SYM_FUNC,
 } SymbolTypes;
 
 struct cipl_symbol {

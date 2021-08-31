@@ -28,33 +28,34 @@
 	struct cipl_ast *ast;
     struct cipl_symbol *sym;
     struct cipl_list_node *list;
-    char *literal;
-    char *operator;
+    char *pchar;
 	double real;
 	int integer;
 }
 
 %token<integer> NUMBER_INT
 %token<real> NUMBER_REAL
-%token<sym> NAME BUILT_IN
-%token<operator> MULT ADD REL AND OR EQ COLON DL_DG EXCLAMATION PERCENT QUESTION
-%token<literal> STR_LITERAL
+%token<sym> NAME
+%token<pchar> MULT ADD REL AND OR EQ COLON DL_DG EXCLAMATION PERCENT QUESTION STR_LITERAL
+%token<pchar> INT FLOAT LIST
 %token IF ELSE FOR RETURN LET NIL
-%token TYPE
 
-%type<operator> unary_ops
+%type<pchar> unary_ops type
 
 %type<ast> external_declaration declaration declarator func_declaration block_item statement
 %type<ast> expression assign_expr eq_expr rel_expr add_expr primary_expr id constant
 %type<ast> mult_expr unary_expr postfix_expr compound_stmt logical_and_expr logical_or_expr
-%type<ast> expr_stmt jmp_stmt cond_stmt expression.opt iter_stmt dl_dg_expr
+%type<ast> expr_stmt jmp_stmt cond_stmt expression.opt iter_stmt dl_dg_expr param_decl
 
-%type<list> id_list.opt id_list block_item_list block_item_list.opt prog arg_expr_list arg_expr_list.opt
+%type<list> block_item_list block_item_list.opt prog arg_expr_list arg_expr_list.opt
+%type<list> params_list param_list.opt 
 
 %nonassoc THEN
 %nonassoc ELSE
 
 %start prog
+
+%destructor { free($$); } <pchar>
 %%
 
 prog: prog external_declaration { list_push(&root->children, $2); }
@@ -65,7 +66,7 @@ external_declaration: func_declaration
     | declaration
     ;
 
-declaration: LET declarator <ast>{
+declaration: type declarator <ast>{
         // Symbol *sym = context_has_symbol(current_context, $2->value.symref->symbol);
         // if (sym) {
         //     yyerror(NULL);
@@ -77,9 +78,11 @@ declaration: LET declarator <ast>{
         //     );
         // }
         $$ = ast_symref_init(
+            $1,
             symbol_init_copy(context_declare_variable(current_context, $2->value.symref))
         );
         ast_free($2);
+        free($1);
     } ';' {
         $$ = $3 ? ast_declaration_init($3) : NULL;
     }
@@ -91,7 +94,7 @@ declaration: LET declarator <ast>{
     }
     ;
 
-func_declaration: LET declarator '(' <ast>{
+func_declaration: type declarator '(' <ast>{
         if (current_context->current_scope > 1) {
             yyerror(NULL);
             CIPL_PERROR_CURSOR("CIPL forbids nested functions\n", error_cursor);
@@ -114,11 +117,13 @@ func_declaration: LET declarator '(' <ast>{
             list_push(&contexts, context_init($2->value.symref->symbol->name));
             current_context = list_peek_last(&contexts);
             $$ = ast_symref_init(
+                $1,
                 symbol_init_copy(context_declare_function(previous_context, $2->value.symref))
             );
         }
         ast_free($2);
-    } id_list.opt ')' {
+        free($1);
+    } param_list.opt ')' {
         context_push_scope(current_context);
         LIST_FOR_EACH($5, {
             symbol_update_context(((AST *)__IT__->data)->value.symref->symbol, current_context);
@@ -133,6 +138,17 @@ func_declaration: LET declarator '(' <ast>{
         $$ = ast_userfunc_init(current_context, $4, ast_params_init($5), $8);
         current_context = previous_context;
     }
+    ;
+
+param_list.opt: %empty { $$ = NULL; }
+    | params_list
+    ;
+
+params_list: params_list ',' param_decl { list_push(&$$, $3); }
+    | param_decl { $$ = list_node_init($1); }
+    ;
+
+param_decl: declarator
     ;
 
 compound_stmt: '{' {
@@ -171,14 +187,6 @@ statement: expr_stmt
 
 declarator: id
     | '(' declarator ')' { $$ = $2; }
-    ;
-
-id_list: id_list ',' id { list_push(&$$, $3); }
-    | id { $$ = list_node_init($1); }
-    ;
-
-id_list.opt: %empty { $$ = NULL; }
-    | id_list
     ;
 
 expr_stmt: expression ';' { $$ = $1; }
@@ -279,7 +287,7 @@ unary_ops: EXCLAMATION
 
 postfix_expr: primary_expr
     | postfix_expr '(' arg_expr_list.opt ')' {
-        $$ = NULL;
+        $$ = ast_funcall_init($1, ast_params_init($3));
     }
     ;
 
@@ -301,20 +309,36 @@ primary_expr: id {
         //     $$ = ast_symref_init(symbol_init_copy(sym));
         // }
         symbol_update_context($1->value.symref->symbol, current_context);
-        $$ = ast_symref_init(symbol_init_copy($1->value.symref->symbol));
+        $$ = ast_symref_init("int", symbol_init_copy($1->value.symref->symbol));
         ast_free($1);
     }
     | constant
     | '(' expression ')' { $$ = $2; }
     ;
 
-id: NAME { $$ = ast_symref_init($1); }
-    | BUILT_IN { $$ = ast_symref_init($1); }
+id: NAME { $$ = ast_symref_init(NULL, $1); }
+    ;
+
+type: INT
+    | FLOAT
+    | INT LIST {
+        char *type = calloc(strlen($1) + strlen($2) + 2, sizeof(char));
+        sprintf(type, "%s %s", $1, $2);
+        free($1);
+        free($2);
+        $$ = type;
+    }
+    | FLOAT LIST {
+        char *type = calloc(strlen($1) + strlen($2) + 2, sizeof(char));
+        sprintf(type, "%s %s", $1, $2);
+        free($1);
+        free($2);
+        $$ = type;
+    }
     ;
 
 constant: NUMBER_REAL { $$ = ast_number_init(REAL, (NumberValue){ .real=$1 }); }
     | NUMBER_INT { $$ = ast_number_init(INTEGER, (NumberValue){ .integer=$1 }); }
-    | NIL { }
     ;
 
 %%
