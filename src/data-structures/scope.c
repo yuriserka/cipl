@@ -24,6 +24,7 @@ Scope *scope_init_copy(Scope *other) {
           .scope = others_sym->scope,
           .value = others_sym->value,
           .def_pos = others_sym->def_pos,
+          .type = others_sym->type,
       };
     }
   }

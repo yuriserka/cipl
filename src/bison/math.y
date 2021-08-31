@@ -135,10 +135,9 @@ func_declaration: type declarator '(' <ast>{
         }
         ast_free($2);
         free($1);
-    } param_list.opt ')' {
         context_push_scope(current_context);
+    } param_list.opt ')' {
         LIST_FOR_EACH($5, {
-            // symbol_update_context(((AST *)__IT__->data)->value.symref->symbol, current_context);
             context_declare_variable(current_context, ((AST *)__IT__->data)->value.symref);
         });
         // hack to save the scope of params and append to the scope of the body
@@ -323,7 +322,7 @@ arg_expr_list.opt: arg_expr_list
     ;
 
 primary_expr: id {
-        // Symbol *sym = context_search_symbol_scopes(current_context, $1->value.symref->symbol);
+        Symbol *sym = context_search_symbol_scopes(current_context, $1->value.symref->symbol);
         // if (!sym) {
         //     yyerror(NULL);
         //     CIPL_PERROR_CURSOR("'%s' undeclared (first use in this function)\n", $1->value.symref->symbol->def_pos, $1->value.symref->symbol->name);
@@ -332,7 +331,7 @@ primary_expr: id {
         //     $$ = ast_symref_init(symbol_init_copy(sym));
         // }
         symbol_update_context($1->value.symref->symbol, current_context);
-        $$ = ast_symref_init(symbol_init_copy($1->value.symref->symbol));
+        $$ = ast_symref_init(symbol_init_copy(sym ? sym : $1->value.symref->symbol));
         ast_free($1);
     }
     | constant

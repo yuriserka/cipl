@@ -45,7 +45,7 @@ int cipl_main(int argc, char *argv[]) {
   root = ast_cast(AST_PROG, 0);
   contexts = list_node_init(context_init("global"));
   current_context = list_peek(&contexts, 0);
-  // init_global_context(current_context);
+  init_global_context(current_context);
 
   if (argc < 2) {
     CIPL_PRINTF_COLOR(RED, "error: ");
