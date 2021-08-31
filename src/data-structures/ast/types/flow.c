@@ -14,7 +14,7 @@ AST *ast_flow_init(Context *context, AST *cond, AST *then_branch,
 
 void ast_flow_free(AST *ast) {
   FlowAST *flow_ast = ast->value.flow;
-  list_free(ast->children, ast_child_free);
+  LIST_FREE(ast->children, { ast_free(__IT__->data); });
   free(flow_ast);
 }
 
@@ -29,4 +29,17 @@ void ast_flow_print(AST *ast) {
   ast_child_print_aux_label("then", then_branch);
   ast_child_print_aux_label("else", else_branch);
   printf("}");
+}
+
+void ast_flow_print_pretty(AST *ast, int depth) {
+  AST *conditional = list_peek(&ast->children, 0);
+  AST *then_branch = list_peek(&ast->children, 1);
+  AST *else_branch = list_peek(&ast->children, 2);
+
+  for (int i = depth; i > 0; --i) printf("\t");
+  printf("<if_else-statement>\n");
+
+  ast_print_pretty(conditional, depth + 1);
+  ast_print_pretty(then_branch, depth + 1);
+  ast_print_pretty(else_branch, depth + 1);
 }

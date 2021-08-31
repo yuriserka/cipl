@@ -12,7 +12,7 @@ AST *ast_jmp_init(AST *stmt) {
 
 void ast_jmp_free(AST *ast) {
   JumpAST *flow_ast = ast->value.jmp;
-  list_free(ast->children, ast_child_free);
+  LIST_FREE(ast->children, { ast_free(__IT__->data); });
   free(flow_ast);
 }
 
@@ -23,4 +23,13 @@ void ast_jmp_print(AST *ast) {
   printf("return: { ");
   ast_child_print_aux_label("statement", stmt);
   printf("}");
+}
+
+void ast_jmp_print_pretty(AST *ast, int depth) {
+  AST *stmt = list_peek(&ast->children, 0);
+
+  for (int i = depth; i > 0; --i) printf("\t");
+  printf("<return-statement>\n");
+
+  ast_print_pretty(stmt, depth + 1);
 }

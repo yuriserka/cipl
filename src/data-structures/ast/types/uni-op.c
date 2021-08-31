@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "utils/io.h"
+
 AST *ast_uniop_init(char *op, AST *l) {
   UniOpAST *ast = calloc(1, sizeof(UniOpAST));
   ast->op = strdup(op);
@@ -13,7 +15,7 @@ AST *ast_uniop_init(char *op, AST *l) {
 
 void ast_uniop_free(AST *ast) {
   UniOpAST *uniop_ast = ast->value.uniop;
-  list_free(ast->children, ast_child_free);
+  LIST_FREE(ast->children, { ast_free(__IT__->data); });
   free(uniop_ast->op);
   free(uniop_ast);
 }
@@ -35,4 +37,17 @@ void ast_uniop_print(AST *ast) {
   printf("uni_op: { op: '%s', ", uniop_ast->op);
   ast_print(ast->children->data);
   printf("}");
+}
+
+void ast_uniop_print_pretty(AST *ast, int depth) {
+  AST *lhs = list_peek(&ast->children, 0);
+  UniOpAST *uniop_ast = ast->value.uniop;
+
+  for (int i = depth; i > 0; --i) printf("\t");
+  printf("<unary-op>\n");
+
+  for (int i = depth + 1; i > 0; --i) printf("\t");
+  CIPL_PRINTF_COLOR(BBLU, "%s\n", uniop_ast->op);
+
+  ast_print_pretty(lhs, depth + 1);
 }

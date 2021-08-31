@@ -12,7 +12,7 @@ AST *ast_declaration_init(AST *name) {
 
 void ast_declaration_free(AST *ast) {
   DeclarationAST *decl_ast = ast->value.declaration;
-  list_free(ast->children, ast_child_free);
+  LIST_FREE(ast->children, { ast_free(__IT__->data); });
   free(decl_ast);
 }
 
@@ -22,4 +22,13 @@ void ast_declaration_print(AST *ast) {
   printf("declaration: { ");
   ast_print(ast->children->data);
   printf("}");
+}
+
+void ast_declaration_print_pretty(AST *ast, int depth) {
+  AST *name = list_peek(&ast->children, 0);
+
+  for (int i = depth; i > 0; --i) printf("\t");
+
+  printf("<declaration>\n");
+  ast_print_pretty(name, depth + 1);
 }

@@ -40,6 +40,10 @@ void print_ast() {
   printf("}, }\n");
 }
 
+void print_ast_pretty() {
+  ast_print_pretty(root, 0);
+}
+
 int cipl_main(int argc, char *argv[]) {
   root = ast_cast(AST_PROG, 0);
   contexts = list_node_init(context_init("global"));
@@ -75,7 +79,7 @@ int cipl_main(int argc, char *argv[]) {
   yylex_destroy();
 
   if (!got_erros) {
-    print_ast();
+    print_ast_pretty();
     print_all_contexts();
   }
 

@@ -13,3 +13,4 @@ AST *ast_userfunc_init(struct cipl_context *context, AST *declarator,
                        AST *params, AST *statements);
 double ast_userfunc_eval(AST *ast);
 void ast_userfunc_print(AST *ast);
+void ast_userfunc_print_pretty(AST *ast, int depth);

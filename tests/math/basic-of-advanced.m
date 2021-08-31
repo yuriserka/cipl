@@ -28,11 +28,11 @@ int operators() {
 int list conditional(a) {
     if (1) {
         float a;
-        a = 7;
+        a = 7.5234;
     } else {
         a = 2;
         float b;
-        b = a + 1;
+        b = a + 2.72 + 3.14159;
         return b;
     }
     return 0;
@@ -65,11 +65,18 @@ int main(argc, argv) {
     global_var = 0;
     int i;
 
-    for (i = 2; ; ) {}
-    for (; i < 10 ;) {}
-    for (;;i = i + 1) {}
+    for (i = 2; ; ) {
+        int scope_3;
+    }
+    for (; i < 10 ;) {
+        int scope_4;
+    }
+    int scope_1;
+    for (;;i = i + 1) {
+        int scope_5;
+    }
     for (;;) {
-        int loop;
+        int loop_6;
     }
 
     int ret;

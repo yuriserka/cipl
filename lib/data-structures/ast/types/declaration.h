@@ -9,3 +9,4 @@ void ast_declaration_free(AST *ast);
 AST *ast_declaration_init(AST *name);
 double ast_declaration_eval(AST *ast);
 void ast_declaration_print(AST *ast);
+void ast_declaration_print_pretty(AST *ast, int depth);

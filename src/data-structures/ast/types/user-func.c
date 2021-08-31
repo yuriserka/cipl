@@ -17,7 +17,7 @@ AST *ast_userfunc_init(Context *context, AST *declarator, AST *params,
 
 void ast_userfunc_free(AST *ast) {
   UserFuncAST *userfunc_ast = ast->value.userfunc;
-  list_free(ast->children, ast_child_free);
+  LIST_FREE(ast->children, { ast_free(__IT__->data); });
   free(userfunc_ast);
 }
 
@@ -32,4 +32,17 @@ void ast_userfunc_print(AST *ast) {
   ast_print(params);
   ast_print(statements);
   printf("}");
+}
+
+void ast_userfunc_print_pretty(AST *ast, int depth) {
+  AST *name = list_peek(&ast->children, 0);
+  AST *params = list_peek(&ast->children, 1);
+  AST *statements = list_peek(&ast->children, 2);
+
+  for (int i = depth; i > 0; --i) printf("\t");
+
+  printf("<function-declaration>\n");
+  ast_print_pretty(name, depth + 1);
+  ast_print_pretty(params, depth + 1);
+  ast_print_pretty(statements, depth + 1);
 }

@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "utils/io.h"
+
 AST *ast_symref_init(char *type, Symbol *symbol) {
   SymbolRefAST *ast = calloc(1, sizeof(SymbolRefAST));
   ast->symbol = symbol;
@@ -23,10 +25,19 @@ void ast_symref_print(AST *ast) {
   SymbolRefAST *symref = ast->value.symref;
   cursor_position pos = symref->symbol->def_pos;
   printf(
-      "symbol_ref: { name: %s, type: %s, defined_at: { context: %s, line: %d, "
+      "symbol_ref: { name: %s, type: %s, defined_at: { context: %s, scope: %d, "
+      "line: %d, "
       "col: %d, }, }",
       symref->symbol->name, symbol_type_from_enum(symref->type),
-      symref->symbol->context_name, pos.line, pos.col);
+      symref->symbol->context_name, symref->symbol->scope, pos.line, pos.col);
+}
+
+void ast_symref_print_pretty(AST *ast, int depth) {
+  SymbolRefAST *sym = ast->value.symref;
+
+  for (int i = depth; i > 0; --i) printf("\t");
+  CIPL_PRINTF_COLOR(BGRN, "%s " BCYN "%s\n", symbol_type_from_enum(sym->type),
+                    sym->symbol->name);
 }
 
 SymbolTypes symbol_type_from_str(char *type) {

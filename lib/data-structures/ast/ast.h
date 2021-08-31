@@ -45,8 +45,6 @@ struct cipl_ast {
   AstNodeValue value;
 };
 
-void ast_child_free(ListNode *node);
-void ast_child_print(ListNode *node);
 void ast_child_print_aux_label(const char *label, AST *ast);
 
 /*
@@ -57,3 +55,4 @@ AST *ast_cast(AstTypes type, int n_children, ...);
 void ast_free(AST *ast);
 double ast_eval(AST *ast);
 void ast_print(AST *ast);
+void ast_print_pretty(AST *ast, int depth);

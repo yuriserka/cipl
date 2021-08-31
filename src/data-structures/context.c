@@ -46,8 +46,7 @@ Scope *context_push_scope(Context *ctx) {
 }
 
 Scope *context_pop_scope(Context *ctx) {
-  --ctx->current_scope;
-  return list_peek_reverse(&ctx->scopes, ctx->current_scope);
+  return context_found_scope(ctx);
 }
 
 Symbol *context_declare_variable(Context *ctx, SymbolRefAST *symref) {
@@ -69,11 +68,8 @@ Symbol *context_declare_function(Context *ctx, SymbolRefAST *symref) {
 }
 
 void context_print(Context *ctx) {
-  printf("{ name: %s, symbol_table_entries: [ ", ctx->name);
-  LIST_FOR_EACH_REVERSE(ctx->scopes, {
-    Scope *scope = __IT__->data;
-    symbol_table_print(scope->symbol_table);
-  });
+  printf("{ name: %s, scopes: [ ", ctx->name);
+  LIST_FOR_EACH_REVERSE(ctx->scopes, { scope_print(__IT__->data); });
   printf("], }, ");
 }
 

@@ -11,7 +11,7 @@ AST *ast_blockitems_init(ListNode *blockitems) {
 
 void ast_blockitems_free(AST *ast) {
   BlockItemListAST *blockitems_ast = ast->value.blockitems;
-  list_free(blockitems_ast->value, ast_child_free);
+  LIST_FREE(blockitems_ast->value, { ast_free(__IT__->data); });
   free(blockitems_ast);
 }
 
@@ -20,6 +20,16 @@ double ast_blockitems_eval(AST *ast) { return 0; }
 void ast_blockitems_print(AST *ast) {
   BlockItemListAST *blockitems_ast = ast->value.blockitems;
   printf("block_items: { ");
-  LIST_FOR_EACH(blockitems_ast->value, { ast_child_print(__IT__); });
+  LIST_FOR_EACH(blockitems_ast->value, { ast_print(__IT__->data); });
   printf("}");
+}
+
+void ast_blockitems_print_pretty(AST *ast, int depth) {
+  BlockItemListAST *blockitems_ast = ast->value.blockitems;
+
+  for (int i = depth; i > 0; --i) printf("\t");
+
+  printf("<code-block>\n");
+  LIST_FOR_EACH(blockitems_ast->value,
+                { ast_print_pretty(__IT__->data, depth + 1); });
 }

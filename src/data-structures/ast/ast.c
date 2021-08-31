@@ -74,8 +74,6 @@ AST *ast_cast(AstTypes type, int n_children, ...) {
   return ast;
 }
 
-void ast_child_free(ListNode *node) { ast_free(node->data); }
-
 void ast_free(AST *ast) {
   if (!ast) return;
 
@@ -121,7 +119,7 @@ void ast_free(AST *ast) {
       ast_funcall_free(ast);
       break;
     case AST_PROG:
-      list_free(ast->children, ast_child_free);
+      LIST_FREE(ast->children, { ast_free(__IT__->data); });
       break;
     default:
       printf("AST type: %d free not implemented yet", ast->type);
@@ -169,8 +167,6 @@ double ast_eval(AST *ast) {
   }
   return 0;
 }
-
-void ast_child_print(ListNode *node) { ast_print(node->data); }
 
 void ast_child_print_aux_label(const char *label, AST *ast) {
   printf("%s: { ", label);
@@ -223,11 +219,65 @@ void ast_print(AST *ast) {
       ast_funcall_print(ast);
       break;
     case AST_PROG:
-      LIST_FOR_EACH(ast->children, { ast_child_print(__IT__); });
+      LIST_FOR_EACH(ast->children, { ast_print(__IT__->data); });
       return;
     default:
       printf("AST type: %d print not implemented yet", ast->type);
       break;
   }
   printf(", ");
+}
+
+void ast_print_pretty(AST *ast, int depth) {
+  if (!ast) return;
+
+  switch (ast->type) {
+    case AST_NUMBER_INT:
+    case AST_NUMBER_REAL:
+      ast_number_print_pretty(ast, depth);
+      break;
+    case AST_BIN_OP:
+      ast_binop_print_pretty(ast, depth);
+      break;
+    case AST_UNI_OP:
+      ast_uniop_print_pretty(ast, depth);
+      break;
+    case AST_ASSIGN_OP:
+      ast_assign_print_pretty(ast, depth);
+      break;
+    case AST_SYM_REF:
+      ast_symref_print_pretty(ast, depth);
+      break;
+    case AST_USER_FUNC:
+      ast_userfunc_print_pretty(ast, depth);
+      break;
+    case AST_PARAMS:
+      ast_params_print_pretty(ast, depth);
+      break;
+    case AST_BLOCK_ITEM_LIST:
+      ast_blockitems_print_pretty(ast, depth);
+      break;
+    case AST_DECLARATION:
+      ast_declaration_print_pretty(ast, depth);
+      break;
+    case AST_FLOW:
+      ast_flow_print_pretty(ast, depth);
+      break;
+    case AST_JMP:
+      ast_jmp_print_pretty(ast, depth);
+      break;
+    case AST_ITER:
+      ast_iter_print_pretty(ast, depth);
+      break;
+    case AST_FUNC_CALL:
+      ast_funcall_print_pretty(ast, depth);
+      break;
+    case AST_PROG:
+      printf("<root>\n");
+      LIST_FOR_EACH(ast->children, { ast_print_pretty(__IT__->data, depth + 1); });
+      return;
+    default:
+      printf("AST type: %d print not implemented yet", ast->type);
+      break;
+  }
 }

@@ -16,3 +16,4 @@ void ast_builtinfn_free(AST *ast);
 AST *ast_builtinfn_init(BuiltInFuncTypes func_type, AST *l);
 double ast_builtinfn_eval(AST *ast);
 void ast_builtinfn_print(AST *ast);
+void ast_builtinfn_print_pretty(AST *ast, int depth);

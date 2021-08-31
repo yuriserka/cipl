@@ -11,7 +11,7 @@ AST *ast_params_init(ListNode *params) {
 
 void ast_params_free(AST *ast) {
   ParamsAST *params_ast = ast->value.params;
-  list_free(params_ast->value, ast_child_free);
+  LIST_FREE(params_ast->value, { ast_free(__IT__->data); });
   free(params_ast);
 }
 
@@ -20,6 +20,16 @@ double ast_params_eval(AST *ast) { return 0; }
 void ast_params_print(AST *ast) {
   ParamsAST *params_ast = ast->value.params;
   printf("params: { ");
-  LIST_FOR_EACH(params_ast->value, { ast_child_print(__IT__); });
+  LIST_FOR_EACH(params_ast->value, { ast_print(__IT__->data); });
   printf("}");
+}
+
+void ast_params_print_pretty(AST *ast, int depth) {
+  ParamsAST *params_ast = ast->value.params;
+
+  for (int i = depth; i > 0; --i) printf("\t");
+
+  printf("<params>\n");
+  LIST_FOR_EACH(params_ast->value,
+                { ast_print_pretty(__IT__->data, depth + 1); });
 }

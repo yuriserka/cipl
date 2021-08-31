@@ -15,6 +15,7 @@ void ast_symref_free(AST *ast);
 AST *ast_symref_init(char *type, Symbol *symbol);
 double ast_symref_eval(AST *ast);
 void ast_symref_print(AST *ast);
+void ast_symref_print_pretty(AST *ast, int depth);
 
 SymbolTypes symbol_type_from_str(char *type);
 const char *symbol_type_from_enum(SymbolTypes type);

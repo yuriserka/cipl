@@ -12,3 +12,4 @@ void ast_params_free(AST *ast);
 AST *ast_params_init(ListNode *params);
 double ast_params_eval(AST *ast);
 void ast_params_print(AST *ast);
+void ast_params_print_pretty(AST *ast, int depth);

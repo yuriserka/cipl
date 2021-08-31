@@ -12,7 +12,7 @@ AST *ast_funcall_init(AST *declarator, AST *args) {
 
 void ast_funcall_free(AST *ast) {
   FunctionCallAST *funcall_ast = ast->value.funcall;
-  list_free(ast->children, ast_child_free);
+  LIST_FREE(ast->children, { ast_free(__IT__->data); });
   free(funcall_ast);
 }
 
@@ -25,4 +25,15 @@ void ast_funcall_print(AST *ast) {
   ast_child_print_aux_label("declarator", declarator);
   ast_child_print_aux_label("args", args);
   printf("}");
+}
+
+void ast_funcall_print_pretty(AST *ast, int depth) {
+  AST *declarator = list_peek(&ast->children, 0);
+  AST *args = list_peek(&ast->children, 1);
+
+  for (int i = depth; i > 0; --i) printf("\t");
+  printf("<function-call>\n");
+
+  ast_print_pretty(declarator, depth + 1);
+  ast_print_pretty(args, depth + 1);
 }
