@@ -46,11 +46,6 @@ void context_pretty() {
 }
 
 int cipl_main(int argc, char *argv[]) {
-  root = ast_cast(AST_PROG, 0);
-  contexts = list_node_init(context_init("global"));
-  current_context = list_peek(&contexts, 0);
-  init_global_context(current_context);
-
   if (argc < 2) {
     CIPL_PRINTF_COLOR(RED, "error: ");
     CIPL_PRINTF("usage: %s <filename>\n", argv[0]);
@@ -67,6 +62,11 @@ int cipl_main(int argc, char *argv[]) {
 
   yyin = pfile;
   (filename = strrchr(argv[1], '/')) ? ++filename : (filename = argv[1]);
+
+  root = ast_cast(AST_PROG, 0);
+  contexts = list_node_init(context_init("global"));
+  current_context = list_peek(&contexts, 0);
+  init_global_context(current_context);
 
   int got_erros = yyparse() || errors_count;
 

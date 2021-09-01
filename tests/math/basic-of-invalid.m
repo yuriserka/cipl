@@ -1,0 +1,2 @@
+// no declarator
+int list ;

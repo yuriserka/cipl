@@ -58,27 +58,28 @@ extern int yydebug;
     NIL = 259,                     /* NIL  */
     NUMBER_REAL = 260,             /* NUMBER_REAL  */
     NAME = 261,                    /* NAME  */
-    MULT = 262,                    /* MULT  */
-    ADD = 263,                     /* ADD  */
-    REL = 264,                     /* REL  */
-    AND = 265,                     /* AND  */
-    OR = 266,                      /* OR  */
-    EQ = 267,                      /* EQ  */
-    COLON = 268,                   /* COLON  */
-    DL_DG = 269,                   /* DL_DG  */
-    EXCLAMATION = 270,             /* EXCLAMATION  */
-    PERCENT = 271,                 /* PERCENT  */
-    QUESTION = 272,                /* QUESTION  */
-    STR_LITERAL = 273,             /* STR_LITERAL  */
-    INT = 274,                     /* INT  */
-    FLOAT = 275,                   /* FLOAT  */
-    LIST = 276,                    /* LIST  */
-    IF = 277,                      /* IF  */
-    ELSE = 278,                    /* ELSE  */
-    FOR = 279,                     /* FOR  */
-    RETURN = 280,                  /* RETURN  */
-    LET = 281,                     /* LET  */
-    THEN = 282                     /* THEN  */
+    READ = 262,                    /* READ  */
+    WRITE = 263,                   /* WRITE  */
+    MULT = 264,                    /* MULT  */
+    ADD = 265,                     /* ADD  */
+    REL = 266,                     /* REL  */
+    AND = 267,                     /* AND  */
+    OR = 268,                      /* OR  */
+    EQ = 269,                      /* EQ  */
+    COLON = 270,                   /* COLON  */
+    DL_DG = 271,                   /* DL_DG  */
+    EXCLAMATION = 272,             /* EXCLAMATION  */
+    PERCENT = 273,                 /* PERCENT  */
+    QUESTION = 274,                /* QUESTION  */
+    STR_LITERAL = 275,             /* STR_LITERAL  */
+    INT = 276,                     /* INT  */
+    FLOAT = 277,                   /* FLOAT  */
+    LIST = 278,                    /* LIST  */
+    IF = 279,                      /* IF  */
+    ELSE = 280,                    /* ELSE  */
+    FOR = 281,                     /* FOR  */
+    RETURN = 282,                  /* RETURN  */
+    THEN = 283                     /* THEN  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -87,7 +88,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 37 "src/bison/math.y"
+#line 37 "src/bison/grammar.y"
 
 	struct cipl_ast *ast;
     struct cipl_symbol *sym;
@@ -96,7 +97,7 @@ union YYSTYPE
 	double real;
 	int integer;
 
-#line 100 "lib/bison/grammar.h"
+#line 101 "lib/bison/grammar.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

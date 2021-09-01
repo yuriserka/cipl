@@ -98,6 +98,8 @@ int test_builtin() {
             }
         }
     }
+
+    writeln((media + nota1 + nota2) / 3);
 }
 
 int main(int argc, int argv) {

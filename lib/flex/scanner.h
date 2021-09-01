@@ -471,7 +471,7 @@ extern int yylex (void);
 #undef yyTABLES_NAME
 #endif
 
-#line 214 "src/flex/math.l"
+#line 219 "src/flex/lexer.l"
 
 
 #line 478 "lib/flex/scanner.h"

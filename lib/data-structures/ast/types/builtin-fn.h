@@ -13,7 +13,9 @@ typedef struct cipl_ast_builtin_fn {
 #include "data-structures/ast/ast.h"
 
 void ast_builtinfn_free(AST *ast);
-AST *ast_builtinfn_init(BuiltInFuncTypes func_type, AST *l);
+AST *ast_builtinfn_init(AST *name, AST *params);
 double ast_builtinfn_eval(AST *ast);
 void ast_builtinfn_print(AST *ast);
 void ast_builtinfn_print_pretty(AST *ast, int depth);
+
+BuiltInFuncTypes builtinfn_type_from_str(char *sym_name);

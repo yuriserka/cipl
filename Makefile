@@ -15,7 +15,7 @@ DEPS := $(SRCS:$(SRC_DIR)/%.c=$(DEP_DIR)/%.d)
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEP_DIR)/$*.d
 CXX := gcc
 INCLUDES := -I"lib/"
-CXXFLAGS := -std=gnu99
+CXXFLAGS := -std=gnu11
 CFLAGS := $(INCLUDES) -g -Wall -pedantic -Wpedantic -Werror -lm -lfl
 
 # $@  Nome da regra. 
@@ -30,11 +30,11 @@ all: clean runbison runflex $(EXEC)
 
 runbison:
 	@echo Running bison
-	@bison -Wcounterexamples -Wother --defines="lib/bison/grammar.h" --output="src/bison/grammar.c" src/bison/math.y
+	@bison -Wcounterexamples -Wother --defines="lib/bison/grammar.h" --output="src/bison/grammar.c" src/bison/grammar.y
 
 runflex:
 	@echo Running flex
-	@flex $(SRC_DIR)/flex/math.l
+	@flex $(SRC_DIR)/flex/lexer.l
 
 $(EXEC): $(OBJS)
 	@echo Generating executable $@

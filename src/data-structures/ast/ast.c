@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "utils/io.h"
+
 #define AST_INIT_UNION(MEM, TGT) \
   (AstNodeValue) { .MEM = va_arg(ptr, TGT *) }
 
@@ -122,6 +124,9 @@ void ast_free(AST *ast) {
     case AST_STR_LITERAL:
       ast_str_free(ast);
       break;
+    case AST_BUILTIN_FUNC:
+      ast_builtinfn_free(ast);
+      break;
     case AST_PROG:
       LIST_FREE(ast->children, { ast_free(__IT__->data); });
       break;
@@ -164,6 +169,8 @@ double ast_eval(AST *ast) {
       return ast_funcall_eval(ast);
     case AST_STR_LITERAL:
       return ast_str_eval(ast);
+    case AST_BUILTIN_FUNC:
+      return ast_builtinfn_eval(ast);
     case AST_PROG:
       return ast_eval(ast->children->data);
     default:
@@ -225,6 +232,9 @@ void ast_print(AST *ast) {
     case AST_STR_LITERAL:
       ast_str_print(ast);
       break;
+    case AST_BUILTIN_FUNC:
+      ast_builtinfn_print(ast);
+      break;
     case AST_PROG:
       LIST_FOR_EACH(ast->children, { ast_print(__IT__->data); });
       return;
@@ -241,6 +251,9 @@ void ast_print_pretty(AST *ast, int depth) {
   switch (ast->type) {
     case AST_NUMBER:
       ast_number_print_pretty(ast, depth);
+      break;
+    case AST_BUILTIN_FUNC:
+      ast_builtinfn_print_pretty(ast, depth);
       break;
     case AST_BIN_OP:
       ast_binop_print_pretty(ast, depth);
@@ -282,10 +295,10 @@ void ast_print_pretty(AST *ast, int depth) {
       ast_str_print_pretty(ast, depth);
       break;
     case AST_PROG:
-      printf("<root>\n");
+      CIPL_PRINTF_COLOR(BMAG, "<root>\n");
       LIST_FOR_EACH(ast->children,
                     { ast_print_pretty(__IT__->data, depth + 1); });
-      return;
+      break;
     default:
       printf("AST type: %d print not implemented yet", ast->type);
       break;
