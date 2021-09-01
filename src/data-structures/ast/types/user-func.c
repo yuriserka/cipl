@@ -7,6 +7,7 @@
 
 #include "core/globals.h"
 #include "data-structures/context.h"
+#include "utils/io.h"
 
 AST *ast_userfunc_init(Context *context, AST *declarator, AST *params,
                        AST *stmts) {
@@ -41,7 +42,7 @@ void ast_userfunc_print_pretty(AST *ast, int depth) {
 
   for (int i = depth; i > 0; --i) printf("\t");
 
-  printf("<function-declaration>\n");
+  CIPL_PRINTF_COLOR(BMAG, "<function-declaration>\n");
   ast_print_pretty(name, depth + 1);
   ast_print_pretty(params, depth + 1);
   ast_print_pretty(statements, depth + 1);

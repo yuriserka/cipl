@@ -52,7 +52,7 @@ void ast_binop_print_pretty(AST *ast, int depth) {
   BinOpAST *binop_ast = ast->value.binop;
 
   for (int i = depth; i > 0; --i) printf("\t");
-  printf("<binary-op>\n");
+  CIPL_PRINTF_COLOR(BMAG, "<binary-op>\n");
 
   for (int i = depth + 1; i > 0; --i) printf("\t");
   CIPL_PRINTF_COLOR(BBLU, "%s\n", binop_ast->op);

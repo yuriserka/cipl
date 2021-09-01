@@ -9,6 +9,7 @@
 Scope *scope_init() {
   Scope *scope = calloc(1, sizeof(Scope));
   scope->index = 0;
+  scope->size = 0;
   return scope;
 }
 
@@ -26,6 +27,7 @@ Scope *scope_init_copy(Scope *other) {
           .def_pos = others_sym->def_pos,
           .type = others_sym->type,
       };
+      ++scope->size;
     }
   }
   return scope;
@@ -37,6 +39,7 @@ void scope_free(Scope *scope) {
     if (sym && sym->name) {
       free(sym->name);
       free(sym->context_name);
+      --scope->size;
     }
   }
   free(scope);

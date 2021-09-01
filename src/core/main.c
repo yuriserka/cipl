@@ -41,6 +41,10 @@ void print_ast() {
 
 void print_ast_pretty() { ast_print_pretty(root, 0); }
 
+void context_pretty() {
+  LIST_FOR_EACH(contexts, { context_print_pretty(__IT__->data); });
+}
+
 int cipl_main(int argc, char *argv[]) {
   root = ast_cast(AST_PROG, 0);
   contexts = list_node_init(context_init("global"));
@@ -77,7 +81,7 @@ int cipl_main(int argc, char *argv[]) {
 
   if (!got_erros) {
     print_ast_pretty();
-    print_all_contexts();
+    context_pretty();
   }
 
   ast_free(root);

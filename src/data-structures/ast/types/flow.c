@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "data-structures/context.h"
+#include "utils/io.h"
 
 AST *ast_flow_init(Context *context, AST *cond, AST *then_branch,
                    AST *else_branch) {
@@ -37,7 +38,7 @@ void ast_flow_print_pretty(AST *ast, int depth) {
   AST *else_branch = list_peek(&ast->children, 2);
 
   for (int i = depth; i > 0; --i) printf("\t");
-  printf("<if_else-statement>\n");
+  CIPL_PRINTF_COLOR(BMAG, "<if_else-statement>\n");
 
   ast_print_pretty(conditional, depth + 1);
   ast_print_pretty(then_branch, depth + 1);

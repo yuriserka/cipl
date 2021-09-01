@@ -44,7 +44,7 @@ void ast_uniop_print_pretty(AST *ast, int depth) {
   UniOpAST *uniop_ast = ast->value.uniop;
 
   for (int i = depth; i > 0; --i) printf("\t");
-  printf("<unary-op>\n");
+  CIPL_PRINTF_COLOR(BMAG, "<unary-op>\n");
 
   for (int i = depth + 1; i > 0; --i) printf("\t");
   CIPL_PRINTF_COLOR(BBLU, "%s\n", uniop_ast->op);

@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "core/globals.h"
+#include "utils/io.h"
 
 AST *ast_declaration_init(AST *name) {
   DeclarationAST *ast = calloc(1, sizeof(DeclarationAST));
@@ -29,6 +30,6 @@ void ast_declaration_print_pretty(AST *ast, int depth) {
 
   for (int i = depth; i > 0; --i) printf("\t");
 
-  printf("<declaration>\n");
+  CIPL_PRINTF_COLOR(BMAG, "<declaration>\n");
   ast_print_pretty(name, depth + 1);
 }

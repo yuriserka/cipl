@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "utils/io.h"
+
 AST *ast_params_init(ListNode *params) {
   ParamsAST *ast = calloc(1, sizeof(ParamsAST));
   ast->value = params;
@@ -29,7 +31,7 @@ void ast_params_print_pretty(AST *ast, int depth) {
 
   for (int i = depth; i > 0; --i) printf("\t");
 
-  printf("<params>\n");
+  CIPL_PRINTF_COLOR(BMAG, "<params>\n");
   LIST_FOR_EACH(params_ast->value,
                 { ast_print_pretty(__IT__->data, depth + 1); });
 }

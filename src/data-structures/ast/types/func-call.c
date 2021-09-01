@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "data-structures/context.h"
+#include "utils/io.h"
 
 AST *ast_funcall_init(AST *declarator, AST *args) {
   FunctionCallAST *ast = calloc(1, sizeof(FunctionCallAST));
@@ -32,7 +33,7 @@ void ast_funcall_print_pretty(AST *ast, int depth) {
   AST *args = list_peek(&ast->children, 1);
 
   for (int i = depth; i > 0; --i) printf("\t");
-  printf("<function-call>\n");
+  CIPL_PRINTF_COLOR(BMAG, "<function-call>\n");
 
   ast_print_pretty(declarator, depth + 1);
   ast_print_pretty(args, depth + 1);

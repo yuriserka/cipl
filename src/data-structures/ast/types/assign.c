@@ -40,7 +40,7 @@ void ast_assign_print_pretty(AST *ast, int depth) {
 
   for (int i = depth; i > 0; --i) printf("\t");
 
-  printf("<assign>\n");
+  CIPL_PRINTF_COLOR(BMAG, "<assign>\n");
   ast_print_pretty(lhs, depth + 1);
 
   for (int i = depth + 1; i > 0; --i) printf("\t");

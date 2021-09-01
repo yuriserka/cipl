@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "utils/io.h"
+
 AST *ast_blockitems_init(ListNode *blockitems) {
   BlockItemListAST *ast = calloc(1, sizeof(BlockItemListAST));
   ast->value = blockitems;
@@ -29,7 +31,7 @@ void ast_blockitems_print_pretty(AST *ast, int depth) {
 
   for (int i = depth; i > 0; --i) printf("\t");
 
-  printf("<code-block>\n");
+  CIPL_PRINTF_COLOR(BMAG, "<code-block>\n");
   LIST_FOR_EACH(blockitems_ast->value,
                 { ast_print_pretty(__IT__->data, depth + 1); });
 }

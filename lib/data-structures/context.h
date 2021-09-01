@@ -22,3 +22,4 @@ Symbol *context_search_symbol_scopes(Context *ctx, Symbol *sym);
 Symbol *context_declare_variable(Context *ctx, SymbolRefAST *symref);
 Symbol *context_declare_function(Context *ctx, SymbolRefAST *sym);
 Scope *context_found_scope(Context *ctx);
+void context_print_pretty(Context *ctx);

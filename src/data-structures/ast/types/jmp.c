@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "data-structures/context.h"
+#include "utils/io.h"
 
 AST *ast_jmp_init(AST *stmt) {
   JumpAST *ast = calloc(1, sizeof(JumpAST));
@@ -29,7 +30,7 @@ void ast_jmp_print_pretty(AST *ast, int depth) {
   AST *stmt = list_peek(&ast->children, 0);
 
   for (int i = depth; i > 0; --i) printf("\t");
-  printf("<return-statement>\n");
+  CIPL_PRINTF_COLOR(BMAG, "<return-statement>\n");
 
   ast_print_pretty(stmt, depth + 1);
 }

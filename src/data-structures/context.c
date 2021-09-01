@@ -6,6 +6,7 @@
 
 #include "core/globals.h"
 #include "data-structures/scope.h"
+#include "utils/io.h"
 
 Context *context_init(char *name) {
   Context *ctx = calloc(1, sizeof(Context));
@@ -53,6 +54,7 @@ Symbol *context_declare_variable(Context *ctx, SymbolRefAST *symref) {
       symbol_table_get_valid_entry(current_scope->symbol_table, symref);
   symbol_update(entry, symref->symbol->name, symref->symbol->type,
                 current_scope->index, ctx->name, symref->symbol->def_pos);
+  ++current_scope->size;
   return entry;
 }
 
@@ -62,6 +64,7 @@ Symbol *context_declare_function(Context *ctx, SymbolRefAST *symref) {
       symbol_table_get_valid_entry(current_scope->symbol_table, symref);
   symbol_update(entry, symref->symbol->name, symref->symbol->type,
                 current_scope->index, ctx->name, symref->symbol->def_pos);
+  ++current_scope->size;
   return entry;
 }
 
@@ -77,4 +80,31 @@ Scope *context_found_scope(Context *ctx) {
     if (scope->index == ctx->current_scope) return scope;
   });
   return NULL;
+}
+
+void context_print_pretty(Context *ctx) {
+  int wd = 0;
+  CIPL_PRINTF_COLOR(BMAG, "Symbol Table for Context: %s\n", ctx->name);
+  LIST_FOR_EACH_REVERSE(ctx->scopes, {
+    Scope *scope = __IT__->data;
+
+    if (scope->size) {
+      for (int i = 0; i < wd; ++i) printf("\t");
+      CIPL_PRINTF_COLOR(BCYN, "Scope %d\n", scope->index);
+
+      for (int i = 0; i < NHASH; ++i) {
+        if (scope->symbol_table[i].name) {
+          Symbol *sym = &scope->symbol_table[i];
+          for (int i = 0; i < wd; ++i) printf("\t");
+
+          CIPL_PRINTF_COLOR(BGRN, "%s " BBLU "%s " BWHT "@%d:%d\n",
+                            symbol_type_from_enum(sym->type), sym->name,
+                            sym->def_pos.line, sym->def_pos.col);
+        }
+      }
+      ++wd;
+      printf("\n");
+    }
+  });
+  printf("\n\n");
 }

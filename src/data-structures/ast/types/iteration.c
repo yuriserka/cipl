@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "data-structures/context.h"
+#include "utils/io.h"
 
 AST *ast_iter_init(Context *context, AST *start, AST *while_cond, AST *final,
                    AST *stmts) {
@@ -40,7 +41,7 @@ void ast_iter_print_pretty(AST *ast, int depth) {
   AST *stmts = list_peek(&ast->children, 3);
 
   for (int i = depth; i > 0; --i) printf("\t");
-  printf("<iteration-statement>\n");
+  CIPL_PRINTF_COLOR(BMAG, "<iteration-statement>\n");
 
   ast_print_pretty(b4_all, depth + 1);
   ast_print_pretty(b4_each, depth + 1);

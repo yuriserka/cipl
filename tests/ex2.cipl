@@ -1,5 +1,4 @@
 float compute_w(
-    // TODO: nao permitir casar: <type, int list> <id, _elem>
     int list_elem, 
     int elem,
     int list h
@@ -13,13 +12,15 @@ int main() {
     int n;
     read(n);
 
-    int i, elem;
-    for (i = 0; i < n; ++i) {
+    int i;
+    int elem;
+    for (i = 0; i < n; i = i + 1) {
         read(elem);
         l = elem : l;
     }
 
-    float list w, it;
+    float list w;
+    float list it;
     w = compute_w >> l;
     i = 0;
 
@@ -28,7 +29,7 @@ int main() {
         write(i);
         write("): ");
         writeln(?it);
-        ++i;
+        i = i + 1;
     }
 
     it = %it;
