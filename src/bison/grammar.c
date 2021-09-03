@@ -589,14 +589,14 @@ static const yytype_int8 yytranslate[] =
 static const yytype_int16 yyrline[] =
 {
        0,    74,    74,    75,    78,    79,    82,    82,    99,   107,
-     126,   107,   141,   142,   145,   146,   149,   158,   158,   178,
-     179,   182,   183,   186,   187,   190,   191,   192,   193,   194,
-     195,   198,   205,   212,   215,   218,   223,   226,   231,   232,
-     235,   236,   239,   240,   246,   247,   253,   254,   260,   261,
-     267,   268,   272,   278,   279,   285,   286,   292,   293,   299,
-     300,   301,   302,   305,   306,   311,   312,   315,   316,   319,
-     320,   321,   322,   325,   339,   342,   343,   344,   351,   360,
-     361,   362,   365
+     126,   107,   148,   149,   152,   153,   156,   165,   165,   185,
+     186,   189,   190,   193,   194,   197,   198,   199,   200,   201,
+     202,   205,   212,   219,   222,   225,   230,   233,   238,   239,
+     242,   243,   246,   247,   253,   254,   260,   261,   267,   268,
+     274,   275,   279,   285,   286,   292,   293,   299,   300,   306,
+     307,   308,   309,   312,   313,   318,   319,   322,   323,   326,
+     327,   328,   329,   332,   346,   349,   350,   351,   358,   367,
+     368,   369,   372
 };
 #endif
 
@@ -2817,7 +2817,14 @@ yyreduce:
 #line 126 "src/bison/grammar.y"
                          {
         LIST_FOR_EACH((yyvsp[-1].list), {
-            context_declare_variable(current_context, ((AST *)__IT__->data)->value.symref);
+            SymbolRefAST *symref = ((AST *)__IT__->data)->value.symref;
+            Symbol *sym = context_has_symbol(current_context, symref->symbol);
+            if (sym) {
+                yyerror(NULL);
+                CIPL_PERROR_CURSOR("redefinition of parameter '%s'\n", error_cursor, symref->symbol->name);
+            } else {
+                context_declare_variable(current_context, symref);
+            }
         });
         // hack to save the scope of params and append to the scope of the body
         if((yyvsp[-2].ast)) {
@@ -2825,38 +2832,38 @@ yyreduce:
             stack_pop(&current_context->scopes, free_scope_cb);
         }
     }
-#line 2829 "src/bison/grammar.c"
+#line 2836 "src/bison/grammar.c"
     break;
 
   case 11: /* func_declaration: type id '(' @2 param_list.opt ')' $@3 compound_stmt  */
-#line 135 "src/bison/grammar.y"
+#line 142 "src/bison/grammar.y"
                     {
         (yyval.ast) = ast_userfunc_init(current_context, (yyvsp[-4].ast), ast_params_init((yyvsp[-3].list)), (yyvsp[0].ast));
         current_context = previous_context;
     }
-#line 2838 "src/bison/grammar.c"
+#line 2845 "src/bison/grammar.c"
     break;
 
   case 12: /* param_list.opt: %empty  */
-#line 141 "src/bison/grammar.y"
+#line 148 "src/bison/grammar.y"
                        { (yyval.list) = NULL; }
-#line 2844 "src/bison/grammar.c"
+#line 2851 "src/bison/grammar.c"
     break;
 
   case 14: /* params_list: params_list ',' param_decl  */
-#line 145 "src/bison/grammar.y"
+#line 152 "src/bison/grammar.y"
                                         { list_push(&(yyval.list), (yyvsp[0].ast)); }
-#line 2850 "src/bison/grammar.c"
+#line 2857 "src/bison/grammar.c"
     break;
 
   case 15: /* params_list: param_decl  */
-#line 146 "src/bison/grammar.y"
+#line 153 "src/bison/grammar.y"
                  { (yyval.list) = list_node_init((yyvsp[0].ast)); }
-#line 2856 "src/bison/grammar.c"
+#line 2863 "src/bison/grammar.c"
     break;
 
   case 16: /* param_decl: type id  */
-#line 149 "src/bison/grammar.y"
+#line 156 "src/bison/grammar.y"
                     {
         symbol_update_context((yyvsp[0].ast)->value.symref->symbol, current_context);
         symbol_update_type((yyvsp[0].ast)->value.symref->symbol, symbol_type_from_str((yyvsp[-1].pchar)));
@@ -2864,11 +2871,11 @@ yyreduce:
         ast_free((yyvsp[0].ast));
         free((yyvsp[-1].pchar));
     }
-#line 2868 "src/bison/grammar.c"
+#line 2875 "src/bison/grammar.c"
     break;
 
   case 17: /* $@4: %empty  */
-#line 158 "src/bison/grammar.y"
+#line 165 "src/bison/grammar.y"
                    {
         parent_stacknode_ref = context_get_current_stacknode_ref();
         // hack to update the current scope 
@@ -2880,11 +2887,11 @@ yyreduce:
             context_push_scope(current_context);
         }
     }
-#line 2884 "src/bison/grammar.c"
+#line 2891 "src/bison/grammar.c"
     break;
 
   case 18: /* compound_stmt: '{' $@4 block_item_list.opt '}'  */
-#line 168 "src/bison/grammar.y"
+#line 175 "src/bison/grammar.y"
                               {
         (yyval.ast) = ast_blockitems_init((yyvsp[-1].list));
         context_pop_scope(current_context);
@@ -2893,35 +2900,35 @@ yyreduce:
             parent_stacknode_ref = parent_stacknode_ref->parent;
         }
     }
-#line 2897 "src/bison/grammar.c"
+#line 2904 "src/bison/grammar.c"
     break;
 
   case 19: /* block_item_list.opt: block_item_list  */
-#line 178 "src/bison/grammar.y"
+#line 185 "src/bison/grammar.y"
                                      { (yyval.list) = (yyvsp[0].list); }
-#line 2903 "src/bison/grammar.c"
+#line 2910 "src/bison/grammar.c"
     break;
 
   case 20: /* block_item_list.opt: %empty  */
-#line 179 "src/bison/grammar.y"
+#line 186 "src/bison/grammar.y"
              { (yyval.list) = NULL; }
-#line 2909 "src/bison/grammar.c"
+#line 2916 "src/bison/grammar.c"
     break;
 
   case 21: /* block_item_list: block_item_list block_item  */
-#line 182 "src/bison/grammar.y"
+#line 189 "src/bison/grammar.y"
                                             { list_push(&(yyval.list), (yyvsp[0].ast)); }
-#line 2915 "src/bison/grammar.c"
+#line 2922 "src/bison/grammar.c"
     break;
 
   case 22: /* block_item_list: block_item  */
-#line 183 "src/bison/grammar.y"
+#line 190 "src/bison/grammar.y"
                  { (yyval.list) = list_node_init((yyvsp[0].ast)); }
-#line 2921 "src/bison/grammar.c"
+#line 2928 "src/bison/grammar.c"
     break;
 
   case 31: /* io_stmt: READ '(' id ')' ';'  */
-#line 198 "src/bison/grammar.y"
+#line 205 "src/bison/grammar.y"
                              {
         Symbol *func = context_search_symbol_scopes(current_context, (yyvsp[-4].sym));
         Symbol *param = context_search_symbol_scopes(current_context, (yyvsp[-2].ast)->value.symref->symbol);
@@ -2929,182 +2936,182 @@ yyreduce:
         symbol_free((yyvsp[-4].sym));
         ast_free((yyvsp[-2].ast));
     }
-#line 2933 "src/bison/grammar.c"
+#line 2940 "src/bison/grammar.c"
     break;
 
   case 32: /* io_stmt: WRITE '(' expression ')' ';'  */
-#line 205 "src/bison/grammar.y"
+#line 212 "src/bison/grammar.y"
                                    {
         Symbol *sym = context_search_symbol_scopes(current_context, (yyvsp[-4].sym));
         (yyval.ast) = ast_builtinfn_init(ast_symref_init(symbol_init_copy(sym)), (yyvsp[-2].ast));
         symbol_free((yyvsp[-4].sym));
     }
-#line 2943 "src/bison/grammar.c"
+#line 2950 "src/bison/grammar.c"
     break;
 
   case 33: /* expr_stmt: expression ';'  */
-#line 212 "src/bison/grammar.y"
+#line 219 "src/bison/grammar.y"
                           { (yyval.ast) = (yyvsp[-1].ast); }
-#line 2949 "src/bison/grammar.c"
+#line 2956 "src/bison/grammar.c"
     break;
 
   case 34: /* cond_stmt: IF '(' expression ')' statement  */
-#line 215 "src/bison/grammar.y"
+#line 222 "src/bison/grammar.y"
                                                       {
         (yyval.ast) = ast_flow_init(current_context, (yyvsp[-2].ast), (yyvsp[0].ast), NULL);
     }
-#line 2957 "src/bison/grammar.c"
+#line 2964 "src/bison/grammar.c"
     break;
 
   case 35: /* cond_stmt: IF '(' expression ')' statement ELSE statement  */
-#line 218 "src/bison/grammar.y"
+#line 225 "src/bison/grammar.y"
                                                      {
         (yyval.ast) = ast_flow_init(current_context, (yyvsp[-4].ast), (yyvsp[-2].ast), (yyvsp[0].ast));
     }
-#line 2965 "src/bison/grammar.c"
+#line 2972 "src/bison/grammar.c"
     break;
 
   case 36: /* jmp_stmt: RETURN expression ';'  */
-#line 223 "src/bison/grammar.y"
+#line 230 "src/bison/grammar.y"
                                 { (yyval.ast) = ast_jmp_init((yyvsp[-1].ast)); }
-#line 2971 "src/bison/grammar.c"
+#line 2978 "src/bison/grammar.c"
     break;
 
   case 37: /* iter_stmt: FOR '(' expression.opt ';' expression.opt ';' expression.opt ')' statement  */
-#line 226 "src/bison/grammar.y"
+#line 233 "src/bison/grammar.y"
                                                                                       {
         (yyval.ast) = ast_iter_init(current_context, (yyvsp[-6].ast), (yyvsp[-4].ast), (yyvsp[-2].ast), (yyvsp[0].ast));
     }
-#line 2979 "src/bison/grammar.c"
+#line 2986 "src/bison/grammar.c"
     break;
 
   case 39: /* expression: unary_expr '=' logical_or_expr  */
-#line 232 "src/bison/grammar.y"
+#line 239 "src/bison/grammar.y"
                                      { (yyval.ast) = ast_assign_init((yyvsp[-2].ast), (yyvsp[0].ast)); }
-#line 2985 "src/bison/grammar.c"
+#line 2992 "src/bison/grammar.c"
     break;
 
   case 40: /* expression.opt: %empty  */
-#line 235 "src/bison/grammar.y"
+#line 242 "src/bison/grammar.y"
                        { (yyval.ast) = NULL; }
-#line 2991 "src/bison/grammar.c"
+#line 2998 "src/bison/grammar.c"
     break;
 
   case 43: /* logical_or_expr: logical_or_expr OR logical_and_expr  */
-#line 240 "src/bison/grammar.y"
+#line 247 "src/bison/grammar.y"
                                           {
         (yyval.ast) = ast_binop_init((yyvsp[-1].pchar), (yyvsp[-2].ast), (yyvsp[0].ast));
         free((yyvsp[-1].pchar));
     }
-#line 3000 "src/bison/grammar.c"
+#line 3007 "src/bison/grammar.c"
     break;
 
   case 45: /* logical_and_expr: logical_and_expr AND eq_expr  */
-#line 247 "src/bison/grammar.y"
+#line 254 "src/bison/grammar.y"
                                    {
         (yyval.ast) = ast_binop_init((yyvsp[-1].pchar), (yyvsp[-2].ast), (yyvsp[0].ast));
         free((yyvsp[-1].pchar));
     }
-#line 3009 "src/bison/grammar.c"
+#line 3016 "src/bison/grammar.c"
     break;
 
   case 47: /* eq_expr: eq_expr EQ rel_expr  */
-#line 254 "src/bison/grammar.y"
+#line 261 "src/bison/grammar.y"
                           {
         (yyval.ast) = ast_binop_init((yyvsp[-1].pchar), (yyvsp[-2].ast), (yyvsp[0].ast));
         free((yyvsp[-1].pchar));
     }
-#line 3018 "src/bison/grammar.c"
+#line 3025 "src/bison/grammar.c"
     break;
 
   case 49: /* rel_expr: rel_expr REL list_expr  */
-#line 261 "src/bison/grammar.y"
+#line 268 "src/bison/grammar.y"
                              {
         (yyval.ast) = ast_binop_init((yyvsp[-1].pchar), (yyvsp[-2].ast), (yyvsp[0].ast));
         free((yyvsp[-1].pchar));
     }
-#line 3027 "src/bison/grammar.c"
+#line 3034 "src/bison/grammar.c"
     break;
 
   case 51: /* list_expr: add_expr DL_DG list_expr  */
-#line 268 "src/bison/grammar.y"
+#line 275 "src/bison/grammar.y"
                                {
         (yyval.ast) = ast_binop_init((yyvsp[-1].pchar), (yyvsp[-2].ast), (yyvsp[0].ast));
         free((yyvsp[-1].pchar));
     }
-#line 3036 "src/bison/grammar.c"
+#line 3043 "src/bison/grammar.c"
     break;
 
   case 52: /* list_expr: add_expr COLON list_expr  */
-#line 272 "src/bison/grammar.y"
+#line 279 "src/bison/grammar.y"
                                {
         (yyval.ast) = ast_binop_init((yyvsp[-1].pchar), (yyvsp[-2].ast), (yyvsp[0].ast));
         free((yyvsp[-1].pchar));
     }
-#line 3045 "src/bison/grammar.c"
+#line 3052 "src/bison/grammar.c"
     break;
 
   case 54: /* add_expr: add_expr ADD mult_expr  */
-#line 279 "src/bison/grammar.y"
+#line 286 "src/bison/grammar.y"
                              {
         (yyval.ast) = ast_binop_init((yyvsp[-1].pchar), (yyvsp[-2].ast), (yyvsp[0].ast));
         free((yyvsp[-1].pchar));
     }
-#line 3054 "src/bison/grammar.c"
+#line 3061 "src/bison/grammar.c"
     break;
 
   case 56: /* mult_expr: mult_expr MULT unary_expr  */
-#line 286 "src/bison/grammar.y"
+#line 293 "src/bison/grammar.y"
                                 {
         (yyval.ast) = ast_binop_init((yyvsp[-1].pchar), (yyvsp[-2].ast), (yyvsp[0].ast));
         free((yyvsp[-1].pchar));
     }
-#line 3063 "src/bison/grammar.c"
+#line 3070 "src/bison/grammar.c"
     break;
 
   case 58: /* unary_expr: unary_ops unary_expr  */
-#line 293 "src/bison/grammar.y"
+#line 300 "src/bison/grammar.y"
                            {
         (yyval.ast) = ast_uniop_init((yyvsp[-1].pchar), (yyvsp[0].ast));
         free((yyvsp[-1].pchar));
     }
-#line 3072 "src/bison/grammar.c"
+#line 3079 "src/bison/grammar.c"
     break;
 
   case 64: /* postfix_expr: id_expr '(' arg_expr_list.opt ')'  */
-#line 306 "src/bison/grammar.y"
+#line 313 "src/bison/grammar.y"
                                         {
         (yyval.ast) = ast_funcall_init((yyvsp[-3].ast), ast_params_init((yyvsp[-1].list)));
     }
-#line 3080 "src/bison/grammar.c"
+#line 3087 "src/bison/grammar.c"
     break;
 
   case 65: /* arg_expr_list: expression  */
-#line 311 "src/bison/grammar.y"
+#line 318 "src/bison/grammar.y"
                           { (yyval.list) = list_node_init((yyvsp[0].ast)); }
-#line 3086 "src/bison/grammar.c"
+#line 3093 "src/bison/grammar.c"
     break;
 
   case 66: /* arg_expr_list: arg_expr_list ',' expression  */
-#line 312 "src/bison/grammar.y"
+#line 319 "src/bison/grammar.y"
                                    { list_push(&(yyval.list), (yyvsp[0].ast)); }
-#line 3092 "src/bison/grammar.c"
+#line 3099 "src/bison/grammar.c"
     break;
 
   case 68: /* arg_expr_list.opt: %empty  */
-#line 316 "src/bison/grammar.y"
+#line 323 "src/bison/grammar.y"
              { (yyval.list) = NULL; }
-#line 3098 "src/bison/grammar.c"
+#line 3105 "src/bison/grammar.c"
     break;
 
   case 72: /* primary_expr: '(' expression ')'  */
-#line 322 "src/bison/grammar.y"
+#line 329 "src/bison/grammar.y"
                          { (yyval.ast) = (yyvsp[-1].ast); }
-#line 3104 "src/bison/grammar.c"
+#line 3111 "src/bison/grammar.c"
     break;
 
   case 73: /* id_expr: id  */
-#line 325 "src/bison/grammar.y"
+#line 332 "src/bison/grammar.y"
             {
         Symbol *sym = context_search_symbol_scopes(current_context, (yyvsp[0].ast)->value.symref->symbol);
         if (!sym) {
@@ -3117,17 +3124,17 @@ yyreduce:
         }
         ast_free((yyvsp[0].ast));
     }
-#line 3121 "src/bison/grammar.c"
+#line 3128 "src/bison/grammar.c"
     break;
 
   case 74: /* id: NAME  */
-#line 339 "src/bison/grammar.y"
+#line 346 "src/bison/grammar.y"
          { (yyval.ast) = ast_symref_init((yyvsp[0].sym)); }
-#line 3127 "src/bison/grammar.c"
+#line 3134 "src/bison/grammar.c"
     break;
 
   case 77: /* type: INT LIST  */
-#line 344 "src/bison/grammar.y"
+#line 351 "src/bison/grammar.y"
                {
         char *type = calloc(strlen((yyvsp[-1].pchar)) + strlen((yyvsp[0].pchar)) + 2, sizeof(char));
         sprintf(type, "%s %s", (yyvsp[-1].pchar), (yyvsp[0].pchar));
@@ -3135,11 +3142,11 @@ yyreduce:
         free((yyvsp[0].pchar));
         (yyval.pchar) = type;
     }
-#line 3139 "src/bison/grammar.c"
+#line 3146 "src/bison/grammar.c"
     break;
 
   case 78: /* type: FLOAT LIST  */
-#line 351 "src/bison/grammar.y"
+#line 358 "src/bison/grammar.y"
                  {
         char *type = calloc(strlen((yyvsp[-1].pchar)) + strlen((yyvsp[0].pchar)) + 2, sizeof(char));
         sprintf(type, "%s %s", (yyvsp[-1].pchar), (yyvsp[0].pchar));
@@ -3147,38 +3154,38 @@ yyreduce:
         free((yyvsp[0].pchar));
         (yyval.pchar) = type;
     }
-#line 3151 "src/bison/grammar.c"
+#line 3158 "src/bison/grammar.c"
     break;
 
   case 79: /* constant: NUMBER_REAL  */
-#line 360 "src/bison/grammar.y"
+#line 367 "src/bison/grammar.y"
                       { (yyval.ast) = ast_number_init(K_REAL, (NumberValue){ .real=(yyvsp[0].real) }); }
-#line 3157 "src/bison/grammar.c"
+#line 3164 "src/bison/grammar.c"
     break;
 
   case 80: /* constant: NUMBER_INT  */
-#line 361 "src/bison/grammar.y"
+#line 368 "src/bison/grammar.y"
                  { (yyval.ast) = ast_number_init(K_INTEGER, (NumberValue){ .integer=(yyvsp[0].integer) }); }
-#line 3163 "src/bison/grammar.c"
+#line 3170 "src/bison/grammar.c"
     break;
 
   case 81: /* constant: NIL  */
-#line 362 "src/bison/grammar.y"
+#line 369 "src/bison/grammar.y"
           { (yyval.ast) = ast_number_init(K_NIL, (NumberValue){ .integer=(yyvsp[0].integer) }); }
-#line 3169 "src/bison/grammar.c"
+#line 3176 "src/bison/grammar.c"
     break;
 
   case 82: /* string_literal: STR_LITERAL  */
-#line 365 "src/bison/grammar.y"
+#line 372 "src/bison/grammar.y"
                             {
         (yyval.ast) = ast_str_init((yyvsp[0].pchar));
         free((yyvsp[0].pchar));
     }
-#line 3178 "src/bison/grammar.c"
+#line 3185 "src/bison/grammar.c"
     break;
 
 
-#line 3182 "src/bison/grammar.c"
+#line 3189 "src/bison/grammar.c"
 
       default: break;
     }
@@ -3403,7 +3410,7 @@ yyreturn:
   return yyresult;
 }
 
-#line 371 "src/bison/grammar.y"
+#line 378 "src/bison/grammar.y"
 
 
 void yyerror(const char *s, ...) {

@@ -57,9 +57,11 @@ Symbol *context_declare_variable(Context *ctx, SymbolRefAST *symref) {
   Scope *current_scope = context_found_scope(ctx);
   Symbol *entry =
       symbol_table_get_valid_entry(current_scope->symbol_table, symref);
-  symbol_update(entry, symref->symbol->name, symref->symbol->type, false,
-                current_scope->index, ctx->name, symref->symbol->def_pos);
-  ++current_scope->size;
+  if (entry) {
+    symbol_update(entry, symref->symbol->name, symref->symbol->type, false,
+                  current_scope->index, ctx->name, symref->symbol->def_pos);
+    ++current_scope->size;
+  }
   return entry;
 }
 
@@ -67,9 +69,11 @@ Symbol *context_declare_function(Context *ctx, SymbolRefAST *symref) {
   Scope *current_scope = context_found_scope(ctx);
   Symbol *entry =
       symbol_table_get_valid_entry(current_scope->symbol_table, symref);
-  symbol_update(entry, symref->symbol->name, symref->symbol->type, true,
-                current_scope->index, ctx->name, symref->symbol->def_pos);
-  ++current_scope->size;
+  if (entry) {
+    symbol_update(entry, symref->symbol->name, symref->symbol->type, true,
+                  current_scope->index, ctx->name, symref->symbol->def_pos);
+    ++current_scope->size;
+  }
   return entry;
 }
 

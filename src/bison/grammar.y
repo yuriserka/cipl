@@ -125,7 +125,14 @@ func_declaration: type id '(' <ast>{
         free($1);
     } param_list.opt ')' {
         LIST_FOR_EACH($5, {
-            context_declare_variable(current_context, ((AST *)__IT__->data)->value.symref);
+            SymbolRefAST *symref = ((AST *)__IT__->data)->value.symref;
+            Symbol *sym = context_has_symbol(current_context, symref->symbol);
+            if (sym) {
+                yyerror(NULL);
+                CIPL_PERROR_CURSOR("redefinition of parameter '%s'\n", error_cursor, symref->symbol->name);
+            } else {
+                context_declare_variable(current_context, symref);
+            }
         });
         // hack to save the scope of params and append to the scope of the body
         if($4) {
