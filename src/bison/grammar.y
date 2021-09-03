@@ -80,19 +80,17 @@ external_declaration: func_declaration
     ;
 
 var_declaration: type id <ast>{
-        // Symbol *sym = context_has_symbol(current_context, $2->value.symref->symbol);
-        // if (sym) {
-        //     yyerror(NULL);
-        //     CIPL_PERROR_CURSOR("redeclaration of '%s'\n", error_cursor, $2->value.symref->symbol->name);
-        //     $$ = NULL;
-        // } else {
-        //     $$ = ast_symref_init(
-        //         symbol_init_copy(context_declare_variable(current_context, $2->value.symref))
-        //     );
-        // }
-        Symbol *declared = context_declare_variable(current_context, $2->value.symref);
-        symbol_update_type(declared, symbol_type_from_str($1));
-        $$ = ast_symref_init(symbol_init_copy(declared));
+        Symbol *sym = context_has_symbol(current_context, $2->value.symref->symbol);
+        if (sym) {
+            yyerror(NULL);
+            CIPL_PERROR_CURSOR("redeclaration of '%s'\n", error_cursor, $2->value.symref->symbol->name);
+            $$ = NULL;
+        }
+        else {
+            Symbol *declared = context_declare_variable(current_context, $2->value.symref);
+            symbol_update_type(declared, symbol_type_from_str($1));
+            $$ = ast_symref_init(symbol_init_copy(declared));
+        }
         ast_free($2);
         free($1);
     } ';' {
