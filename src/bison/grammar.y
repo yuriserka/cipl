@@ -53,7 +53,7 @@
 %type<pchar> unary_ops type
 
 %type<ast> external_declaration var_declaration id func_declaration block_item statement
-%type<ast> expression eq_expr rel_expr add_expr primary_expr constant string_literal
+%type<ast> expression eq_expr rel_expr add_expr primary_expr constant string_literal id_expr
 %type<ast> mult_expr unary_expr postfix_expr compound_stmt logical_and_expr logical_or_expr
 %type<ast> expr_stmt jmp_stmt cond_stmt expression.opt iter_stmt list_expr param_decl io_stmt
 
@@ -311,7 +311,7 @@ unary_ops: EXCLAMATION
     ;
 
 postfix_expr: primary_expr
-    | id '(' arg_expr_list.opt ')' {
+    | id_expr '(' arg_expr_list.opt ')' {
         $$ = ast_funcall_init($1, ast_params_init($3));
     }
     ;
@@ -324,7 +324,13 @@ arg_expr_list.opt: arg_expr_list
     | %empty { $$ = NULL; }
     ;
 
-primary_expr: id {
+primary_expr: id_expr
+    | constant
+    | string_literal
+    | '(' expression ')' { $$ = $2; }
+    ;
+
+id_expr: id {
         Symbol *sym = context_search_symbol_scopes(current_context, $1->value.symref->symbol);
         if (!sym) {
             yyerror(NULL);
@@ -336,9 +342,6 @@ primary_expr: id {
         }
         ast_free($1);
     }
-    | constant
-    | string_literal
-    | '(' expression ')' { $$ = $2; }
     ;
 
 id: NAME { $$ = ast_symref_init($1); }
