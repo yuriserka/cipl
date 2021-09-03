@@ -102,6 +102,24 @@ int test_builtin() {
     writeln((media + nota1 + nota2) / 3);
 }
 
+int scopes_redecl(int a) {
+    {
+        int a;
+        {
+            int a;
+            if (a) {
+                int a;
+            } else {
+                int b;
+                a = 2;
+                for (a = a + 2;;) {
+                    int a;
+                }
+            }
+        }
+    }
+}
+
 int main(int argc, int argv) {
     if (argc < 2 + !argv) {
         return 1;
@@ -128,6 +146,7 @@ int main(int argc, int argv) {
     ret = conditional(iteration(i, 15));
 
     test_builtin();
+    scopes_redecl(ret);
 
     return ret;
 }

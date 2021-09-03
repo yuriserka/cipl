@@ -76,19 +76,14 @@ BUILTIN_FUNCTIONS read|write|writeln
   }
 }
 
-"int" {
+"int"|"float"|"list" {
   yylval.pchar = strdup(yytext);
-  return INT;
-}
-
-"float" {
-  yylval.pchar = strdup(yytext);
-  return FLOAT;
-}
-
-"list" {
-  yylval.pchar = strdup(yytext);
-  return LIST;
+  cursor_position_update(0, yyleng);
+  switch(yytext[0]) {
+    case 'i': return INT;
+    case 'f': return FLOAT;
+    case 'l': return LIST;
+  }
 }
 
 {BUILTIN_FUNCTIONS} {
@@ -107,6 +102,7 @@ BUILTIN_FUNCTIONS read|write|writeln
   long int longval;
   sscanf(yytext, "%ld", &longval);
   yylval.integer = longval;
+  cursor_position_update(0, yyleng);
   return NUMBER_INT;
 }
 
@@ -114,6 +110,7 @@ BUILTIN_FUNCTIONS read|write|writeln
   double doubleval;
   sscanf(yytext, "%lf", &doubleval);
   yylval.real = doubleval;
+  cursor_position_update(0, yyleng);
   return NUMBER_REAL;
 }
 
