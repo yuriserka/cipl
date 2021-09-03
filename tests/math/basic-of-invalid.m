@@ -1,8 +1,14 @@
 int ;
 
-int redecl(int a) {
+int var_redecl(int a) {
     float a;
+    int list a;
+    float list a;
+    int var_redecl;
 }
+
+int fn_decl() {}
+int list fn_decl() {}
 
 int main() {
     if (1) {
