@@ -23,6 +23,10 @@ Context *context_init(char *name) {
 Symbol *context_search_symbol_scopes(Context *ctx, Symbol *sym) {
   LIST_FOR_EACH_REVERSE(ctx->scopes, {
     Scope *scope = __IT__->data;
+    while (__IT_NXT__ &&
+           (scope->last_parent != ((Scope *)__IT_NXT__->data)->index)) {
+      __IT_NXT__ = __IT_NXT__->parent;
+    }
     Symbol *sym_entry = symbol_table_lookup(scope->symbol_table, sym->name);
     if (sym_entry) return sym_entry;
   });
@@ -42,6 +46,7 @@ void context_free(Context *ctx) {
 
 Scope *context_push_scope(Context *ctx) {
   Scope *scope = scope_add(&ctx->scopes, stack_peek(&ctx->scopes));
+  scope->last_parent = ctx->current_scope;
   ctx->current_scope = scope->index;
   return scope;
 }

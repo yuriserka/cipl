@@ -48,8 +48,8 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(DEP_DIR)/%.d
 	@echo Compiling $<
 	@$(CXX) -c $< $(DEPFLAGS) $(CXXFLAGS) $(CFLAGS) -o $@
 
-$(DEPS):
-include $(wildcard $(DEPS))
+# $(DEPS):
+# include $(wildcard $(DEPS))
 
 clean:
 	@echo Deleting generated files  
@@ -67,4 +67,4 @@ mem_check: all
 docs:
 	doxygen ./Doxyfile
 
--include $(wildcard $(DEPS))
+# -include $(wildcard $(DEPS))

@@ -10,12 +10,14 @@ Scope *scope_init() {
   Scope *scope = calloc(1, sizeof(Scope));
   scope->index = 0;
   scope->size = 0;
+  scope->last_parent = 0;
   return scope;
 }
 
 Scope *scope_init_copy(Scope *other) {
   Scope *scope = calloc(1, sizeof(Scope));
   scope->index = other->index;
+  scope->last_parent = other->last_parent;
   for (int i = 0; i < NHASH; ++i) {
     Symbol *others_sym = &other->symbol_table[i];
     if (others_sym->name) {

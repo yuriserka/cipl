@@ -7,6 +7,7 @@ typedef struct cipl_scope {
   int index;
   SymbolTable symbol_table;
   unsigned int size;
+  int last_parent;
 } Scope;
 
 Scope *scope_init();

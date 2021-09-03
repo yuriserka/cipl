@@ -73,7 +73,7 @@ int cipl_main(int argc, char *argv[]) {
   if (got_erros) {
     CIPL_PRINTF_COLOR(BRED, "\n%d error%s", errors_count,
                       errors_count > 1 ? "s" : "");
-    CIPL_PRINTF(" generated.\nisn't possible to print the AST.\n");
+    CIPL_PRINTF(" generated.\nis not possible to print the AST or the Symbol Table.\n");
   }
 
   fclose(yyin);

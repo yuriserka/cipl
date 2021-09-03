@@ -326,15 +326,14 @@ arg_expr_list.opt: arg_expr_list
 
 primary_expr: id {
         Symbol *sym = context_search_symbol_scopes(current_context, $1->value.symref->symbol);
-        // if (!sym) {
-        //     yyerror(NULL);
-        //     CIPL_PERROR_CURSOR("'%s' undeclared (first use in this function)\n", $1->value.symref->symbol->def_pos, $1->value.symref->symbol->name);
-        //     $$ = NULL;
-        // } else {
-        //     $$ = ast_symref_init(symbol_init_copy(sym));
-        // }
-        symbol_update_context($1->value.symref->symbol, current_context);
-        $$ = ast_symref_init(symbol_init_copy(sym ? sym : $1->value.symref->symbol));
+        if (!sym) {
+            yyerror(NULL);
+            CIPL_PERROR_CURSOR("'%s' undeclared (first use in this function)", error_cursor, $1->value.symref->symbol->name);
+            $$ = NULL;
+        }   else {
+            symbol_update_context($1->value.symref->symbol, current_context);
+            $$ = ast_symref_init(symbol_init_copy(sym ? sym : $1->value.symref->symbol));
+        }
         ast_free($1);
     }
     | constant
