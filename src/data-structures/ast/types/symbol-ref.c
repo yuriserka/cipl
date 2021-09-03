@@ -35,8 +35,5 @@ void ast_symref_print_pretty(AST *ast, int depth) {
   SymbolRefAST *symref = ast->value.symref;
 
   for (int i = depth; i > 0; --i) printf("\t");
-  CIPL_PRINTF_COLOR(BGRN, "%s " BCYN "%s " BHWHT "@%d:%d\n",
-                    symbol_type_from_enum(symref->symbol->type),
-                    symref->symbol->name, symref->symbol->def_pos.line,
-                    symref->symbol->def_pos.col);
+  symbol_print_pretty(symref->symbol);
 }

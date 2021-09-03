@@ -6,18 +6,19 @@
 
 #include "core/globals.h"
 #include "data-structures/context.h"
+#include "utils/io.h"
 
-Symbol *symbol_init(char *name, SymbolTypes type, int scope, char *ctx_name,
-                    cursor_position pos) {
+Symbol *symbol_init(char *name, SymbolTypes type, bool is_function, int scope,
+                    char *ctx_name, cursor_position pos) {
   Symbol *sym = calloc(1, sizeof(Symbol));
-  symbol_update(sym, name, type, scope, ctx_name, pos);
+  symbol_update(sym, name, type, is_function, scope, ctx_name, pos);
   return sym;
 }
 
 void symbol_update_type(Symbol *sym, SymbolTypes type) { sym->type = type; }
 
 Symbol *symbol_init_copy(Symbol *other) {
-  return symbol_init(other->name, other->type, other->scope,
+  return symbol_init(other->name, other->type, other->is_fn, other->scope,
                      other->context_name, other->def_pos);
 }
 
@@ -33,14 +34,15 @@ void symbol_update_context(Symbol *sym, Context *ctx) {
   sym->scope = ctx->current_scope;
 }
 
-void symbol_update(Symbol *sym, char *name, SymbolTypes type, int scope, char *ctx_name,
-                   cursor_position pos) {
+void symbol_update(Symbol *sym, char *name, SymbolTypes type, bool is_function,
+                   int scope, char *ctx_name, cursor_position pos) {
   sym->name = strdup(name);
   sym->context_name = strdup(ctx_name);
   sym->scope = scope;
   sym->value = 0;
   sym->def_pos = pos;
   sym->type = type;
+  sym->is_fn = is_function;
 }
 
 void symbol_free(Symbol *sym) {
@@ -50,9 +52,20 @@ void symbol_free(Symbol *sym) {
 }
 
 void symbol_print(Symbol *sym) {
-  printf("{ name: '%s', type: %s, declared_at: '%s:%d:%d', }, ", sym->name,
-         symbol_type_from_enum(sym->type), filename, sym->def_pos.line,
-         sym->def_pos.col);
+  printf("{ name: '%s', type: %s%s, declared_at: '%s:%d:%d', }, ", sym->name,
+         sym->is_fn ? "SYM_FUNC " : "", symbol_type_from_enum(sym->type),
+         filename, sym->def_pos.line, sym->def_pos.col);
+}
+
+void symbol_print_pretty(Symbol *sym) {
+  const char *color = sym->is_fn ? BBLU : BCYN;
+  CIPL_PRINTF_COLOR(BGRN,
+                    "%s%s "
+                    "%s"
+                    "%s " BHWHT "@%d:%d\n",
+                    sym->is_fn ? "SYM_FUNC " : "",
+                    symbol_type_from_enum(sym->type), color, sym->name,
+                    sym->def_pos.line, sym->def_pos.col);
 }
 
 SymbolTypes symbol_type_from_str(char *type) {

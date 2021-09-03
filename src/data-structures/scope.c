@@ -28,6 +28,7 @@ Scope *scope_init_copy(Scope *other) {
           .value = others_sym->value,
           .def_pos = others_sym->def_pos,
           .type = others_sym->type,
+          .is_fn = others_sym->is_fn,
       };
       ++scope->size;
     }

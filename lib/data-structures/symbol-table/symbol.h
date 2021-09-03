@@ -1,5 +1,7 @@
 #pragma once
 
+#include "stdbool.h"
+
 // fast-forward definition of Symbol
 typedef struct cipl_symbol Symbol;
 
@@ -19,23 +21,25 @@ struct cipl_symbol {
   char *context_name;
   double value;
   int scope;
+  bool is_fn;
   cursor_position def_pos;
   SymbolTypes type;
 };
 
 struct cipl_context;
 
-Symbol *symbol_init(char *name, SymbolTypes type, int scope, char *ctx_name,
-                    cursor_position pos);
+Symbol *symbol_init(char *name, SymbolTypes type, bool is_function, int scope,
+                    char *ctx_name, cursor_position pos);
 Symbol *symbol_init_copy(Symbol *other);
 Symbol *symbol_found(char *name, cursor_position pos);
 void symbol_update_type(Symbol *sym, SymbolTypes type);
 void symbol_update_context(Symbol *sym, struct cipl_context *ctx);
 
-void symbol_update(Symbol *sym, char *name, SymbolTypes type, int scope,
-                   char *ctx_name, cursor_position pos);
+void symbol_update(Symbol *sym, char *name, SymbolTypes type, bool is_function,
+                   int scope, char *ctx_name, cursor_position pos);
 void symbol_free(Symbol *sym);
 void symbol_print(Symbol *sym);
+void symbol_print_pretty(Symbol *sym);
 
 SymbolTypes symbol_type_from_str(char *type);
 char *symbol_type_from_enum(SymbolTypes type);

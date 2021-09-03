@@ -10,13 +10,17 @@
 void init_global_context(Context *global_ctx) {
   cursor_position definition = (cursor_position){.line = 0, .col = 0};
   SymbolTypes type = symbol_type_from_str("int");
-  AST *write_fnref = ast_symref_init(symbol_init(
-      "write", type, global_ctx->current_scope, global_ctx->name, definition));
-  AST *writeln_fnref =
-      ast_symref_init(symbol_init("writeln", type, global_ctx->current_scope,
+  AST *write_fnref = ast_symref_init(symbol_init("write", type, true,
+                                                 global_ctx->current_scope,
+                                                 global_ctx->name, definition));
+
+  AST *writeln_fnref = ast_symref_init(
+      symbol_init("writeln", type, true, global_ctx->current_scope,
+                  global_ctx->name, definition));
+
+  AST *read_fnref =
+      ast_symref_init(symbol_init("read", type, true, global_ctx->current_scope,
                                   global_ctx->name, definition));
-  AST *read_fnref = ast_symref_init(symbol_init(
-      "read", type, global_ctx->current_scope, global_ctx->name, definition));
 
   context_declare_function(global_ctx, write_fnref->value.symref);
   context_declare_function(global_ctx, writeln_fnref->value.symref);
@@ -39,9 +43,17 @@ void print_ast() {
   printf("}, }\n");
 }
 
-void print_ast_pretty() { ast_print_pretty(root, 0); }
+void print_ast_pretty() {
+  printf("\n##################################################\n");
+  printf("               Abstract Syntax Tree               \n");
+  printf("##################################################\n\n");
+  ast_print_pretty(root, 0);
+}
 
 void context_pretty() {
+  printf("\n\n##################################################\n");
+  printf("                   Symbol Table                   \n");
+  printf("##################################################\n\n");
   LIST_FOR_EACH(contexts, { context_print_pretty(__IT__->data); });
 }
 
@@ -73,7 +85,8 @@ int cipl_main(int argc, char *argv[]) {
   if (got_erros) {
     CIPL_PRINTF_COLOR(BRED, "\n%d error%s", errors_count,
                       errors_count > 1 ? "s" : "");
-    CIPL_PRINTF(" generated.\nis not possible to print the AST or the Symbol Table.\n");
+    CIPL_PRINTF(
+        " generated.\nis not possible to print the AST or the Symbol Table.\n");
   }
 
   fclose(yyin);
