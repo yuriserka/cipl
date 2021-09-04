@@ -176,7 +176,6 @@ compound_stmt: '{' {
         $$ = ast_blockitems_init($3);
         context_pop_scope(current_context);
         if (parent_stacknode_ref) {
-            current_context->current_scope = ((Scope *)parent_stacknode_ref->data)->index;
             parent_stacknode_ref = parent_stacknode_ref->parent;
         }
     }

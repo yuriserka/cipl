@@ -6,8 +6,6 @@
 #include "data-structures/ast/types/symbol-ref.h"
 #include "utils/io.h"
 
-SymbolTable symbol_table;
-
 static unsigned symbol_table_hash(char *sym_name) {
   unsigned long hash = 0;
   int c;
@@ -48,7 +46,7 @@ Symbol *symbol_table_get_valid_entry(SymbolTable symbol_table,
   return NULL;
 }
 
-void symbol_table_delete(char *sym_name) {
+void symbol_table_delete(SymbolTable symbol_table, char *sym_name) {
   Symbol *sp = &symbol_table[symbol_table_hash(sym_name) % NHASH];
   int scount = NHASH;
 

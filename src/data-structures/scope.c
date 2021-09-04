@@ -21,15 +21,9 @@ Scope *scope_init_copy(Scope *other) {
   for (int i = 0; i < NHASH; ++i) {
     Symbol *others_sym = &other->symbol_table[i];
     if (others_sym->name) {
-      scope->symbol_table[i] = (Symbol){
-          .name = strdup(others_sym->name),
-          .context_name = strdup(others_sym->context_name),
-          .scope = others_sym->scope,
-          .value = others_sym->value,
-          .def_pos = others_sym->def_pos,
-          .type = others_sym->type,
-          .is_fn = others_sym->is_fn,
-      };
+      symbol_update(&scope->symbol_table[i], others_sym->name, others_sym->type,
+                    others_sym->is_fn, others_sym->scope,
+                    others_sym->context_name, others_sym->def_pos);
       ++scope->size;
     }
   }

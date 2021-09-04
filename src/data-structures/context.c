@@ -21,7 +21,15 @@ Context *context_init(char *name) {
 }
 
 Symbol *context_search_symbol_scopes(Context *ctx, Symbol *sym) {
+  StackNode *curr_scope_stacknode_ref;
   LIST_FOR_EACH_REVERSE(ctx->scopes, {
+    if (((Scope *)__IT__->data)->index == ctx->current_scope) {
+      curr_scope_stacknode_ref = __IT__;
+      break;
+    }
+  });
+
+  LIST_FOR_EACH_REVERSE(curr_scope_stacknode_ref, {
     Scope *scope = __IT__->data;
     while (__IT_NXT__ &&
            (scope->last_parent != ((Scope *)__IT_NXT__->data)->index)) {
@@ -51,7 +59,11 @@ Scope *context_push_scope(Context *ctx) {
   return scope;
 }
 
-Scope *context_pop_scope(Context *ctx) { return context_found_scope(ctx); }
+Scope *context_pop_scope(Context *ctx) {
+  Scope *nxt_curr_scope = context_found_scope(ctx);
+  ctx->current_scope = nxt_curr_scope->last_parent;
+  return nxt_curr_scope;
+}
 
 Symbol *context_declare_variable(Context *ctx, SymbolRefAST *symref) {
   Scope *current_scope = context_found_scope(ctx);

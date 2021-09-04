@@ -102,22 +102,38 @@ int test_builtin() {
     writeln((media + nota1 + nota2) / 3);
 }
 
-int scopes_redecl(int a) {
-    {
+int scopes_redecl(int a) { // s1-p:0
+    { // s2-p:1
         int a;
-        {
+        { // s3-p:2
             int a;
-            if (a) {
+            if (a) { // s4-p:3
                 int a;
-            } else {
+            } else { // s5-p:3
                 int b;
                 a = 2;
-                for (a = a + 2;;) {
+                for (a = a + 2;;) { // s6-p:5
                     int a;
                 }
             }
         }
     }
+    a = 1;
+    { // s:7-p:1
+        int list a;
+        a = 2 : a;
+    }
+    a = 11;
+    { // s:8-p:1
+        float a;
+        a = 3;
+        { // s:9-p:8
+            float list a;
+            a = 4.0 : a;
+        }
+        a = 33;
+    }
+    a = 111;
 }
 
 int main(int argc, int argv) {
