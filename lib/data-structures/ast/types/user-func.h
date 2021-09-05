@@ -4,6 +4,7 @@ struct cipl_context;
 
 typedef struct cipl_ast_userfunc {
   struct cipl_context *context;
+  int arity;
 } UserFuncAST;
 
 #include "data-structures/ast/ast.h"

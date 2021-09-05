@@ -4,6 +4,7 @@
 
 typedef struct cipl_ast_params {
   ListNode *value;
+  unsigned int size;
 } ParamsAST;
 
 #include "data-structures/ast/ast.h"

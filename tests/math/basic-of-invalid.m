@@ -11,6 +11,7 @@ int param_redecl(int a, float a) {}
 
 int fn_decl() {}
 int list fn_decl() {}
+float fn_decl;
 
 int main() {
     if (1) {

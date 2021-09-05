@@ -8,6 +8,7 @@ typedef enum cipl_builtin_fn_types {
 
 typedef struct cipl_ast_builtin_fn {
   BuiltInFuncTypes func_type;
+  int arity;
 } BuiltinFuncAST;
 
 #include "data-structures/ast/ast.h"

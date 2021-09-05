@@ -13,6 +13,7 @@ AST *ast_userfunc_init(Context *context, AST *declarator, AST *params,
                        AST *stmts) {
   UserFuncAST *ast = calloc(1, sizeof(UserFuncAST));
   ast->context = context;
+  ast->arity = params->value.params->size;
   return ast_cast(AST_USER_FUNC, 3, ast, declarator, params, stmts);
 }
 

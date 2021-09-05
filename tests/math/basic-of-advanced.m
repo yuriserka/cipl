@@ -54,6 +54,14 @@ float list iteration(int it, int max) {
             return -1;
         }
     }
+
+    int i;
+    for (i = 2; ; ) { int scope_4; }
+    for (; i < 10 ;) { int scope_5; }
+    int scope_1;
+    for (;;i = i + 1) { int scope_6; }
+    for (;;) { int loop_7; }
+
     return ret;
 }
 
@@ -142,24 +150,9 @@ int main(int argc, int argv) {
     }
 
     global_var = 0;
-    int i;
-
-    for (i = 2; ; ) {
-        int scope_3;
-    }
-    for (; i < 10 ;) {
-        int scope_4;
-    }
-    int scope_1;
-    for (;;i = i + 1) {
-        int scope_5;
-    }
-    for (;;) {
-        int loop_6;
-    }
 
     int ret;
-    ret = conditional(iteration(i, 15));
+    ret = conditional(iteration(global_var, 15));
 
     test_builtin();
     scopes_redecl(ret);

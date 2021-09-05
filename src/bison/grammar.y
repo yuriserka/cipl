@@ -71,7 +71,14 @@
 %destructor { ast_free($$); } <ast>
 %%
 
-prog: prog external_declaration { list_push(&root->children, $2); }
+prog: external_declaration_list
+    | %empty {
+        yyerror(NULL);
+        CIPL_PERROR_CURSOR("ISO C-IPL forbids an empty translation unit\n", error_cursor);
+    }
+    ;
+
+external_declaration_list: external_declaration_list external_declaration { list_push(&root->children, $2); }
     | external_declaration { list_push(&root->children, $1); }
     ;
 
@@ -81,14 +88,23 @@ external_declaration: func_declaration
 
 var_declaration: type id <ast>{
         Symbol *sym = context_has_symbol(current_context, $2->value.symref->symbol);
+        SymbolTypes decl_type = symbol_type_from_str($1);
         if (sym) {
-            yyerror(NULL);
-            CIPL_PERROR_CURSOR("redeclaration of '%s'\n", error_cursor, $2->value.symref->symbol->name);
+            if (sym->scope) {
+                yyerror(NULL);
+                CIPL_PERROR_CURSOR("redeclaration of '%s'\n", error_cursor, $2->value.symref->symbol->name);
+            } else if (sym->is_fn) {
+                yyerror(NULL);
+                CIPL_PERROR_CURSOR("'%s' redeclared as different kind of symbol\n", error_cursor, $2->value.symref->symbol->name);
+            } else if (sym->type != decl_type) {
+                yyerror(NULL);
+                CIPL_PERROR_CURSOR("conflicting types for '%s'\n", error_cursor, $2->value.symref->symbol->name);
+            } 
             $$ = NULL;
         }
         else {
             Symbol *declared = context_declare_variable(current_context, $2->value.symref);
-            symbol_update_type(declared, symbol_type_from_str($1));
+            symbol_update_type(declared, decl_type);
             $$ = ast_symref_init(symbol_init_copy(declared));
         }
         ast_free($2);
@@ -106,20 +122,31 @@ var_declaration: type id <ast>{
 
 func_declaration: type id '(' <ast>{
         Symbol *sym = context_has_symbol(current_context, $2->value.symref->symbol);
+        SymbolTypes decl_type = symbol_type_from_str($1);
+
+        // always push a context for the function even if not valid so is possible to pop later
+        previous_context = current_context;
+        list_push(&contexts, context_init($2->value.symref->symbol->name));
+        current_context = list_peek_last(&contexts);
+
         if (sym) {
             yyerror(NULL);
-            CIPL_PERROR_CURSOR("redefinition of '%s'\n", error_cursor, $2->value.symref->symbol->name);
+            if (!sym->is_fn) {
+                CIPL_PERROR_CURSOR("'%s' redeclared as different kind of symbol\n", error_cursor, $2->value.symref->symbol->name);
+            } else if (sym->type != decl_type) {
+                CIPL_PERROR_CURSOR("conflicting types for '%s'\n", error_cursor, $2->value.symref->symbol->name);
+            } else {
+                CIPL_PERROR_CURSOR("redefinition of '%s'\n", error_cursor, $2->value.symref->symbol->name);
+            }
             $$ = NULL;
         } else {
-            previous_context = current_context;
-            list_push(&contexts, context_init($2->value.symref->symbol->name));
-            current_context = list_peek_last(&contexts);
-            
             Symbol *declared = context_declare_function(previous_context, $2->value.symref);
-            symbol_update_type(declared, symbol_type_from_str($1));
+            symbol_update_type(declared, decl_type);
             $$ = ast_symref_init(symbol_init_copy(declared));
-            context_push_scope(current_context);
         }
+
+        // push scope for the function s:1
+        context_push_scope(current_context);
 
         ast_free($2);
         free($1);
@@ -135,10 +162,8 @@ func_declaration: type id '(' <ast>{
             }
         });
         // hack to save the scope of params and append to the scope of the body
-        if($4) {
-            params_scope = scope_init_copy(stack_peek(&current_context->scopes));
-            stack_pop(&current_context->scopes, free_scope_cb);
-        }
+        params_scope = scope_init_copy(stack_peek(&current_context->scopes));
+        stack_pop(&current_context->scopes, free_scope_cb);
     } compound_stmt {
         $$ = ast_userfunc_init(current_context, $4, ast_params_init($5), $8);
         current_context = previous_context;
@@ -164,7 +189,7 @@ param_decl: type id {
 
 compound_stmt: '{' {
         parent_stacknode_ref = context_get_current_stacknode_ref();
-        // hack to update the current scope 
+        // hack to update the current scope
         if (params_scope) {
             stack_push(&current_context->scopes, params_scope);
             current_context->current_scope = ((Scope *)stack_peek(&current_context->scopes))->index;

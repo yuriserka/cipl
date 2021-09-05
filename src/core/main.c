@@ -43,14 +43,14 @@ void print_ast() {
   printf("}, }\n");
 }
 
-void print_ast_pretty() {
+void main_ast_pretty() {
   printf("\n##################################################\n");
   printf("               Abstract Syntax Tree               \n");
   printf("##################################################\n\n");
   ast_print_pretty(root, 0);
 }
 
-void context_pretty() {
+void main_context_pretty() {
   printf("\n\n##################################################\n");
   printf("                   Symbol Table                   \n");
   printf("##################################################\n\n");
@@ -83,18 +83,18 @@ int cipl_main(int argc, char *argv[]) {
   int got_erros = yyparse() || errors_count;
 
   if (got_erros) {
-    CIPL_PRINTF_COLOR(BRED, "\n%d error%s", errors_count,
+    CIPL_PRINTF_COLOR(BRED, "\n\n%d error%s", errors_count,
                       errors_count > 1 ? "s" : "");
     CIPL_PRINTF(
-        " generated.\nis not possible to print the AST or the Symbol Table.\n");
+        " generated.\n\tIs not possible to print the AST or the Symbol Table.\n");
   }
 
   fclose(yyin);
   yylex_destroy();
 
   if (!got_erros) {
-    print_ast_pretty();
-    context_pretty();
+    main_ast_pretty();
+    main_context_pretty();
   }
 
   ast_free(root);

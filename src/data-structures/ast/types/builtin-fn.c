@@ -15,6 +15,7 @@ void ast_builtinfn_free(AST *ast) {
 AST *ast_builtinfn_init(AST *symref, AST *params) {
   BuiltinFuncAST *ast = calloc(1, sizeof(BuiltinFuncAST));
   ast->func_type = builtinfn_type_from_str(symref->value.symref->symbol->name);
+  ast->arity = 1;
   return ast_cast(AST_BUILTIN_FUNC, 2, ast, symref, params);
 }
 
