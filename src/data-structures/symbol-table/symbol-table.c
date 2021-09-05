@@ -26,14 +26,12 @@ Symbol *symbol_table_lookup(SymbolTable symbol_table, char *sym_name) {
   return NULL;
 }
 
-Symbol *symbol_table_get_valid_entry(SymbolTable symbol_table,
-                                     SymbolRefAST *ast) {
-  Symbol *symref = ast->symbol;
-  Symbol *sp = &symbol_table[symbol_table_hash(symref->name) % NHASH];
+Symbol *symbol_table_get_valid_entry(SymbolTable symbol_table, char *sym_name) {
+  Symbol *sp = &symbol_table[symbol_table_hash(sym_name) % NHASH];
   int scount = NHASH;
 
   while (--scount >= 0) {
-    if (sp->name && !strcmp(sp->name, symref->name)) {
+    if (sp->name && !strcmp(sp->name, sym_name)) {
       return NULL;
     }
     if (!sp->name) {

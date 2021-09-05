@@ -65,25 +65,25 @@ Scope *context_pop_scope(Context *ctx) {
   return nxt_curr_scope;
 }
 
-Symbol *context_declare_variable(Context *ctx, SymbolRefAST *symref) {
+Symbol *context_declare_variable(Context *ctx, Symbol *sym) {
   Scope *current_scope = context_found_scope(ctx);
   Symbol *entry =
-      symbol_table_get_valid_entry(current_scope->symbol_table, symref);
+      symbol_table_get_valid_entry(current_scope->symbol_table, sym->name);
   if (entry) {
-    symbol_update(entry, symref->symbol->name, symref->symbol->type, false,
-                  current_scope->index, ctx->name, symref->symbol->def_pos);
+    symbol_update(entry, sym->name, sym->type, false, current_scope->index,
+                  ctx->name, sym->def_pos);
     ++current_scope->size;
   }
   return entry;
 }
 
-Symbol *context_declare_function(Context *ctx, SymbolRefAST *symref) {
+Symbol *context_declare_function(Context *ctx, Symbol *sym) {
   Scope *current_scope = context_found_scope(ctx);
   Symbol *entry =
-      symbol_table_get_valid_entry(current_scope->symbol_table, symref);
+      symbol_table_get_valid_entry(current_scope->symbol_table, sym->name);
   if (entry) {
-    symbol_update(entry, symref->symbol->name, symref->symbol->type, true,
-                  current_scope->index, ctx->name, symref->symbol->def_pos);
+    symbol_update(entry, sym->name, sym->type, true, current_scope->index,
+                  ctx->name, sym->def_pos);
     ++current_scope->size;
   }
   return entry;
@@ -111,7 +111,7 @@ void context_print_pretty(Context *ctx) {
 
     if (scope->size) {
       for (int i = 0; i < wd; ++i) printf("\t");
-      CIPL_PRINTF_COLOR(UMAG, "Scope %d\n", scope->index);
+      CIPL_PRINTF_COLOR(UMAG, "Scope %d have %d entries\n", scope->index, scope->size);
 
       for (int i = 0; i < NHASH; ++i) {
         if (scope->symbol_table[i].name) {

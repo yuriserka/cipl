@@ -23,10 +23,7 @@ Symbol *symbol_init_copy(Symbol *other) {
 }
 
 Symbol *symbol_found(char *name, cursor_position pos) {
-  Symbol *sym = calloc(1, sizeof(Symbol));
-  sym->name = strdup(name);
-  sym->def_pos = pos;
-  return sym;
+  return symbol_init(name, SYM_INVALID, false, 0, NULL, pos);
 }
 
 void symbol_update_context(Symbol *sym, Context *ctx) {
@@ -36,8 +33,8 @@ void symbol_update_context(Symbol *sym, Context *ctx) {
 
 void symbol_update(Symbol *sym, char *name, SymbolTypes type, bool is_function,
                    int scope, char *ctx_name, cursor_position pos) {
-  sym->name = strdup(name);
-  sym->context_name = strdup(ctx_name);
+  sym->name = name ? strdup(name) : NULL;
+  sym->context_name = ctx_name ? strdup(ctx_name) : NULL;
   sym->scope = scope;
   sym->value = 0;
   sym->def_pos = pos;

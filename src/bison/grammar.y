@@ -52,13 +52,15 @@
 
 %type<pchar> unary_ops type
 
-%type<ast> external_declaration var_declaration id func_declaration block_item statement
+%type<ast> external_declaration var_declaration func_declaration block_item statement
 %type<ast> expression eq_expr rel_expr add_expr primary_expr constant string_literal id_expr
 %type<ast> mult_expr unary_expr postfix_expr compound_stmt logical_and_expr logical_or_expr
 %type<ast> expr_stmt jmp_stmt cond_stmt expression.opt iter_stmt list_expr param_decl io_stmt
 
 %type<list> block_item_list block_item_list.opt arg_expr_list arg_expr_list.opt
 %type<list> params_list param_list.opt
+
+%type<sym> id
 
 %nonassoc THEN
 %nonassoc ELSE
@@ -87,27 +89,27 @@ external_declaration: func_declaration
     ;
 
 var_declaration: type id <ast>{
-        Symbol *sym = context_has_symbol(current_context, $2->value.symref->symbol);
+        Symbol *sym = context_has_symbol(current_context, $2);
         SymbolTypes decl_type = symbol_type_from_str($1);
         if (sym) {
             if (sym->scope) {
                 yyerror(NULL);
-                CIPL_PERROR_CURSOR("redeclaration of '%s'\n", error_cursor, $2->value.symref->symbol->name);
+                CIPL_PERROR_CURSOR("redeclaration of '%s'\n", error_cursor, $2->name);
             } else if (sym->is_fn) {
                 yyerror(NULL);
-                CIPL_PERROR_CURSOR("'%s' redeclared as different kind of symbol\n", error_cursor, $2->value.symref->symbol->name);
+                CIPL_PERROR_CURSOR("'%s' redeclared as different kind of symbol\n", error_cursor, $2->name);
             } else if (sym->type != decl_type) {
                 yyerror(NULL);
-                CIPL_PERROR_CURSOR("conflicting types for '%s'\n", error_cursor, $2->value.symref->symbol->name);
+                CIPL_PERROR_CURSOR("conflicting types for '%s'\n", error_cursor, $2->name);
             } 
             $$ = NULL;
         }
         else {
-            Symbol *declared = context_declare_variable(current_context, $2->value.symref);
+            Symbol *declared = context_declare_variable(current_context, $2);
             symbol_update_type(declared, decl_type);
             $$ = ast_symref_init(symbol_init_copy(declared));
         }
-        ast_free($2);
+        symbol_free($2);
         free($1);
     } ';' {
         $$ = $3 ? ast_declaration_init($3) : NULL;
@@ -121,26 +123,26 @@ var_declaration: type id <ast>{
     ;
 
 func_declaration: type id '(' <ast>{
-        Symbol *sym = context_has_symbol(current_context, $2->value.symref->symbol);
+        Symbol *sym = context_has_symbol(current_context, $2);
         SymbolTypes decl_type = symbol_type_from_str($1);
 
         // always push a context for the function even if not valid so is possible to pop later
         previous_context = current_context;
-        list_push(&contexts, context_init($2->value.symref->symbol->name));
+        list_push(&contexts, context_init($2->name));
         current_context = list_peek_last(&contexts);
 
         if (sym) {
             yyerror(NULL);
             if (!sym->is_fn) {
-                CIPL_PERROR_CURSOR("'%s' redeclared as different kind of symbol\n", error_cursor, $2->value.symref->symbol->name);
+                CIPL_PERROR_CURSOR("'%s' redeclared as different kind of symbol\n", error_cursor, $2->name);
             } else if (sym->type != decl_type) {
-                CIPL_PERROR_CURSOR("conflicting types for '%s'\n", error_cursor, $2->value.symref->symbol->name);
+                CIPL_PERROR_CURSOR("conflicting types for '%s'\n", error_cursor, $2->name);
             } else {
-                CIPL_PERROR_CURSOR("redefinition of '%s'\n", error_cursor, $2->value.symref->symbol->name);
+                CIPL_PERROR_CURSOR("redefinition of '%s'\n", error_cursor, $2->name);
             }
             $$ = NULL;
         } else {
-            Symbol *declared = context_declare_function(previous_context, $2->value.symref);
+            Symbol *declared = context_declare_function(previous_context, $2);
             symbol_update_type(declared, decl_type);
             $$ = ast_symref_init(symbol_init_copy(declared));
         }
@@ -148,7 +150,7 @@ func_declaration: type id '(' <ast>{
         // push scope for the function s:1
         context_push_scope(current_context);
 
-        ast_free($2);
+        symbol_free($2);
         free($1);
     } param_list.opt ')' {
         LIST_FOR_EACH($5, {
@@ -158,7 +160,7 @@ func_declaration: type id '(' <ast>{
                 yyerror(NULL);
                 CIPL_PERROR_CURSOR("redefinition of parameter '%s'\n", error_cursor, symref->symbol->name);
             } else {
-                context_declare_variable(current_context, symref);
+                context_declare_variable(current_context, symref->symbol);
             }
         });
         // hack to save the scope of params and append to the scope of the body
@@ -179,10 +181,10 @@ params_list: params_list ',' param_decl { list_push(&$$, $3); }
     ;
 
 param_decl: type id {
-        symbol_update_context($2->value.symref->symbol, current_context);
-        symbol_update_type($2->value.symref->symbol, symbol_type_from_str($1));
-        $$ = ast_symref_init(symbol_init_copy($2->value.symref->symbol));
-        ast_free($2);
+        symbol_update_context($2, current_context);
+        symbol_update_type($2, symbol_type_from_str($1));
+        $$ = ast_symref_init(symbol_init_copy($2));
+        symbol_free($2);
         free($1);
     }
     ;
@@ -228,10 +230,10 @@ statement: expr_stmt
 
 io_stmt: READ '(' id ')' ';' {
         Symbol *func = context_search_symbol_scopes(current_context, $1);
-        Symbol *param = context_search_symbol_scopes(current_context, $3->value.symref->symbol);
+        Symbol *param = context_search_symbol_scopes(current_context, $3);
         $$ = ast_builtinfn_init(ast_symref_init(symbol_init_copy(func)), ast_symref_init(symbol_init_copy(param)));
         symbol_free($1);
-        ast_free($3);
+        symbol_free($3);
     }
     | WRITE '(' expression ')' ';' {
         Symbol *sym = context_search_symbol_scopes(current_context, $1);
@@ -354,20 +356,20 @@ primary_expr: id_expr
     ;
 
 id_expr: id {
-        Symbol *sym = context_search_symbol_scopes(current_context, $1->value.symref->symbol);
+        Symbol *sym = context_search_symbol_scopes(current_context, $1);
         if (!sym) {
             yyerror(NULL);
-            CIPL_PERROR_CURSOR("'%s' undeclared (first use in this function)", error_cursor, $1->value.symref->symbol->name);
+            CIPL_PERROR_CURSOR("'%s' undeclared (first use in this function)", error_cursor, $1->name);
             $$ = NULL;
         }   else {
-            symbol_update_context($1->value.symref->symbol, current_context);
-            $$ = ast_symref_init(symbol_init_copy(sym ? sym : $1->value.symref->symbol));
+            symbol_update_context($1, current_context);
+            $$ = ast_symref_init(symbol_init_copy(sym ? sym : $1));
         }
-        ast_free($1);
+        symbol_free($1);
     }
     ;
 
-id: NAME { $$ = ast_symref_init($1); }
+id: NAME
     ;
 
 type: INT

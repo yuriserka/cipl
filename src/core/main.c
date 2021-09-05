@@ -22,9 +22,9 @@ void init_global_context(Context *global_ctx) {
       ast_symref_init(symbol_init("read", type, true, global_ctx->current_scope,
                                   global_ctx->name, definition));
 
-  context_declare_function(global_ctx, write_fnref->value.symref);
-  context_declare_function(global_ctx, writeln_fnref->value.symref);
-  context_declare_function(global_ctx, read_fnref->value.symref);
+  context_declare_function(global_ctx, write_fnref->value.symref->symbol);
+  context_declare_function(global_ctx, writeln_fnref->value.symref->symbol);
+  context_declare_function(global_ctx, read_fnref->value.symref->symbol);
 
   ast_free(write_fnref);
   ast_free(writeln_fnref);
@@ -86,7 +86,8 @@ int cipl_main(int argc, char *argv[]) {
     CIPL_PRINTF_COLOR(BRED, "\n\n%d error%s", errors_count,
                       errors_count > 1 ? "s" : "");
     CIPL_PRINTF(
-        " generated.\n\tIs not possible to print the AST or the Symbol Table.\n");
+        " generated.\n\tIs not possible to print the AST or the Symbol "
+        "Table.\n");
   }
 
   fclose(yyin);
