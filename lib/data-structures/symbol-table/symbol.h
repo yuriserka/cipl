@@ -22,21 +22,21 @@ struct cipl_symbol {
   double value;
   int scope;
   bool is_fn;
-  cursor_position def_pos;
+  Cursor def_pos;
   SymbolTypes type;
 };
 
 struct cipl_context;
 
 Symbol *symbol_init(char *name, SymbolTypes type, bool is_function, int scope,
-                    char *ctx_name, cursor_position pos);
+                    char *ctx_name, Cursor pos);
 Symbol *symbol_init_copy(Symbol *other);
-Symbol *symbol_found(char *name, cursor_position pos);
+Symbol *symbol_found(char *name, Cursor pos);
 void symbol_update_type(Symbol *sym, SymbolTypes type);
 void symbol_update_context(Symbol *sym, struct cipl_context *ctx);
 
 void symbol_update(Symbol *sym, char *name, SymbolTypes type, bool is_function,
-                   int scope, char *ctx_name, cursor_position pos);
+                   int scope, char *ctx_name, Cursor pos);
 void symbol_free(Symbol *sym);
 void symbol_print(Symbol *sym);
 void symbol_print_pretty(Symbol *sym);

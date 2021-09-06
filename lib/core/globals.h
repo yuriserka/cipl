@@ -12,14 +12,16 @@
 // from lexer.l
 extern int errors_count;
 extern char *filename;
-extern cursor_position cursor;
+extern Cursor cursor;
+extern ListNode *lines;
+extern LineInfo *curr_line_info;
+extern char curr_line_buffer[1024];
 
 extern int yylex();
 extern int yyparse();
 extern void yyerror(int line, int column, const char *message, ...);
 extern int yylex_destroy();
 extern FILE *yyin;
-extern char curr_line[1024];
 
 // from grammar.y
 extern AST *root;

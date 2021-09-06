@@ -38,10 +38,16 @@ int __error__() {
     a = j;
 }
 
-int main() {
-    if (1) {
+int main(int a) {
+    if () {
         int i;
+        if () {
+            int a;
+        } else {
+            i = 2;
+        }
     } else {
-        i = 2;
+        a = 1;
     }
+    return;
 }

@@ -22,7 +22,7 @@ double ast_symref_eval(AST *ast) { return ast->value.symref->symbol->value; }
 
 void ast_symref_print(AST *ast) {
   SymbolRefAST *symref = ast->value.symref;
-  cursor_position pos = symref->symbol->def_pos;
+  Cursor pos = symref->symbol->def_pos;
   printf(
       "symbol_ref: { name: %s, type: %s, defined_at: { context: %s, scope: %d, "
       "line: %d, "

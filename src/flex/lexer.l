@@ -10,20 +10,30 @@
 
   int errors_count = 0;
   char *filename;
-  char curr_line[1024] = "";
-  cursor_position dquote_open_pos, comment_open_pos;
-  cursor_position cursor = {.line=1, .col=1};
+  ListNode *lines;
+  char curr_line_buffer[1024] = "";
+  LineInfo *curr_line_info;
+  Cursor dquote_open_pos, comment_open_pos;
+  Cursor cursor = {.line=1, .col=1};
 
   void show_str_literal_err();
-  void append_curr_line(char *t) {
-    strcat(curr_line, t);
-  }
 
-  #define YY_USER_ACTION                                       \
-    yylloc.first_line = yylloc.last_line = yylineno;           \
-    yylloc.first_column = cursor.col;                          \
-    if (yytext[0] == '\n') { ++cursor.line; cursor.col =  1; } \
-    else { cursor.col += yyleng; }                             \
+  #define YY_USER_ACTION                                           \
+    yylloc.first_line = yylloc.last_line = yylineno;               \
+    yylloc.first_column = cursor.col;                              \
+    if (yytext[0] == '\n') {                                       \
+      list_push(&lines, line_init(cursor.line, curr_line_buffer)); \
+      cursor.col = 1;                                              \
+      ++cursor.line;                                               \
+      ++curr_line_info->line;                                      \
+      memset(curr_line_buffer, 0, 1024);                           \
+      memset(curr_line_info->text, 0, 100);                        \
+    }                                                              \
+    else {                                                         \
+      strcat(curr_line_info->text, yytext);                        \
+      strcat(curr_line_buffer, yytext);                            \
+      cursor.col += yyleng;                                        \
+    }                                                              \
     yylloc.last_column = cursor.col - 1;
 
 %}
@@ -62,25 +72,18 @@ BUILTIN_FUNCTIONS read|write|writeln
 
 {SINGLELINE_COMMENT} { /* noop */ }
 
-{WS} {
-  switch (yytext[0]) {
-      case ' ':
-      case '\t':        
-        append_curr_line(yytext);
-        break;
-      default:
-        memset(curr_line, 0, 1024);
-        break;
-  }
+{WS} {}
+
+<INITIAL><<EOF>> {
+  list_push(&lines, line_init(cursor.line, curr_line_buffer));
+  return YYEOF;
 }
 
 <INITIAL>[\(\){};,] {  
-  append_curr_line(yytext);
   return yytext[0];
 }
 
 {RESERVED_KEYWORDS} {  
-  append_curr_line(yytext);
   switch (yytext[0]) {
     case 'i': return IF;
     case 'e': return ELSE;
@@ -94,7 +97,6 @@ BUILTIN_FUNCTIONS read|write|writeln
 
 "int"|"float"|"list" {
   yylval.pchar = strdup(yytext);  
-  append_curr_line(yytext);
   switch(yytext[0]) {
     case 'i': return INT;
     case 'f': return FLOAT;
@@ -104,13 +106,11 @@ BUILTIN_FUNCTIONS read|write|writeln
 
 {BUILTIN_FUNCTIONS} {
   yylval.sym = symbol_found(yytext, cursor);  
-  append_curr_line(yytext);
   return yytext[0] == 'r' ? READ : WRITE;
 }
 
 {ID} {
   yylval.sym = symbol_found(yytext, cursor);  
-  append_curr_line(yytext);
   return NAME;
 }
 
@@ -118,7 +118,6 @@ BUILTIN_FUNCTIONS read|write|writeln
   long int longval;
   sscanf(yytext, "%ld", &longval);
   yylval.integer = longval;  
-  append_curr_line(yytext);
   return NUMBER_INT;
 }
 
@@ -126,12 +125,10 @@ BUILTIN_FUNCTIONS read|write|writeln
   double doubleval;
   sscanf(yytext, "%lf", &doubleval);
   yylval.real = doubleval;  
-  append_curr_line(yytext);
   return NUMBER_REAL;
 }
 
 {UNARY_OP} {  
-  append_curr_line(yytext);
   yylval.pchar = strdup(yytext);
   switch(yytext[0]) {
     case '!': return EXCLAMATION;
@@ -144,7 +141,6 @@ BUILTIN_FUNCTIONS read|write|writeln
 
 {BINARY_OP} {
   char *token = yytext;  
-  append_curr_line(yytext);
   yylval.pchar = strdup(yytext);
   switch (token[0]) {
       case ':': return COLON;
@@ -170,24 +166,20 @@ BUILTIN_FUNCTIONS read|write|writeln
 }
 
 {OP_ASSSIGN} {  
-  append_curr_line(yytext);
   return yytext[0];
 }
 
 ["] {
   BEGIN(SCANNING_STR_LITERAL);  
-  append_curr_line(yytext);
   dquote_open_pos = cursor;
   yymore();
 }
 
 <SCANNING_STR_LITERAL>{
   ([^\n"\\]|\\.)* {    
-    append_curr_line(yytext);
     yymore();
   }
   ["] {    
-    append_curr_line(yytext);
     yylval.pchar = strdup(yytext);
     BEGIN(INITIAL);
     return STR_LITERAL;
@@ -217,14 +209,13 @@ BUILTIN_FUNCTIONS read|write|writeln
   }
   <<EOF>> {
     ++errors_count;
-    CIPL_PERROR_CURSOR("unterminated comment\n", curr_line, comment_open_pos);
+    CIPL_PERROR_CURSOR("unterminated comment\n", curr_line_buffer, comment_open_pos);
     BEGIN(INITIAL);
   } 
 }
 
 . {
-  append_curr_line(yytext);
-  CIPL_PERROR_CURSOR("unexpected character: %s\n", curr_line, cursor, yytext);  
+  CIPL_PERROR_CURSOR("unexpected character: %s\n", curr_line_buffer, cursor, yytext);  
   return YYerror;
 }
 
@@ -232,6 +223,6 @@ BUILTIN_FUNCTIONS read|write|writeln
 
 void show_str_literal_err() {
   ++errors_count;
-  CIPL_PERROR_CURSOR("missing terminating '\"' character\n", curr_line, dquote_open_pos);
+  CIPL_PERROR_CURSOR("missing terminating '\"' character\n", curr_line_buffer, dquote_open_pos);
   BEGIN(INITIAL);
 }

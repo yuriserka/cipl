@@ -8,7 +8,7 @@
 #include "utils/io.h"
 
 void init_global_context(Context *global_ctx) {
-  cursor_position definition = (cursor_position){.line = 0, .col = 0};
+  Cursor definition = (Cursor){.line = 0, .col = 0};
   SymbolTypes type = symbol_type_from_str("int");
   AST *write_fnref = ast_symref_init(symbol_init("write", type, true,
                                                  global_ctx->current_scope,
@@ -78,6 +78,7 @@ int cipl_main(int argc, char *argv[]) {
   root = ast_cast(AST_PROG, 0);
   contexts = list_node_init(context_init("global"));
   current_context = list_peek(&contexts, 0);
+  curr_line_info = line_init(1, "");
   init_global_context(current_context);
 
   int got_erros = yyparse() || errors_count;
@@ -100,6 +101,8 @@ int cipl_main(int argc, char *argv[]) {
 
   ast_free(root);
   LIST_FREE(contexts, { context_free(__IT__->data); });
+  LIST_FREE(lines, { line_free(__IT__->data); });
+  line_free(curr_line_info);
 
   return errors_count > 0;
 }

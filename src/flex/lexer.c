@@ -548,25 +548,35 @@ char *yytext;
 
   int errors_count = 0;
   char *filename;
-  char curr_line[1024] = "";
-  cursor_position dquote_open_pos, comment_open_pos;
-  cursor_position cursor = {.line=1, .col=1};
+  ListNode *lines;
+  char curr_line_buffer[1024] = "";
+  LineInfo *curr_line_info;
+  Cursor dquote_open_pos, comment_open_pos;
+  Cursor cursor = {.line=1, .col=1};
 
   void show_str_literal_err();
-  void append_curr_line(char *t) {
-    strcat(curr_line, t);
-  }
 
-  #define YY_USER_ACTION                                       \
-    yylloc.first_line = yylloc.last_line = yylineno;           \
-    yylloc.first_column = cursor.col;                          \
-    if (yytext[0] == '\n') { ++cursor.line; cursor.col =  1; } \
-    else { cursor.col += yyleng; }                             \
+  #define YY_USER_ACTION                                           \
+    yylloc.first_line = yylloc.last_line = yylineno;               \
+    yylloc.first_column = cursor.col;                              \
+    if (yytext[0] == '\n') {                                       \
+      list_push(&lines, line_init(cursor.line, curr_line_buffer)); \
+      cursor.col = 1;                                              \
+      ++cursor.line;                                               \
+      ++curr_line_info->line;                                      \
+      memset(curr_line_buffer, 0, 1024);                           \
+      memset(curr_line_info->text, 0, 100);                        \
+    }                                                              \
+    else {                                                         \
+      strcat(curr_line_info->text, yytext);                        \
+      strcat(curr_line_buffer, yytext);                            \
+      cursor.col += yyleng;                                        \
+    }                                                              \
     yylloc.last_column = cursor.col - 1;
 
-#line 568 "src/flex/lexer.c"
+#line 578 "src/flex/lexer.c"
 
-#line 570 "src/flex/lexer.c"
+#line 580 "src/flex/lexer.c"
 
 #define INITIAL 0
 #define SCANNING_STR_LITERAL 1
@@ -783,10 +793,10 @@ YY_DECL
 		}
 
 	{
-#line 61 "src/flex/lexer.l"
+#line 71 "src/flex/lexer.l"
 
 
-#line 790 "src/flex/lexer.c"
+#line 800 "src/flex/lexer.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -861,38 +871,33 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 63 "src/flex/lexer.l"
+#line 73 "src/flex/lexer.l"
 { /* noop */ }
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 65 "src/flex/lexer.l"
+#line 75 "src/flex/lexer.l"
+{}
+	YY_BREAK
+case YY_STATE_EOF(INITIAL):
+#line 77 "src/flex/lexer.l"
 {
-  switch (yytext[0]) {
-      case ' ':
-      case '\t':        
-        append_curr_line(yytext);
-        break;
-      default:
-        memset(curr_line, 0, 1024);
-        break;
-  }
+  list_push(&lines, line_init(cursor.line, curr_line_buffer));
+  return YYEOF;
 }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 77 "src/flex/lexer.l"
+#line 82 "src/flex/lexer.l"
 {  
-  append_curr_line(yytext);
   return yytext[0];
 }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 82 "src/flex/lexer.l"
+#line 86 "src/flex/lexer.l"
 {  
-  append_curr_line(yytext);
   switch (yytext[0]) {
     case 'i': return IF;
     case 'e': return ELSE;
@@ -906,10 +911,9 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 95 "src/flex/lexer.l"
+#line 98 "src/flex/lexer.l"
 {
   yylval.pchar = strdup(yytext);  
-  append_curr_line(yytext);
   switch(yytext[0]) {
     case 'i': return INT;
     case 'f': return FLOAT;
@@ -919,19 +923,17 @@ YY_RULE_SETUP
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 105 "src/flex/lexer.l"
+#line 107 "src/flex/lexer.l"
 {
   yylval.sym = symbol_found(yytext, cursor);  
-  append_curr_line(yytext);
   return yytext[0] == 'r' ? READ : WRITE;
 }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 111 "src/flex/lexer.l"
+#line 112 "src/flex/lexer.l"
 {
   yylval.sym = symbol_found(yytext, cursor);  
-  append_curr_line(yytext);
   return NAME;
 }
 	YY_BREAK
@@ -942,26 +944,23 @@ YY_RULE_SETUP
   long int longval;
   sscanf(yytext, "%ld", &longval);
   yylval.integer = longval;  
-  append_curr_line(yytext);
   return NUMBER_INT;
 }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 125 "src/flex/lexer.l"
+#line 124 "src/flex/lexer.l"
 {
   double doubleval;
   sscanf(yytext, "%lf", &doubleval);
   yylval.real = doubleval;  
-  append_curr_line(yytext);
   return NUMBER_REAL;
 }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 133 "src/flex/lexer.l"
+#line 131 "src/flex/lexer.l"
 {  
-  append_curr_line(yytext);
   yylval.pchar = strdup(yytext);
   switch(yytext[0]) {
     case '!': return EXCLAMATION;
@@ -974,10 +973,9 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 145 "src/flex/lexer.l"
+#line 142 "src/flex/lexer.l"
 {
   char *token = yytext;  
-  append_curr_line(yytext);
   yylval.pchar = strdup(yytext);
   switch (token[0]) {
       case ':': return COLON;
@@ -1004,18 +1002,16 @@ YY_RULE_SETUP
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 172 "src/flex/lexer.l"
+#line 168 "src/flex/lexer.l"
 {  
-  append_curr_line(yytext);
   return yytext[0];
 }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 177 "src/flex/lexer.l"
+#line 172 "src/flex/lexer.l"
 {
   BEGIN(SCANNING_STR_LITERAL);  
-  append_curr_line(yytext);
   dquote_open_pos = cursor;
   yymore();
 }
@@ -1023,17 +1019,15 @@ YY_RULE_SETUP
 
 case 14:
 YY_RULE_SETUP
-#line 185 "src/flex/lexer.l"
+#line 179 "src/flex/lexer.l"
 {    
-    append_curr_line(yytext);
     yymore();
   }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 189 "src/flex/lexer.l"
+#line 182 "src/flex/lexer.l"
 {    
-    append_curr_line(yytext);
     yylval.pchar = strdup(yytext);
     BEGIN(INITIAL);
     return STR_LITERAL;
@@ -1042,14 +1036,14 @@ YY_RULE_SETUP
 case 16:
 /* rule 16 can match eol */
 YY_RULE_SETUP
-#line 195 "src/flex/lexer.l"
+#line 187 "src/flex/lexer.l"
 {
     show_str_literal_err();
     cursor_position_update(1, 0);
   }
 	YY_BREAK
 case YY_STATE_EOF(SCANNING_STR_LITERAL):
-#line 199 "src/flex/lexer.l"
+#line 191 "src/flex/lexer.l"
 {
     show_str_literal_err();
   }
@@ -1057,7 +1051,7 @@ case YY_STATE_EOF(SCANNING_STR_LITERAL):
 
 case 17:
 YY_RULE_SETUP
-#line 204 "src/flex/lexer.l"
+#line 196 "src/flex/lexer.l"
 {
   BEGIN(SCANNING_MULTILINE_COMMENT);  
   comment_open_pos = cursor;
@@ -1067,50 +1061,47 @@ YY_RULE_SETUP
 
 case 18:
 YY_RULE_SETUP
-#line 211 "src/flex/lexer.l"
+#line 203 "src/flex/lexer.l"
 { /* noop */ }
 	YY_BREAK
 case 19:
 /* rule 19 can match eol */
 YY_RULE_SETUP
-#line 212 "src/flex/lexer.l"
+#line 204 "src/flex/lexer.l"
 {
     cursor_position_update(1, 0);
   }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 215 "src/flex/lexer.l"
+#line 207 "src/flex/lexer.l"
 {
     BEGIN(INITIAL);    
   }
 	YY_BREAK
 case YY_STATE_EOF(SCANNING_MULTILINE_COMMENT):
-#line 218 "src/flex/lexer.l"
+#line 210 "src/flex/lexer.l"
 {
     ++errors_count;
-    CIPL_PERROR_CURSOR("unterminated comment\n", curr_line, comment_open_pos);
+    CIPL_PERROR_CURSOR("unterminated comment\n", curr_line_buffer, comment_open_pos);
     BEGIN(INITIAL);
   } 
 	YY_BREAK
 
 case 21:
 YY_RULE_SETUP
-#line 225 "src/flex/lexer.l"
+#line 217 "src/flex/lexer.l"
 {
-  append_curr_line(yytext);
-  CIPL_PERROR_CURSOR("unexpected character: %s\n", curr_line, cursor, yytext);  
+  CIPL_PERROR_CURSOR("unexpected character: %s\n", curr_line_buffer, cursor, yytext);  
   return YYerror;
 }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 231 "src/flex/lexer.l"
+#line 222 "src/flex/lexer.l"
 ECHO;
 	YY_BREAK
-#line 1112 "src/flex/lexer.c"
-case YY_STATE_EOF(INITIAL):
-	yyterminate();
+#line 1105 "src/flex/lexer.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2084,12 +2075,12 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 231 "src/flex/lexer.l"
+#line 222 "src/flex/lexer.l"
 
 
 void show_str_literal_err() {
   ++errors_count;
-  CIPL_PWARN_CURSOR("missing terminating '\"' character\n", dquote_open_pos);
+  CIPL_PERROR_CURSOR("missing terminating '\"' character\n", curr_line_buffer, dquote_open_pos);
   BEGIN(INITIAL);
 }
 

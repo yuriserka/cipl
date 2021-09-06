@@ -9,7 +9,7 @@
 #include "utils/io.h"
 
 Symbol *symbol_init(char *name, SymbolTypes type, bool is_function, int scope,
-                    char *ctx_name, cursor_position pos) {
+                    char *ctx_name, Cursor pos) {
   Symbol *sym = calloc(1, sizeof(Symbol));
   symbol_update(sym, name, type, is_function, scope, ctx_name, pos);
   return sym;
@@ -22,7 +22,7 @@ Symbol *symbol_init_copy(Symbol *other) {
                      other->context_name, other->def_pos);
 }
 
-Symbol *symbol_found(char *name, cursor_position pos) {
+Symbol *symbol_found(char *name, Cursor pos) {
   return symbol_init(name, SYM_INVALID, false, 0, NULL, pos);
 }
 
@@ -32,7 +32,7 @@ void symbol_update_context(Symbol *sym, Context *ctx) {
 }
 
 void symbol_update(Symbol *sym, char *name, SymbolTypes type, bool is_function,
-                   int scope, char *ctx_name, cursor_position pos) {
+                   int scope, char *ctx_name, Cursor pos) {
   sym->name = name ? strdup(name) : NULL;
   sym->context_name = ctx_name ? strdup(ctx_name) : NULL;
   sym->scope = scope;
@@ -43,8 +43,10 @@ void symbol_update(Symbol *sym, char *name, SymbolTypes type, bool is_function,
 }
 
 void symbol_free(Symbol *sym) {
-  free(sym->name);
-  free(sym->context_name);
+  if (!sym) return;
+
+  if (sym->name) free(sym->name);
+  if (sym->context_name) free(sym->context_name);
   free(sym);
 }
 
