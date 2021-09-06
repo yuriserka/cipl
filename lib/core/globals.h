@@ -16,9 +16,10 @@ extern cursor_position cursor;
 
 extern int yylex();
 extern int yyparse();
-extern void yyerror(const char *message, ...);
+extern void yyerror(int line, int column, const char *message, ...);
 extern int yylex_destroy();
 extern FILE *yyin;
+extern char curr_line[1024];
 
 // from grammar.y
 extern AST *root;

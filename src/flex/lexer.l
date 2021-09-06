@@ -1,4 +1,4 @@
-%option nounput noinput noyywrap
+%option nounput noinput noyywrap yylineno
 %option outfile="src/flex/lexer.c" header-file="lib/flex/scanner.h"
 
 %{
@@ -10,10 +10,22 @@
 
   int errors_count = 0;
   char *filename;
+  char curr_line[1024] = "";
   cursor_position dquote_open_pos, comment_open_pos;
   cursor_position cursor = {.line=1, .col=1};
 
   void show_str_literal_err();
+  void append_curr_line(char *t) {
+    strcat(curr_line, t);
+  }
+
+  #define YY_USER_ACTION                                       \
+    yylloc.first_line = yylloc.last_line = yylineno;           \
+    yylloc.first_column = cursor.col;                          \
+    if (yytext[0] == '\n') { ++cursor.line; cursor.col =  1; } \
+    else { cursor.col += yyleng; }                             \
+    yylloc.last_column = cursor.col - 1;
+
 %}
 
 DELIM [[:blank:]\n\r]
@@ -53,18 +65,22 @@ BUILTIN_FUNCTIONS read|write|writeln
 {WS} {
   switch (yytext[0]) {
       case ' ':
-      case '\t': cursor_position_update(0, yyleng); break;
-      default: cursor_position_update(yyleng, 0); break;
+      case '\t':        
+        append_curr_line(yytext);
+        break;
+      default:
+        memset(curr_line, 0, 1024);
+        break;
   }
 }
 
-<INITIAL>[\(\){};,] {
-  cursor_position_update(0, yyleng);
+<INITIAL>[\(\){};,] {  
+  append_curr_line(yytext);
   return yytext[0];
 }
 
-{RESERVED_KEYWORDS} {
-  cursor_position_update(0, yyleng);
+{RESERVED_KEYWORDS} {  
+  append_curr_line(yytext);
   switch (yytext[0]) {
     case 'i': return IF;
     case 'e': return ELSE;
@@ -77,8 +93,8 @@ BUILTIN_FUNCTIONS read|write|writeln
 }
 
 "int"|"float"|"list" {
-  yylval.pchar = strdup(yytext);
-  cursor_position_update(0, yyleng);
+  yylval.pchar = strdup(yytext);  
+  append_curr_line(yytext);
   switch(yytext[0]) {
     case 'i': return INT;
     case 'f': return FLOAT;
@@ -87,35 +103,35 @@ BUILTIN_FUNCTIONS read|write|writeln
 }
 
 {BUILTIN_FUNCTIONS} {
-  yylval.sym = symbol_found(yytext, cursor);
-  cursor_position_update(0, yyleng);
+  yylval.sym = symbol_found(yytext, cursor);  
+  append_curr_line(yytext);
   return yytext[0] == 'r' ? READ : WRITE;
 }
 
 {ID} {
-  yylval.sym = symbol_found(yytext, cursor);
-  cursor_position_update(0, yyleng);
+  yylval.sym = symbol_found(yytext, cursor);  
+  append_curr_line(yytext);
   return NAME;
 }
 
 {INTEGER_NUMBER} {
   long int longval;
   sscanf(yytext, "%ld", &longval);
-  yylval.integer = longval;
-  cursor_position_update(0, yyleng);
+  yylval.integer = longval;  
+  append_curr_line(yytext);
   return NUMBER_INT;
 }
 
 {REAL_NUMBER} {
   double doubleval;
   sscanf(yytext, "%lf", &doubleval);
-  yylval.real = doubleval;
-  cursor_position_update(0, yyleng);
+  yylval.real = doubleval;  
+  append_curr_line(yytext);
   return NUMBER_REAL;
 }
 
-{UNARY_OP} {
-  cursor_position_update(0, yyleng);
+{UNARY_OP} {  
+  append_curr_line(yytext);
   yylval.pchar = strdup(yytext);
   switch(yytext[0]) {
     case '!': return EXCLAMATION;
@@ -127,8 +143,8 @@ BUILTIN_FUNCTIONS read|write|writeln
 }
 
 {BINARY_OP} {
-  char *token = yytext;
-  cursor_position_update(0, yyleng);
+  char *token = yytext;  
+  append_curr_line(yytext);
   yylval.pchar = strdup(yytext);
   switch (token[0]) {
       case ':': return COLON;
@@ -153,25 +169,25 @@ BUILTIN_FUNCTIONS read|write|writeln
   }
 }
 
-{OP_ASSSIGN} {
-  cursor_position_update(0, yyleng);
+{OP_ASSSIGN} {  
+  append_curr_line(yytext);
   return yytext[0];
 }
 
 ["] {
-  BEGIN(SCANNING_STR_LITERAL);
-  cursor_position_update(0, yyleng);
+  BEGIN(SCANNING_STR_LITERAL);  
+  append_curr_line(yytext);
   dquote_open_pos = cursor;
   yymore();
 }
 
 <SCANNING_STR_LITERAL>{
-  ([^\n"\\]|\\.)* {
-    cursor_position_update(0, yyleng);
+  ([^\n"\\]|\\.)* {    
+    append_curr_line(yytext);
     yymore();
   }
-  ["] {
-    cursor_position_update(0, yyleng);
+  ["] {    
+    append_curr_line(yytext);
     yylval.pchar = strdup(yytext);
     BEGIN(INITIAL);
     return STR_LITERAL;
@@ -186,8 +202,7 @@ BUILTIN_FUNCTIONS read|write|writeln
 }
 
 "/*" {
-  BEGIN(SCANNING_MULTILINE_COMMENT);
-  cursor_position_update(0, yyleng);
+  BEGIN(SCANNING_MULTILINE_COMMENT);  
   comment_open_pos = cursor;
   yymore();
 }
@@ -198,25 +213,25 @@ BUILTIN_FUNCTIONS read|write|writeln
     cursor_position_update(1, 0);
   }
   "*/" {
-    BEGIN(INITIAL);
-    cursor_position_update(0, yyleng);
+    BEGIN(INITIAL);    
   }
   <<EOF>> {
     ++errors_count;
-    CIPL_PERROR_CURSOR("unterminated comment\n", comment_open_pos);
+    CIPL_PERROR_CURSOR("unterminated comment\n", curr_line, comment_open_pos);
     BEGIN(INITIAL);
   } 
 }
 
 . {
-  CIPL_PERROR("unexpected character: %s\n", yytext);
-  cursor_position_update(0, yyleng);
+  append_curr_line(yytext);
+  CIPL_PERROR_CURSOR("unexpected character: %s\n", curr_line, cursor, yytext);  
+  return YYerror;
 }
 
 %%
 
 void show_str_literal_err() {
   ++errors_count;
-  CIPL_PWARN_CURSOR("missing terminating '\"' character\n", dquote_open_pos);
+  CIPL_PERROR_CURSOR("missing terminating '\"' character\n", curr_line, dquote_open_pos);
   BEGIN(INITIAL);
 }

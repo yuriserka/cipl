@@ -111,7 +111,8 @@ void context_print_pretty(Context *ctx) {
 
     if (scope->size) {
       for (int i = 0; i < wd; ++i) printf("\t");
-      CIPL_PRINTF_COLOR(UMAG, "Scope %d have %d entries\n", scope->index, scope->size);
+      CIPL_PRINTF_COLOR(UMAG, "Scope %d has %d entr%s\n", scope->index,
+                        scope->size, scope->size > 1 ? "ies" : "y");
 
       for (int i = 0; i < NHASH; ++i) {
         if (scope->symbol_table[i].name) {

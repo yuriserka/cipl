@@ -88,7 +88,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 37 "src/bison/grammar.y"
+#line 43 "src/bison/grammar.y"
 
 	struct cipl_ast *ast;
     struct cipl_symbol *sym;
@@ -105,9 +105,23 @@ typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_DECLARED 1
 #endif
 
+/* Location type.  */
+#if ! defined YYLTYPE && ! defined YYLTYPE_IS_DECLARED
+typedef struct YYLTYPE YYLTYPE;
+struct YYLTYPE
+{
+  int first_line;
+  int first_column;
+  int last_line;
+  int last_column;
+};
+# define YYLTYPE_IS_DECLARED 1
+# define YYLTYPE_IS_TRIVIAL 1
+#endif
+
 
 extern YYSTYPE yylval;
-
-int yyparse (void);
+extern YYLTYPE yylloc;
+int yyparse (int line, int col);
 
 #endif /* !YY_YY_LIB_BISON_GRAMMAR_H_INCLUDED  */

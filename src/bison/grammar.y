@@ -1,6 +1,11 @@
 %define lr.type canonical-lr
-%define parse.error verbose
+%define parse.error detailed
 %define api.header.include {"bison/grammar.h"}
+%define parse.lac full
+%locations
+%parse-param {int line}
+%parse-param {int col}
+
 %{
     #include <stdarg.h>
 	#include <stdio.h>
@@ -21,6 +26,7 @@
     Context *previous_context;
     Scope *params_scope;
     StackNode *parent_stacknode_ref;
+    char *last_line_ref;
 
     void free_scope_cb(StackNode *node) { scope_free(node->data); }
 
@@ -69,14 +75,13 @@
 
 %destructor { free($$); } <pchar>
 %destructor { symbol_free($$); } <sym>
-/* %destructor { LIST_FREE($$, { ast_free(__IT__->data); }); } <list> */
 %destructor { ast_free($$); } <ast>
 %%
 
 prog: external_declaration_list
     | %empty {
-        yyerror(NULL);
-        CIPL_PERROR_CURSOR("ISO C-IPL forbids an empty translation unit\n", error_cursor);
+        yyerror(1, 1, NULL);
+        CIPL_PERROR("ISO C-IPL forbids an empty translation unit\n");
     }
     ;
 
@@ -93,14 +98,14 @@ var_declaration: type id <ast>{
         SymbolTypes decl_type = symbol_type_from_str($1);
         if (sym) {
             if (sym->scope) {
-                yyerror(NULL);
-                CIPL_PERROR_CURSOR("redeclaration of '%s'\n", error_cursor, $2->name);
+                yyerror(@$.last_line, @$.last_column, NULL);
+                CIPL_PERROR_CURSOR("redeclaration of '%s'\n", last_line_ref, error_cursor, $2->name);
             } else if (sym->is_fn) {
-                yyerror(NULL);
-                CIPL_PERROR_CURSOR("'%s' redeclared as different kind of symbol\n", error_cursor, $2->name);
+                yyerror(@$.last_line, @$.last_column, NULL);
+                CIPL_PERROR_CURSOR("'%s' redeclared as different kind of symbol\n", last_line_ref, error_cursor, $2->name);
             } else if (sym->type != decl_type) {
-                yyerror(NULL);
-                CIPL_PERROR_CURSOR("conflicting types for '%s'\n", error_cursor, $2->name);
+                yyerror(@$.last_line, @$.last_column, NULL);
+                CIPL_PERROR_CURSOR("conflicting types for '%s'\n", last_line_ref, error_cursor, $2->name);
             } 
             $$ = NULL;
         }
@@ -115,8 +120,8 @@ var_declaration: type id <ast>{
         $$ = $3 ? ast_declaration_init($3) : NULL;
     }
     | type ';' {
-        yyerror(NULL);
-        CIPL_PERROR_CURSOR("useless '%s' in empty declaration\n", error_cursor, $1);
+        yyerror(@$.last_line, @$.last_column, NULL);
+        CIPL_PERROR_CURSOR("useless '%s' in empty declaration\n", "", error_cursor, $1);
         $$ = NULL;
         free($1);
     }
@@ -132,13 +137,13 @@ func_declaration: type id '(' <ast>{
         current_context = list_peek_last(&contexts);
 
         if (sym) {
-            yyerror(NULL);
+            yyerror(@$.last_line, @$.last_column, NULL);
             if (!sym->is_fn) {
-                CIPL_PERROR_CURSOR("'%s' redeclared as different kind of symbol\n", error_cursor, $2->name);
+                CIPL_PERROR_CURSOR("'%s' redeclared as different kind of symbol\n", last_line_ref, error_cursor, $2->name);
             } else if (sym->type != decl_type) {
-                CIPL_PERROR_CURSOR("conflicting types for '%s'\n", error_cursor, $2->name);
+                CIPL_PERROR_CURSOR("conflicting types for '%s'\n", last_line_ref, error_cursor, $2->name);
             } else {
-                CIPL_PERROR_CURSOR("redefinition of '%s'\n", error_cursor, $2->name);
+                CIPL_PERROR_CURSOR("redefinition of '%s'\n", last_line_ref, error_cursor, $2->name);
             }
             $$ = NULL;
         } else {
@@ -157,8 +162,8 @@ func_declaration: type id '(' <ast>{
             SymbolRefAST *symref = ((AST *)__IT__->data)->value.symref;
             Symbol *sym = context_has_symbol(current_context, symref->symbol);
             if (sym) {
-                yyerror(NULL);
-                CIPL_PERROR_CURSOR("redefinition of parameter '%s'\n", error_cursor, symref->symbol->name);
+                yyerror(@$.last_line, @$.last_column, NULL);
+                CIPL_PERROR_CURSOR("redefinition of parameter '%s'\n", last_line_ref, error_cursor, symref->symbol->name);
             } else {
                 context_declare_variable(current_context, symref->symbol);
             }
@@ -251,9 +256,21 @@ cond_stmt: IF '(' expression ')' statement %prec THEN {
     | IF '(' expression ')' statement ELSE statement {
         $$ = ast_flow_init(current_context, $3, $5, $7);
     }
+    | IF '(' error {
+        yyerror(@$.last_line, @$.last_column, NULL);
+        CIPL_PERROR_CURSOR("expected expression before ‘)’ token\n", last_line_ref, error_cursor);
+        $$ = NULL;
+        yyerrok;
+    }
     ;
 
 jmp_stmt: RETURN expression ';' { $$ = ast_jmp_init($2); }
+    | RETURN error ';' {
+        yyerror(@$.last_line, @$.last_column, NULL);
+        CIPL_PERROR_CURSOR("'return' with no value\n", "", error_cursor);
+        $$ = NULL;
+        yyerrok;
+    }
     ;
 
 iter_stmt: FOR '(' expression.opt ';' expression.opt ';' expression.opt ')' statement {
@@ -263,6 +280,13 @@ iter_stmt: FOR '(' expression.opt ';' expression.opt ';' expression.opt ')' stat
 
 expression: logical_or_expr
     | unary_expr '=' logical_or_expr { $$ = ast_assign_init($1, $3); }
+    | unary_expr '=' error {
+        yyerror(@$.last_line, @$.last_column, NULL);
+        CIPL_PERROR_CURSOR("expected expression before ‘;’ token\n", last_line_ref, error_cursor);
+        $$ = NULL;
+        ast_free($1);
+        yyerrok;
+    }
     ;
 
 expression.opt: %empty { $$ = NULL; }
@@ -274,12 +298,28 @@ logical_or_expr: logical_and_expr
         $$ = ast_binop_init($2, $1, $3);
         free($2);
     }
+    | logical_or_expr OR error {
+        yyerror(@$.last_line, @$.last_column, NULL);
+        CIPL_PERROR_CURSOR("expected expression before ';' token\n", last_line_ref, error_cursor);
+        $$ = NULL;
+        free($2);
+        ast_free($1);
+        yyerrok;
+    }
     ;
 
 logical_and_expr: eq_expr
     | logical_and_expr AND eq_expr {
         $$ = ast_binop_init($2, $1, $3);
         free($2);
+    }
+    | logical_and_expr AND error {
+        yyerror(@$.last_line, @$.last_column, NULL);
+        CIPL_PERROR_CURSOR("expected expression before ';' token\n", last_line_ref, error_cursor);
+        $$ = NULL;
+        free($2);
+        ast_free($1);
+        yyerrok;
     }
     ;
 
@@ -288,12 +328,28 @@ eq_expr: rel_expr
         $$ = ast_binop_init($2, $1, $3);
         free($2);
     }
+    | eq_expr EQ error {
+        yyerror(@$.last_line, @$.last_column, NULL);
+        CIPL_PERROR_CURSOR("expected expression before ';' token\n", last_line_ref, error_cursor);
+        $$ = NULL;
+        free($2);
+        ast_free($1);
+        yyerrok;
+    }
     ;
 
 rel_expr: list_expr
     | rel_expr REL list_expr {
         $$ = ast_binop_init($2, $1, $3);
         free($2);
+    }
+    | rel_expr REL error {
+        yyerror(@$.last_line, @$.last_column, NULL);
+        CIPL_PERROR_CURSOR("expected expression before ';' token\n", last_line_ref, error_cursor);
+        $$ = NULL;
+        free($2);
+        ast_free($1);
+        yyerrok;
     }
     ;
 
@@ -306,6 +362,22 @@ list_expr: add_expr
         $$ = ast_binop_init($2, $1, $3);
         free($2);
     }
+    | add_expr DL_DG error {
+        yyerror(@$.last_line, @$.last_column, NULL);
+        CIPL_PERROR_CURSOR("expected expression before ';' token\n", last_line_ref, error_cursor);
+        $$ = NULL;
+        free($2);
+        ast_free($1);
+        yyerrok;
+    }
+    | add_expr COLON error {
+        yyerror(@$.last_line, @$.last_column, NULL);
+        CIPL_PERROR_CURSOR("expected expression before ';' token\n", last_line_ref, error_cursor);
+        $$ = NULL;
+        free($2);
+        ast_free($1);
+        yyerrok;
+    }
     ;
 
 add_expr: mult_expr
@@ -313,12 +385,28 @@ add_expr: mult_expr
         $$ = ast_binop_init($2, $1, $3);
         free($2);
     }
+    | add_expr ADD error {
+        yyerror(@$.last_line, @$.last_column, NULL);
+        CIPL_PERROR_CURSOR("expected expression before ';' token\n", last_line_ref, error_cursor);
+        $$ = NULL;
+        free($2);
+        ast_free($1);
+        yyerrok;
+    }
     ;
 
 mult_expr: unary_expr
     | mult_expr MULT unary_expr {
         $$ = ast_binop_init($2, $1, $3);
         free($2);
+    }
+    | mult_expr MULT error {
+        yyerror(@$.last_line, @$.last_column, NULL);
+        CIPL_PERROR_CURSOR("expected expression before ';' token\n", last_line_ref, error_cursor);
+        $$ = NULL;
+        free($2);
+        ast_free($1);
+        yyerrok;
     }
     ;
 
@@ -358,8 +446,8 @@ primary_expr: id_expr
 id_expr: id {
         Symbol *sym = context_search_symbol_scopes(current_context, $1);
         if (!sym) {
-            yyerror(NULL);
-            CIPL_PERROR_CURSOR("'%s' undeclared (first use in this function)", error_cursor, $1->name);
+            yyerror(@$.last_line, @$.last_column, NULL);
+            CIPL_PERROR_CURSOR("'%s' undeclared (first use in this function)\n", last_line_ref, error_cursor, $1->name);
             $$ = NULL;
         }   else {
             symbol_update_context($1, current_context);
@@ -403,9 +491,13 @@ string_literal: STR_LITERAL {
 
 %%
 
-void yyerror(const char *s, ...) {
-    /* just save where the error points to */
-    error_cursor = cursor;
-    if (s) CIPL_PERROR_CURSOR("%s\n", error_cursor, s);
-    ++errors_count;
+void yyerror(int l, int c, const char *s, ...) {
+    error_cursor = (cursor_position){.line=l, .col=c};
+    last_line_ref = curr_line;
+    // enable error print when bison calls yyerror()
+    /* if (s) CIPL_PERROR_CURSOR("%s\n", last_line_ref, error_cursor, s); */
+    // prevent count up errors when bison calls yyerror()
+    if (!s) {
+        ++errors_count;
+    }
 }

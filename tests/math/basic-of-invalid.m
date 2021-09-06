@@ -13,6 +13,31 @@ int fn_decl() {}
 int list fn_decl() {}
 float fn_decl;
 
+int __error__() {
+    if () {
+        int x;
+    }
+    return;
+    int a;
+    a =;
+    a = 6||;
+    a = 6&&;
+    a = 6==;
+    a = 6!=;
+    a = 6<=;
+    a = 6<;
+    a = 6>=;
+    a = 6>;
+    a = 6>>;
+    a = 6<<;
+    a = 6:;
+    a = 1+;
+    a = 1-;
+    a = 1*;
+    a = 1/;
+    a = j;
+}
+
 int main() {
     if (1) {
         int i;
