@@ -28,6 +28,8 @@ extern AST *root;
 extern Context *current_context;
 extern ListNode *contexts;
 
+// utils
+
 #define SWAP(__X__, __Y__)        \
   {                               \
     typeof(__X__) __X1__ = __X__; \

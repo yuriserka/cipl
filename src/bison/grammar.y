@@ -27,6 +27,7 @@
     Scope *params_scope;
     StackNode *parent_stacknode_ref;
     char *last_line_ref;
+    int pctxn = 1;
 
     void free_scope_cb(StackNode *node) { scope_free(node->data); }
 
@@ -39,7 +40,20 @@
         return NULL;
     }
 
+    #define p_error_ctx_info {                                                       \
+        if (pctxn) {                                                                 \
+            if (current_context->current_scope) {                                    \
+                CIPL_PRINTF(WHT "%s:" RESET " In function " BBLU "'%s'" RESET ":\n", \
+                            filename, current_context->name);                        \
+            } else {                                                                 \
+                CIPL_PRINTF(WHT "%s:" RESET " At top level:\n", filename);           \
+            }                                                                        \
+            pctxn = 0;                                                               \
+        }                                                                            \
+    }
+
     #define show_error_range(__R__, __FMT__, ...) {                             \
+        p_error_ctx_info;                                                       \
         Cursor beg = (Cursor){.line=__R__.first_line, .col=__R__.first_column}; \
         Cursor end = (Cursor){.line=__R__.last_line, .col=__R__.last_column};   \
         yyerror(end.line, end.col, NULL);                                       \
@@ -56,6 +70,7 @@
     }
 
     #define show_error(__R__, __FMT__, ...) {                  \
+        p_error_ctx_info;                                      \
         yyerror(__R__.last_line, __R__.last_column, NULL);     \
         LineInfo *li = list_peek(&lines, __R__.last_line - 1); \
         li = li ? li : curr_line_info;                         \
@@ -123,15 +138,15 @@ external_declaration: func_declaration
     ;
 
 var_declaration: type id <ast>{
-        Symbol *sym = context_has_symbol(current_cSontext, $2);
+        Symbol *sym = context_has_symbol(current_context, $2);
         SymbolTypes decl_type = symbol_type_from_str($1);
         if (sym) {
             if (sym->scope) {
-                show_error_range(@2, "redeclaration of '%s'\n", $2->name);
+                show_error_range(@2, "redeclaration of " BCYN "'%s'\n" RESET, $2->name);
             } else if (sym->is_fn) {
-                show_error_range(@2, "'%s' redeclared as different kind of symbol\n", $2->name);
+                show_error_range(@2, BBLU "'%s'" RESET " redeclared as different kind of symbol\n", $2->name);
             } else if (sym->type != decl_type) {
-                show_error_range(@1, "conflicting types for '%s'\n", $2->name);
+                show_error_range(@1, "conflicting types for " BCYN "'%s'\n" RESET, $2->name);
             }
             $$ = NULL;
         }
@@ -146,13 +161,14 @@ var_declaration: type id <ast>{
         $$ = $3 ? ast_declaration_init($3) : NULL;
     }
     | type ';' {
-        show_error_range(@1, "useless '%s' in empty declaration\n", $1);
+        show_error_range(@1, "useless " BGRN "'%s'" RESET " in empty declaration\n", $1);
         $$ = NULL;
         free($1);
     }
     ;
 
 func_declaration: type id '(' <ast>{
+        pctxn = 1;
         Symbol *sym = context_has_symbol(current_context, $2);
         SymbolTypes decl_type = symbol_type_from_str($1);
 
@@ -162,13 +178,12 @@ func_declaration: type id '(' <ast>{
         current_context = list_peek_last(&contexts);
 
         if (sym) {
-            yyerror(@$.last_line, @$.last_column, NULL);
             if (!sym->is_fn) {
-                show_error(@$, "'%s' redeclared as different kind of symbol\n", $2->name);
+                show_error(@$, BCYN "'%s'" RESET " redeclared as different kind of symbol\n", $2->name);
             } else if (sym->type != decl_type) {
-                show_error(@1, "conflicting types for '%s'\n", $2->name);
+                show_error(@1, "conflicting types for " BBLU "'%s'\n" RESET, $2->name);
             } else {
-                show_error(@2, "redefinition of '%s'\n", $2->name);
+                show_error(@2, "redefinition of " BBLU "'%s'\n" RESET, $2->name);
             }
             $$ = NULL;
         } else {
@@ -189,6 +204,7 @@ func_declaration: type id '(' <ast>{
     } compound_stmt {
         $$ = ast_userfunc_init(current_context, $4, ast_params_init($5), $8);
         current_context = previous_context;
+        pctxn = 1;
     }
     ;
 
@@ -205,7 +221,7 @@ param_decl: type id {
         symbol_update_type($2, symbol_type_from_str($1));
         Symbol *sym = context_has_symbol(current_context, $2);
         if (sym) {
-            show_error_range(@2, "redefinition of parameter '%s'\n", $2->name);
+            show_error_range(@2, "redefinition of parameter " BCYN "'%s'\n" RESET , $2->name);
             $$ = NULL;
         } else {
             context_declare_variable(current_context, $2);
@@ -279,13 +295,13 @@ cond_stmt: IF '(' expression ')' compound_stmt %prec THEN {
         $$ = ast_flow_init(current_context, $3, $5, $7);
     }
     | IF '(' error ')' compound_stmt %prec THEN {
-        show_error(@3, "expected expression before ‘)’ token\n");
+        show_error(@3, "expected expression before " WHT "')'" RESET " token\n");
         $$ = NULL;
         ast_free($5);
         yyerrok;
     }
     | IF '(' error ')' compound_stmt ELSE compound_stmt {
-        show_error(@3, "expected expression before ‘)’ token\n");
+        show_error(@3, "expected expression before " WHT "')'" RESET " token\n");
         $$ = NULL;
         ast_free($5);
         ast_free($7);
@@ -295,7 +311,7 @@ cond_stmt: IF '(' expression ')' compound_stmt %prec THEN {
 
 jmp_stmt: RETURN expression ';' { $$ = ast_jmp_init($2); }
     | RETURN error ';' {
-        show_error(@$, "'return' with no value\n");
+        show_error_range(@1, WHT "'return'" RESET " with no value\n");
         $$ = NULL;
         yyerrok;
     }
@@ -309,7 +325,7 @@ iter_stmt: FOR '(' expression.opt ';' expression.opt ';' expression.opt ')' stat
 expression: logical_or_expr
     | unary_expr '=' logical_or_expr { $$ = ast_assign_init($1, $3); }
     | unary_expr '=' error {
-        show_error(@$, "expected expression before ‘;’ token\n");
+        show_error(@$, "expected expression before " WHT "';'" RESET " token\n");
         $$ = NULL;
         ast_free($1);
         yyerrok;
@@ -326,7 +342,7 @@ logical_or_expr: logical_and_expr
         free($2);
     }
     | logical_or_expr OR error {
-        show_error(@3, "expected expression before ';' token\n");
+        show_error(@3, "expected expression before " WHT "';'" RESET " token\n");
         $$ = NULL;
         free($2);
         ast_free($1);
@@ -340,7 +356,7 @@ logical_and_expr: eq_expr
         free($2);
     }
     | logical_and_expr AND error {
-        show_error(@3, "expected expression before ';' token\n");
+        show_error(@3, "expected expression before " WHT "';'" RESET " token\n");
         $$ = NULL;
         free($2);
         ast_free($1);
@@ -354,7 +370,7 @@ eq_expr: rel_expr
         free($2);
     }
     | eq_expr EQ error {
-        show_error(@3, "expected expression before ';' token\n");
+        show_error(@3, "expected expression before " WHT "';'" RESET " token\n");
         $$ = NULL;
         free($2);
         ast_free($1);
@@ -368,7 +384,7 @@ rel_expr: list_expr
         free($2);
     }
     | rel_expr REL error {
-        show_error(@3, "expected expression before ';' token\n");
+        show_error(@3, "expected expression before " WHT "';'" RESET " token\n");
         $$ = NULL;
         free($2);
         ast_free($1);
@@ -386,14 +402,14 @@ list_expr: add_expr
         free($2);
     }
     | add_expr DL_DG error {
-        show_error(@3, "expected expression before ';' token\n");
+        show_error(@3, "expected expression before " WHT "';'" RESET " token\n");
         $$ = NULL;
         free($2);
         ast_free($1);
         yyerrok;
     }
     | add_expr COLON error {
-        show_error(@3, "expected expression before ';' token\n");
+        show_error(@3, "expected expression before " WHT "';'" RESET " token\n");
         $$ = NULL;
         free($2);
         ast_free($1);
@@ -407,7 +423,7 @@ add_expr: mult_expr
         free($2);
     }
     | add_expr ADD error {
-        show_error(@3, "expected expression before ';' token\n");
+        show_error(@3, "expected expression before " WHT "';'" RESET " token\n");
         $$ = NULL;
         free($2);
         ast_free($1);
@@ -421,7 +437,7 @@ mult_expr: unary_expr
         free($2);
     }
     | mult_expr MULT error {
-        show_error(@3, "expected expression before ';' token\n");
+        show_error(@3, "expected expression before " WHT "';'" RESET " token\n");
         $$ = NULL;
         free($2);
         ast_free($1);
@@ -465,7 +481,7 @@ primary_expr: id_expr
 id_expr: id {
         Symbol *sym = context_search_symbol_scopes(current_context, $1);
         if (!sym) {
-            show_error(@$, "'%s' undeclared (first use in this function)\n", $1->name);
+            show_error(@$, BCYN "'%s'" RESET " undeclared (first use in this function)\n", $1->name);
             $$ = NULL;
         }   else {
             symbol_update_context($1, current_context);

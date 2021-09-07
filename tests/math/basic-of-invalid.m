@@ -3,7 +3,10 @@ int ;
 int var;
 float var;
 
-int func(int param, int param, float param) {}
+int func(int param, int param, float param) {
+    int x;
+}
+
 float func;
 
 int main() {
@@ -15,4 +18,12 @@ int main() {
 
     int a;
     a = a+;
+
+    return;
+
+    h = 2;
 }
+
+int x;
+
+int x() {}
