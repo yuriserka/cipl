@@ -27,7 +27,7 @@
     Scope *params_scope;
     StackNode *parent_stacknode_ref;
     char *last_line_ref;
-    int pctxn = 1;
+    int p_ctx_name = 1;
 
     void free_scope_cb(StackNode *node) { scope_free(node->data); }
 
@@ -41,14 +41,14 @@
     }
 
     #define p_error_ctx_info {                                                       \
-        if (pctxn) {                                                                 \
+        if (p_ctx_name) {                                                            \
             if (current_context->current_scope) {                                    \
                 CIPL_PRINTF(WHT "%s:" RESET " In function " BBLU "'%s'" RESET ":\n", \
                             filename, current_context->name);                        \
             } else {                                                                 \
                 CIPL_PRINTF(WHT "%s:" RESET " At top level:\n", filename);           \
             }                                                                        \
-            pctxn = 0;                                                               \
+            p_ctx_name = 0;                                                          \
         }                                                                            \
     }
 
@@ -123,10 +123,7 @@
 %%
 
 prog: external_declaration_list
-    | %empty {
-        yyerror(1, 1, NULL);
-        CIPL_PERROR("ISO C-IPL forbids an empty translation unit\n");
-    }
+    | %empty { show_error(@$, "ISO C-IPL forbids an empty translation unit\n"); }
     ;
 
 external_declaration_list: external_declaration_list external_declaration { list_push(&root->children, $2); }
@@ -135,6 +132,11 @@ external_declaration_list: external_declaration_list external_declaration { list
 
 external_declaration: func_declaration
     | var_declaration
+    | statement {
+        show_error_range(@$, "statements are not allowed at top level\n");
+        $$ = NULL;
+        ast_free($1);
+    }
     ;
 
 var_declaration: type id <ast>{
@@ -168,7 +170,7 @@ var_declaration: type id <ast>{
     ;
 
 func_declaration: type id '(' <ast>{
-        pctxn = 1;
+        p_ctx_name = 1;
         Symbol *sym = context_has_symbol(current_context, $2);
         SymbolTypes decl_type = symbol_type_from_str($1);
 
@@ -188,8 +190,13 @@ func_declaration: type id '(' <ast>{
             $$ = NULL;
         } else {
             Symbol *declared = context_declare_function(previous_context, $2);
-            symbol_update_type(declared, decl_type);
-            $$ = ast_symref_init(symbol_init_copy(declared));
+            if (!declared) {
+                show_error(@$, BCYN "'%s'" RESET " redeclared as different kind of symbol\n", $2->name);
+                $$ = NULL;
+            } else {
+                symbol_update_type(declared, decl_type);
+                $$ = ast_symref_init(symbol_init_copy(declared));
+            }
         }
 
         // push scope for the function s:1
@@ -204,7 +211,7 @@ func_declaration: type id '(' <ast>{
     } compound_stmt {
         $$ = ast_userfunc_init(current_context, $4, ast_params_init($5), $8);
         current_context = previous_context;
-        pctxn = 1;
+        p_ctx_name = 1;
     }
     ;
 

@@ -26,4 +26,10 @@ int main() {
 
 int x;
 
-int x() {}
+x = 2.6;
+
+if (1) {
+    if (2) {}
+}
+
+int list x() {}
