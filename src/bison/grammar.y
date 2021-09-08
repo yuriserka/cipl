@@ -82,6 +82,10 @@
         );                                                     \
         yyerrok;                                               \
     }
+
+    #define cleanup_expr_err(__OP__, __AST__) \
+        { free(__OP__); ast_free(__AST__); }
+
 %}
 
 %union {
@@ -181,7 +185,7 @@ func_declaration: type id '(' <ast>{
 
         if (sym) {
             if (!sym->is_fn) {
-                show_error(@$, BCYN "'%s'" RESET " redeclared as different kind of symbol\n", $2->name);
+                show_error(@2, BCYN "'%s'" RESET " redeclared as different kind of symbol\n", $2->name);
             } else if (sym->type != decl_type) {
                 show_error(@1, "conflicting types for " BBLU "'%s'\n" RESET, $2->name);
             } else {
@@ -191,7 +195,7 @@ func_declaration: type id '(' <ast>{
         } else {
             Symbol *declared = context_declare_function(previous_context, $2);
             if (!declared) {
-                show_error(@$, BCYN "'%s'" RESET " redeclared as different kind of symbol\n", $2->name);
+                show_error(@2, BCYN "'%s'" RESET " redeclared as different kind of symbol\n", $2->name);
                 $$ = NULL;
             } else {
                 symbol_update_type(declared, decl_type);
@@ -331,12 +335,6 @@ iter_stmt: FOR '(' expression.opt ';' expression.opt ';' expression.opt ')' stat
 
 expression: logical_or_expr
     | unary_expr '=' logical_or_expr { $$ = ast_assign_init($1, $3); }
-    | unary_expr '=' error {
-        show_error(@$, "expected expression before " WHT "';'" RESET " token\n");
-        $$ = NULL;
-        ast_free($1);
-        yyerrok;
-    }
     ;
 
 expression.opt: %empty { $$ = NULL; }
@@ -350,10 +348,13 @@ logical_or_expr: logical_and_expr
     }
     | logical_or_expr OR error {
         show_error(@3, "expected expression before " WHT "';'" RESET " token\n");
+        cleanup_expr_err($2, $1);
         $$ = NULL;
-        free($2);
-        ast_free($1);
-        yyerrok;
+    }
+    | error OR logical_and_expr {
+        show_error_range(@2, "expected expression before " WHT "'%s'" RESET " token\n", $2);
+        cleanup_expr_err($2, $3);
+        $$ = NULL;
     }
     ;
 
@@ -364,10 +365,13 @@ logical_and_expr: eq_expr
     }
     | logical_and_expr AND error {
         show_error(@3, "expected expression before " WHT "';'" RESET " token\n");
+        cleanup_expr_err($2, $1);
         $$ = NULL;
-        free($2);
-        ast_free($1);
-        yyerrok;
+    }
+    | error AND eq_expr {
+        show_error_range(@2, "expected expression before " WHT "'%s'" RESET " token\n", $2);
+        cleanup_expr_err($2, $3);
+        $$ = NULL;
     }
     ;
 
@@ -378,10 +382,13 @@ eq_expr: rel_expr
     }
     | eq_expr EQ error {
         show_error(@3, "expected expression before " WHT "';'" RESET " token\n");
+        cleanup_expr_err($2, $1);
         $$ = NULL;
-        free($2);
-        ast_free($1);
-        yyerrok;
+    }
+    | error EQ rel_expr {
+        show_error_range(@2, "expected expression before " WHT "'%s'" RESET " token\n", $2);
+        cleanup_expr_err($2, $3);
+        $$ = NULL;
     }
     ;
 
@@ -392,10 +399,13 @@ rel_expr: list_expr
     }
     | rel_expr REL error {
         show_error(@3, "expected expression before " WHT "';'" RESET " token\n");
+        cleanup_expr_err($2, $1);
         $$ = NULL;
-        free($2);
-        ast_free($1);
-        yyerrok;
+    }
+    | error REL list_expr {
+        show_error_range(@2, "expected expression before " WHT "'%s'" RESET " token\n", $2);
+        cleanup_expr_err($2, $3);
+        $$ = NULL;
     }
     ;
 
@@ -410,17 +420,23 @@ list_expr: add_expr
     }
     | add_expr DL_DG error {
         show_error(@3, "expected expression before " WHT "';'" RESET " token\n");
+        cleanup_expr_err($2, $1);
         $$ = NULL;
-        free($2);
-        ast_free($1);
-        yyerrok;
     }
     | add_expr COLON error {
         show_error(@3, "expected expression before " WHT "';'" RESET " token\n");
+        cleanup_expr_err($2, $1);
         $$ = NULL;
-        free($2);
-        ast_free($1);
-        yyerrok;
+    }
+    | error DL_DG list_expr {
+        show_error_range(@2, "expected expression before " WHT "'%s'" RESET " token\n", $2);
+        cleanup_expr_err($2, $3);
+        $$ = NULL;
+    }
+    | error COLON list_expr {
+        show_error_range(@2, "expected expression before " WHT "'%s'" RESET " token\n", $2);
+        cleanup_expr_err($2, $3);
+        $$ = NULL;
     }
     ;
 
@@ -431,10 +447,13 @@ add_expr: mult_expr
     }
     | add_expr ADD error {
         show_error(@3, "expected expression before " WHT "';'" RESET " token\n");
+        cleanup_expr_err($2, $1);
         $$ = NULL;
-        free($2);
-        ast_free($1);
-        yyerrok;
+    }
+    | error ADD mult_expr {
+        show_error_range(@2, "expected expression before " WHT "'%s'" RESET " token\n", $2);
+        cleanup_expr_err($2, $3);
+        $$ = NULL;
     }
     ;
 
@@ -445,10 +464,13 @@ mult_expr: unary_expr
     }
     | mult_expr MULT error {
         show_error(@3, "expected expression before " WHT "';'" RESET " token\n");
+        cleanup_expr_err($2, $1);
         $$ = NULL;
-        free($2);
-        ast_free($1);
-        yyerrok;
+    }
+    | error MULT unary_expr {
+        show_error_range(@2, "expected expression before " WHT "'%s'" RESET " token\n", $2);
+        cleanup_expr_err($2, $3);
+        $$ = NULL;
     }
     ;
 

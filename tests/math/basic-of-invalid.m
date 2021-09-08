@@ -33,3 +33,44 @@ if (1) {
 }
 
 int list x() {}
+
+int list invalid_exprs(int a) {
+    a = ||a;
+    a = a||;
+
+    a = &&a;
+    a = a&&;
+
+    a = ==a;
+    a = a==;
+    a = !=a;
+    a = a!=;
+    
+    a = >a;
+    a = a>;
+    a = >=a;
+    a = a>=;
+    a = <a;
+    a = a<;
+    a = <=a;
+    a = a<=;
+
+    a = >>a;
+    a = a>>;
+    a = <<a;
+    a = a<<;
+    a = :a;
+    a = a:;
+
+    a = +a;
+    a = a+;
+    a = -a;
+    a = a-;
+
+    a = *a;
+    a = a*;
+    a = /a;
+    a = a/;
+
+    return NIL;
+}
