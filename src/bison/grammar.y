@@ -107,7 +107,7 @@
 %type<pchar> unary_ops type
 
 %type<ast> external_declaration var_declaration func_declaration block_item statement
-%type<ast> expression eq_expr rel_expr add_expr primary_expr constant string_literal id_expr
+%type<ast> expression eq_expr rel_expr add_expr primary_expr constant string_literal
 %type<ast> mult_expr unary_expr postfix_expr compound_stmt logical_and_expr logical_or_expr
 %type<ast> expr_stmt jmp_stmt cond_stmt expression.opt iter_stmt list_expr param_decl io_stmt
 
@@ -488,8 +488,20 @@ unary_ops: EXCLAMATION
     ;
 
 postfix_expr: primary_expr
-    | id_expr '(' arg_expr_list.opt ')' {
-        $$ = ast_funcall_init($1, ast_params_init($3));
+    | id '(' arg_expr_list.opt ')' {
+        Symbol *sym = context_search_symbol_scopes(current_context, $1);
+        if (!sym) {
+            show_error_range(@1, "implicit declaration of function " BBLU "'%s'\n" RESET, $1->name);
+            $$ = NULL;
+        } else {
+            if (!sym->is_fn) {
+                show_error_range(@1, "called object " BCYN "'%s'" RESET " is not a function\n", sym->name);
+                $$ = NULL;
+            } else {
+                $$ = ast_funcall_init(ast_symref_init(symbol_init_copy(sym)), ast_params_init($3));
+            }
+        }
+        symbol_free($1);
     }
     ;
 
@@ -501,23 +513,20 @@ arg_expr_list.opt: arg_expr_list
     | %empty { $$ = NULL; }
     ;
 
-primary_expr: id_expr
-    | constant
-    | string_literal
-    | '(' expression ')' { $$ = $2; }
-    ;
-
-id_expr: id {
+primary_expr: id {
         Symbol *sym = context_search_symbol_scopes(current_context, $1);
         if (!sym) {
-            show_error(@$, BCYN "'%s'" RESET " undeclared (first use in this function)\n", $1->name);
+            show_error_range(@1, BCYN "'%s'" RESET " undeclared (first use in this function)\n", $1->name);
             $$ = NULL;
-        }   else {
+        } else {
             symbol_update_context($1, current_context);
             $$ = ast_symref_init(symbol_init_copy(sym ? sym : $1));
         }
         symbol_free($1);
     }
+    | constant
+    | string_literal
+    | '(' expression ')' { $$ = $2; }
     ;
 
 id: NAME
