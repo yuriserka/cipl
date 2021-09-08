@@ -110,7 +110,7 @@ int test_builtin() {
     writeln((media + nota1 + nota2) / 3);
 }
 
-int scopes_redecl(int a) { // s1-p:0
+int scopes_redecl() { // s1-p:0
     { // s2-p:1
         int a;
         { // s3-p:2
@@ -126,6 +126,7 @@ int scopes_redecl(int a) { // s1-p:0
             }
         }
     }
+    int a;
     a = 1;
     { // s:7-p:1
         int list a;

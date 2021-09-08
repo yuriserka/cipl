@@ -9,19 +9,27 @@ int func(int param, int param, float param) {
 
 float func;
 
+int invalid_fn;
+
 int main() {
     int aaaa;
     int aaaa;
 
+    invalid_fn();
+    not_declared_fn();
+
+    float;
+
     if () {}
     if() {} else {}
 
-    int a;
-    a = a+;
+    int list;
+
+    undeclared_var = 2;
+
+    float list;
 
     return;
-
-    h = 2;
 }
 
 int x;
