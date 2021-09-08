@@ -42,7 +42,7 @@ Symbol *context_search_symbol_scopes(Context *ctx, Symbol *sym) {
 }
 
 Symbol *context_has_symbol(Context *ctx, Symbol *sym) {
-  Scope *scope = stack_peek(&ctx->scopes);
+  Scope *scope = context_found_scope(ctx);
   return symbol_table_lookup(scope->symbol_table, sym->name);
 }
 
