@@ -347,7 +347,7 @@ logical_or_expr: logical_and_expr
         free($2);
     }
     | logical_or_expr OR error {
-        show_error(@3, "expected expression before " WHT "';'" RESET " token\n");
+        show_error(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         cleanup_expr_err($2, $1);
         $$ = NULL;
     }
@@ -364,7 +364,7 @@ logical_and_expr: eq_expr
         free($2);
     }
     | logical_and_expr AND error {
-        show_error(@3, "expected expression before " WHT "';'" RESET " token\n");
+        show_error(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         cleanup_expr_err($2, $1);
         $$ = NULL;
     }
@@ -381,7 +381,7 @@ eq_expr: rel_expr
         free($2);
     }
     | eq_expr EQ error {
-        show_error(@3, "expected expression before " WHT "';'" RESET " token\n");
+        show_error(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         cleanup_expr_err($2, $1);
         $$ = NULL;
     }
@@ -398,7 +398,7 @@ rel_expr: list_expr
         free($2);
     }
     | rel_expr REL error {
-        show_error(@3, "expected expression before " WHT "';'" RESET " token\n");
+        show_error(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         cleanup_expr_err($2, $1);
         $$ = NULL;
     }
@@ -419,12 +419,12 @@ list_expr: add_expr
         free($2);
     }
     | add_expr DL_DG error {
-        show_error(@3, "expected expression before " WHT "';'" RESET " token\n");
+        show_error(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         cleanup_expr_err($2, $1);
         $$ = NULL;
     }
     | add_expr COLON error {
-        show_error(@3, "expected expression before " WHT "';'" RESET " token\n");
+        show_error(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         cleanup_expr_err($2, $1);
         $$ = NULL;
     }
@@ -446,7 +446,7 @@ add_expr: mult_expr
         free($2);
     }
     | add_expr ADD error {
-        show_error(@3, "expected expression before " WHT "';'" RESET " token\n");
+        show_error(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         cleanup_expr_err($2, $1);
         $$ = NULL;
     }
@@ -463,7 +463,7 @@ mult_expr: unary_expr
         free($2);
     }
     | mult_expr MULT error {
-        show_error(@3, "expected expression before " WHT "';'" RESET " token\n");
+        show_error(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         cleanup_expr_err($2, $1);
         $$ = NULL;
     }

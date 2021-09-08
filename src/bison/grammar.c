@@ -3956,7 +3956,7 @@ yyreduce:
   case 50: /* logical_or_expr: logical_or_expr OR error  */
 #line 349 "src/bison/grammar.y"
                                {
-        show_error((yylsp[0]), "expected expression before " WHT "';'" RESET " token\n");
+        show_error((yylsp[0]), "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         cleanup_expr_err((yyvsp[-1].pchar), (yyvsp[-2].ast));
         (yyval.ast) = NULL;
     }
@@ -3985,7 +3985,7 @@ yyreduce:
   case 54: /* logical_and_expr: logical_and_expr AND error  */
 #line 366 "src/bison/grammar.y"
                                  {
-        show_error((yylsp[0]), "expected expression before " WHT "';'" RESET " token\n");
+        show_error((yylsp[0]), "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         cleanup_expr_err((yyvsp[-1].pchar), (yyvsp[-2].ast));
         (yyval.ast) = NULL;
     }
@@ -4014,7 +4014,7 @@ yyreduce:
   case 58: /* eq_expr: eq_expr EQ error  */
 #line 383 "src/bison/grammar.y"
                        {
-        show_error((yylsp[0]), "expected expression before " WHT "';'" RESET " token\n");
+        show_error((yylsp[0]), "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         cleanup_expr_err((yyvsp[-1].pchar), (yyvsp[-2].ast));
         (yyval.ast) = NULL;
     }
@@ -4043,7 +4043,7 @@ yyreduce:
   case 62: /* rel_expr: rel_expr REL error  */
 #line 400 "src/bison/grammar.y"
                          {
-        show_error((yylsp[0]), "expected expression before " WHT "';'" RESET " token\n");
+        show_error((yylsp[0]), "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         cleanup_expr_err((yyvsp[-1].pchar), (yyvsp[-2].ast));
         (yyval.ast) = NULL;
     }
@@ -4081,7 +4081,7 @@ yyreduce:
   case 67: /* list_expr: add_expr DL_DG error  */
 #line 421 "src/bison/grammar.y"
                            {
-        show_error((yylsp[0]), "expected expression before " WHT "';'" RESET " token\n");
+        show_error((yylsp[0]), "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         cleanup_expr_err((yyvsp[-1].pchar), (yyvsp[-2].ast));
         (yyval.ast) = NULL;
     }
@@ -4091,7 +4091,7 @@ yyreduce:
   case 68: /* list_expr: add_expr COLON error  */
 #line 426 "src/bison/grammar.y"
                            {
-        show_error((yylsp[0]), "expected expression before " WHT "';'" RESET " token\n");
+        show_error((yylsp[0]), "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         cleanup_expr_err((yyvsp[-1].pchar), (yyvsp[-2].ast));
         (yyval.ast) = NULL;
     }
@@ -4130,7 +4130,7 @@ yyreduce:
   case 73: /* add_expr: add_expr ADD error  */
 #line 448 "src/bison/grammar.y"
                          {
-        show_error((yylsp[0]), "expected expression before " WHT "';'" RESET " token\n");
+        show_error((yylsp[0]), "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         cleanup_expr_err((yyvsp[-1].pchar), (yyvsp[-2].ast));
         (yyval.ast) = NULL;
     }
@@ -4159,7 +4159,7 @@ yyreduce:
   case 77: /* mult_expr: mult_expr MULT error  */
 #line 465 "src/bison/grammar.y"
                            {
-        show_error((yylsp[0]), "expected expression before " WHT "';'" RESET " token\n");
+        show_error((yylsp[0]), "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         cleanup_expr_err((yyvsp[-1].pchar), (yyvsp[-2].ast));
         (yyval.ast) = NULL;
     }
