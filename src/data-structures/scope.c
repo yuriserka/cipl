@@ -35,7 +35,6 @@ void scope_free(Scope *scope) {
     Symbol *sym = &scope->symbol_table[i];
     if (sym && sym->name) {
       free(sym->name);
-      free(sym->context_name);
       --scope->size;
     }
   }

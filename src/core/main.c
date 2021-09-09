@@ -10,25 +10,25 @@
 void init_global_context(Context *global_ctx) {
   Cursor definition = (Cursor){.line = 0, .col = 0};
   SymbolTypes type = symbol_type_from_str("int");
-  AST *write_fnref = ast_symref_init(symbol_init("write", type, true,
-                                                 global_ctx->current_scope,
-                                                 global_ctx->name, definition));
+  Symbol *write_fnref =
+      symbol_init("write", type, true, global_ctx->current_scope,
+                  global_ctx->name, definition);
 
-  AST *writeln_fnref = ast_symref_init(
+  Symbol *writeln_fnref =
       symbol_init("writeln", type, true, global_ctx->current_scope,
-                  global_ctx->name, definition));
+                  global_ctx->name, definition);
 
-  AST *read_fnref =
-      ast_symref_init(symbol_init("read", type, true, global_ctx->current_scope,
-                                  global_ctx->name, definition));
+  Symbol *read_fnref =
+      symbol_init("read", type, true, global_ctx->current_scope,
+                  global_ctx->name, definition);
 
-  context_declare_function(global_ctx, write_fnref->value.symref->symbol);
-  context_declare_function(global_ctx, writeln_fnref->value.symref->symbol);
-  context_declare_function(global_ctx, read_fnref->value.symref->symbol);
+  context_declare_function(global_ctx, write_fnref);
+  context_declare_function(global_ctx, writeln_fnref);
+  context_declare_function(global_ctx, read_fnref);
 
-  ast_free(write_fnref);
-  ast_free(writeln_fnref);
-  ast_free(read_fnref);
+  symbol_free(write_fnref);
+  symbol_free(writeln_fnref);
+  symbol_free(read_fnref);
 }
 
 void print_all_contexts() {

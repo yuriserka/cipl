@@ -10,6 +10,7 @@
     #include <stdarg.h>
 	#include <stdio.h>
     #include <string.h>
+    #include <stdbool.h>
 
     #include "data-structures/ast/ast.h"
     #include "data-structures/stack.h"
@@ -24,10 +25,9 @@
     Cursor error_cursor;
     Context *current_context;
     Context *previous_context;
-    Scope *params_scope;
     StackNode *parent_stacknode_ref;
     char *last_line_ref;
-    int p_ctx_name = 1;
+    bool p_ctx_name = true, is_fn_blck = false;
 
     void free_scope_cb(StackNode *node) { scope_free(node->data); }
 
@@ -48,7 +48,7 @@
             } else {                                                                 \
                 CIPL_PRINTF(WHT "%s:" RESET " At top level:\n", filename);           \
             }                                                                        \
-            p_ctx_name = 0;                                                          \
+            p_ctx_name = false;                                                      \
         }                                                                            \
     }
 
@@ -157,9 +157,8 @@ var_declaration: type id <ast>{
             $$ = NULL;
         }
         else {
-            Symbol *declared = context_declare_variable(current_context, $2);
-            symbol_update_type(declared, decl_type);
-            $$ = ast_symref_init(symbol_init_copy(declared));
+            symbol_update_type($2, decl_type);
+            $$ = ast_symref_init(context_declare_variable(current_context, $2));
         }
         symbol_free($2);
         free($1);
@@ -174,7 +173,7 @@ var_declaration: type id <ast>{
     ;
 
 func_declaration: type id '(' <ast>{
-        p_ctx_name = 1;
+        p_ctx_name = true;
         Symbol *sym = context_has_symbol(current_context, $2);
         SymbolTypes decl_type = symbol_type_from_str($1);
 
@@ -193,13 +192,13 @@ func_declaration: type id '(' <ast>{
             }
             $$ = NULL;
         } else {
+            symbol_update_type($2, decl_type);
             Symbol *declared = context_declare_function(previous_context, $2);
             if (!declared) {
                 show_error(@2, BCYN "'%s'" RESET " redeclared as different kind of symbol\n", $2->name);
                 $$ = NULL;
             } else {
-                symbol_update_type(declared, decl_type);
-                $$ = ast_symref_init(symbol_init_copy(declared));
+                $$ = ast_symref_init(declared);
             }
         }
 
@@ -208,14 +207,12 @@ func_declaration: type id '(' <ast>{
 
         symbol_free($2);
         free($1);
-    } param_list.opt ')' {
-        // hack to save the scope of params and append to the scope of the body
-        params_scope = scope_init_copy(stack_peek(&current_context->scopes));
-        stack_pop(&current_context->scopes, free_scope_cb);
-    } compound_stmt {
+    } param_list.opt {
+        is_fn_blck = true;
+    } ')' compound_stmt {
         $$ = ast_userfunc_init(current_context, $4, ast_params_init($5), $8);
         current_context = previous_context;
-        p_ctx_name = 1;
+        p_ctx_name = true;
     }
     ;
 
@@ -228,15 +225,13 @@ params_list: params_list ',' param_decl { list_push(&$$, $3); }
     ;
 
 param_decl: type id {
-        symbol_update_context($2, current_context);
-        symbol_update_type($2, symbol_type_from_str($1));
         Symbol *sym = context_has_symbol(current_context, $2);
         if (sym) {
             show_error_range(@2, "redefinition of parameter " BCYN "'%s'\n" RESET , $2->name);
             $$ = NULL;
         } else {
-            context_declare_variable(current_context, $2);
-            $$ = ast_symref_init(symbol_init_copy($2));
+            symbol_update_type($2, symbol_type_from_str($1));
+            $$ = ast_symref_init(context_declare_variable(current_context, $2));
         }
         symbol_free($2);
         free($1);
@@ -246,13 +241,8 @@ param_decl: type id {
 compound_stmt: '{' {
         parent_stacknode_ref = context_get_current_stacknode_ref();
         // hack to update the current scope
-        if (params_scope) {
-            stack_push(&current_context->scopes, params_scope);
-            current_context->current_scope = ((Scope *)stack_peek(&current_context->scopes))->index;
-            params_scope = NULL;
-        } else {
-            context_push_scope(current_context);
-        }
+        if (!is_fn_blck) context_push_scope(current_context);
+        is_fn_blck = false;
     } block_item_list.opt '}' {
         $$ = ast_blockitems_init($3);
         context_pop_scope(current_context);
@@ -285,13 +275,23 @@ statement: expr_stmt
 io_stmt: READ '(' id ')' ';' {
         Symbol *func = context_search_symbol_scopes(current_context, $1);
         Symbol *param = context_search_symbol_scopes(current_context, $3);
-        $$ = ast_builtinfn_init(ast_symref_init(symbol_init_copy(func)), ast_symref_init(symbol_init_copy(param)));
+        $$ = ast_builtinfn_init(ast_symref_init(func), ast_symref_init(param));
         symbol_free($1);
         symbol_free($3);
     }
     | WRITE '(' expression ')' ';' {
-        Symbol *sym = context_search_symbol_scopes(current_context, $1);
-        $$ = ast_builtinfn_init(ast_symref_init(symbol_init_copy(sym)), $3);
+        Symbol *func = context_search_symbol_scopes(current_context, $1);
+        $$ = ast_builtinfn_init(ast_symref_init(func), $3);
+        symbol_free($1);
+    }
+    | WRITE '(' error ')' ';' {
+        show_error_range(@4, "expected expression before " WHT "')'" RESET " token\n");
+        $$ = NULL;
+        symbol_free($1);
+    }
+    | READ '(' error ')' ';' {
+        show_error_range(@4, "expected expression before " WHT "')'" RESET " token\n");
+        $$ = NULL;
         symbol_free($1);
     }
     ;
@@ -335,6 +335,11 @@ iter_stmt: FOR '(' expression.opt ';' expression.opt ';' expression.opt ')' stat
 
 expression: logical_or_expr
     | unary_expr '=' logical_or_expr { $$ = ast_assign_init($1, $3); }
+    | unary_expr '=' error {
+        show_error(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
+        ast_free($1);
+        $$ = NULL;
+    }
     ;
 
 expression.opt: %empty { $$ = NULL; }
@@ -490,15 +495,18 @@ unary_ops: EXCLAMATION
 postfix_expr: primary_expr
     | id '(' arg_expr_list.opt ')' {
         Symbol *sym = context_search_symbol_scopes(current_context, $1);
+        AST *params = ast_params_init($3);
         if (!sym) {
             show_error_range(@1, "implicit declaration of function " BBLU "'%s'\n" RESET, $1->name);
             $$ = NULL;
+            ast_free(params);
         } else {
             if (!sym->is_fn) {
                 show_error_range(@1, "called object " BCYN "'%s'" RESET " is not a function\n", sym->name);
                 $$ = NULL;
+                ast_free(params);
             } else {
-                $$ = ast_funcall_init(ast_symref_init(symbol_init_copy(sym)), ast_params_init($3));
+                $$ = ast_funcall_init(ast_symref_init(sym), params);
             }
         }
         symbol_free($1);
@@ -519,14 +527,17 @@ primary_expr: id {
             show_error_range(@1, BCYN "'%s'" RESET " undeclared (first use in this function)\n", $1->name);
             $$ = NULL;
         } else {
-            symbol_update_context($1, current_context);
-            $$ = ast_symref_init(symbol_init_copy(sym ? sym : $1));
+            $$ = ast_symref_init(sym);
         }
         symbol_free($1);
     }
     | constant
     | string_literal
     | '(' expression ')' { $$ = $2; }
+    | '(' error ')' {
+        show_error_range(@2, "expected expression\n");
+        $$ = NULL;
+    }
     ;
 
 id: NAME
@@ -567,7 +578,10 @@ void yyerror(int l, int c, const char *s, ...) {
     error_cursor = (Cursor){.line=l, .col=c};
     last_line_ref = curr_line_buffer;
     // enable error print when bison calls yyerror()
-    /* if (s) CIPL_PERROR_CURSOR("%s\n", last_line_ref, error_cursor, s); */
+    /* if (s) {
+        CIPL_PRINTF_COLOR(BRED, "%s\n", s);
+        CIPL_PRINTF_COLOR(BYEL, "%d:%d: at line: %s\n", error_cursor.line, error_cursor.col, last_line_ref);
+    } */
     // prevent count up errors when bison calls yyerror()
     if (!s) {
         ++errors_count;

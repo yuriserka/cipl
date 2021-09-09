@@ -27,14 +27,14 @@ Symbol *symbol_found(char *name, Cursor pos) {
 }
 
 void symbol_update_context(Symbol *sym, Context *ctx) {
-  sym->context_name = strdup(ctx->name);
+  sym->context_name = ctx->name;
   sym->scope = ctx->current_scope;
 }
 
 void symbol_update(Symbol *sym, char *name, SymbolTypes type, bool is_function,
                    int scope, char *ctx_name, Cursor pos) {
   sym->name = name ? strdup(name) : NULL;
-  sym->context_name = ctx_name ? strdup(ctx_name) : NULL;
+  sym->context_name = ctx_name;
   sym->scope = scope;
   sym->value = 0;
   sym->def_pos = pos;
@@ -46,14 +46,16 @@ void symbol_free(Symbol *sym) {
   if (!sym) return;
 
   if (sym->name) free(sym->name);
-  if (sym->context_name) free(sym->context_name);
   free(sym);
 }
 
 void symbol_print(Symbol *sym) {
-  printf("{ name: '%s', type: %s%s, declared_at: '%s:%d:%d', }, ", sym->name,
-         sym->is_fn ? "SYM_FUNC " : "", symbol_type_from_enum(sym->type),
-         filename, sym->def_pos.line, sym->def_pos.col);
+  printf(
+      "{ name: '%s', type: %s%s, declared_at: '%s:%d:%d', ctx: '%s', scope: "
+      "%d}, ",
+      sym->name, sym->is_fn ? "SYM_FUNC " : "",
+      symbol_type_from_enum(sym->type), filename, sym->def_pos.line,
+      sym->def_pos.col, sym->context_name, sym->scope);
 }
 
 void symbol_print_pretty(Symbol *sym) {

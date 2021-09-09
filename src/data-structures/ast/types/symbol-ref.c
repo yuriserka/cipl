@@ -14,7 +14,6 @@ AST *ast_symref_init(Symbol *symbol) {
 
 void ast_symref_free(AST *ast) {
   SymbolRefAST *symref_ast = ast->value.symref;
-  symbol_free(symref_ast->symbol);
   free(symref_ast);
 }
 

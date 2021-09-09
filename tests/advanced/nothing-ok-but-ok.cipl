@@ -82,5 +82,17 @@ int list invalid_exprs(int a) {
 
     a = (a/);
 
+    a = a a;
+    a = (a a);
+    // this still dont work
+    // a = (a) a;
+
     return NIL;
+}
+
+float builtin() {
+    // all of them has arity 1
+    read();
+    write();
+    writeln();
 }
