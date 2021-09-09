@@ -1,0 +1,279 @@
+{
+	"$schema": "https://raw.githubusercontent.ciplom/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "cipl",
+	"patterns": [
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#types"
+		},
+		{
+			"include": "#function_call"
+		},
+		{
+			"include": "#constants"
+		},
+		{
+			"include": "#func_call"
+		},
+		{
+			"include": "#variable"
+		},
+		{
+			"include": "#strings"
+		}
+	],
+	"repository": {
+		"keywords": {
+			"patterns": [
+				{
+					"name": "keyword.control.cipl",
+					"match": "\\b(if|else|for|return)\\b"
+				}
+			]
+		},
+		"comments": {
+			"patterns": [
+				{
+					"name": "comment.block.c",
+					"begin": "(\\/\\*)",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.definition.comment.begin.c"
+						}
+					},
+					"end": "(\\*\\/)",
+					"endCaptures": {
+						"1": {
+							"name": "punctuation.definition.comment.end.c"
+						}
+					}
+				},
+				{
+					"name": "comment.block.c",
+					"begin": "(\\/\\/)",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.definition.comment.begin.c"
+						}
+					},
+					"end": "\n",
+					"endCaptures": {
+						"1": {
+							"name": "punctuation.definition.comment.end.c"
+						}
+					}
+				}
+			]
+		},
+		"constants": {
+			"patterns": [
+				{
+					"name": "constant.language.cipl",
+					"match": "NIL"
+				},
+				{
+					"name": "constant.numeric",
+					"match": "\\b(0|[1-9][0-9]*)\\b"
+				},
+				{
+					"name": "constant.numeric",
+					"match": "\\b([0-9]*\\.)?[0-9]+([eE][+-]?[0-9]+)?\\b"
+				}
+			]
+		},
+		"types": {
+			"patterns": [
+				{
+					"match": "\\b(int|float|list)\\b",
+					"name": "storage.type.built-in.cipl"
+				}
+			]
+		},
+		"strings": {
+			"name": "string.quoted.double.cipl",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.cipl",
+					"match": "\\\\."
+				}
+			]
+		},
+		"variable": {
+			"patterns": [
+				{
+					"match": "[a-zA-Z_][a-zA-Z_0-9]*",
+					"name": "variable.parameter.cipl"
+				}
+			]
+		},
+		"func_call": {
+			"begin": "(?x)\n(?!(?:for|if|else|return)\\s*\\()\n(?=\n(?:[A-Za-z_][A-Za-z0-9_]*+|::)++\\s*\\(  # actual name\n|\n(?:(?<=operator)(?:[-*&<>=+!]+|\\(\\)|\\[\\]))\\s*\\(\n)",
+			"end": "(?<=\\))(?!\\w)",
+			"name": "meta.function-call.cipl",
+			"patterns": [
+				{
+					"include": "#function-call-innards"
+				}
+			]
+		},
+		"function-call-innards": {
+			"patterns": [
+				{
+					"begin": "(?x)\n(?!(?:for|if|else|return)\\s*\\()\n(\n(?:[A-Za-z_][A-Za-z0-9_]*+|::)++  # actual name\n|\n(?:(?<=operator)(?:[-*&<>=+!]+|\\(\\)|\\[\\]))\n)\n\\s*(\\()",
+					"beginCaptures": {
+						"1": {
+							"name": "entity.name.function.cipl"
+						},
+						"2": {
+							"name": "punctuation.section.arguments.begin.bracket.round.cipl"
+						}
+					},
+					"end": "\\)",
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.section.arguments.end.bracket.round.cipl"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#function-call-innards"
+						}
+					]
+				},
+				{
+					"begin": "\\(",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.section.parens.begin.bracket.round.cipl"
+						}
+					},
+					"end": "\\)",
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.section.parens.end.bracket.round.cipl"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#function-call-innards"
+						}
+					]
+				},
+				{
+					"include": "#block_innards"
+				}
+			]
+		},
+		"operators": {
+			"patterns": [
+				{
+					"match": "<<|>>|?|%",
+					"name": "keyword.operator.cipl"
+				},
+				{
+					"match": "!=|<=|>=|==|<|>",
+					"name": "keyword.operator.comparison.cipl"
+				},
+				{
+					"match": "&&|\\|\\|",
+					"name": "keyword.operator.logical.cipl"
+				},
+				{
+					"match": "=",
+					"name": "keyword.operator.assignment.cipl"
+				},
+				{
+					"match": "\\*|/|-|\\+",
+					"name": "keyword.operator.cipl"
+				}
+			]
+		},
+		"block_innards": {
+			"patterns": [
+				{
+					"include": "#func_call"
+				},
+				{
+					"name": "meta.initialization.c",
+					"begin": "(?x)\n(?:\n  (?:\n\t(?=\\s)(?<!else|return)\n\t(?<=\\w) \\s+()  # or word + space before name\n  )\n)\n(\n  (?:[A-Za-z_][A-Za-z0-9_]*+ | :: )++   # actual name\n  |\n  (?:(?<=operator) (?:[-*&<>=+!]+ | \\(\\) | \\[\\]))\n)\n\\s*(\\() # opening bracket",
+					"beginCaptures": {
+						"1": {
+							"name": "variable.other.cipl"
+						},
+						"2": {
+							"name": "punctuation.section.parens.begin.bracket.round.initialization.cipl"
+						}
+					},
+					"end": "\\)",
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.section.parens.end.bracket.round.initialization.cipl"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#function-call-innards"
+						}
+					]
+				},
+				{
+					"begin": "{",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.section.block.begin.bracket.curly.cipl"
+						}
+					},
+					"end": "}|(?=\\s*#\\s*(?:else)\\b)",
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.section.block.end.bracket.curly.cipl"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#block_innards"
+						}
+					]
+				},
+				{
+					"include": "#parens-block"
+				},
+				{
+					"include": "$base"
+				}
+			]
+		},
+		"parens-block": {
+			"name": "meta.parens.block.cipl",
+			"begin": "\\(",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.section.parens.begin.bracket.round.cipl"
+				}
+			},
+			"end": "\\)",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.section.parens.end.bracket.round.cipl"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#block_innards"
+				},
+				{
+					"match": "(?-mix:(?<!:):(?!:))",
+					"name": "punctuation.range-based.cipl"
+				}
+			]
+		}
+	},
+	"scopeName": "source.cipl"
+}

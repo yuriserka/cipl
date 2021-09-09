@@ -1,0 +1,25 @@
+{
+    "name": "cipl",
+    "displayName": "C-IPL",
+    "description": "C like language with builtin list",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.60.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [{
+            "id": "cipl",
+            "aliases": ["cipl", "cipl"],
+            "extensions": [".cipl"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "cipl",
+            "scopeName": "source.cipl",
+            "path": "./syntaxes/cipl.tmLanguage.json"
+        }]
+    }
+}
