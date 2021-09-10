@@ -18,7 +18,7 @@ void ast_str_free(AST *ast) {
   free(str_ast);
 }
 
-double ast_str_eval(AST *ast) { return 0; }
+SymbolValues ast_str_eval(AST *ast) { return (SymbolValues){.integer = 0}; }
 
 void ast_str_print(AST *ast) {
   StringLiteralAST *str_ast = ast->value.str;

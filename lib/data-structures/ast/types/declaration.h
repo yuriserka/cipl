@@ -7,6 +7,6 @@ typedef struct cipl_ast_declaration {
 #include "data-structures/ast/ast.h"
 void ast_declaration_free(AST *ast);
 AST *ast_declaration_init(AST *name);
-double ast_declaration_eval(AST *ast);
+SymbolValues ast_declaration_eval(AST *ast);
 void ast_declaration_print(AST *ast);
 void ast_declaration_print_pretty(AST *ast, int depth);

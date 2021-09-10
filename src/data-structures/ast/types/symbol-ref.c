@@ -17,7 +17,7 @@ void ast_symref_free(AST *ast) {
   free(symref_ast);
 }
 
-double ast_symref_eval(AST *ast) { return ast->value.symref->symbol->value; }
+SymbolValues ast_symref_eval(AST *ast) { return ast->value.symref->symbol->value; }
 
 void ast_symref_print(AST *ast) {
   SymbolRefAST *symref = ast->value.symref;

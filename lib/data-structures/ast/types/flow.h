@@ -11,6 +11,6 @@ typedef struct cipl_ast_flow {
 void ast_flow_free(AST *ast);
 AST *ast_flow_init(struct cipl_context *context, AST *cond, AST *then_branch,
                    AST *else_branch);
-double ast_flow_eval(AST *ast);
+SymbolValues ast_flow_eval(AST *ast);
 void ast_flow_print(AST *ast);
 void ast_flow_print_pretty(AST *ast, int depth);

@@ -5,6 +5,8 @@
 // fast-forward definition of AST structure to use in each ast node type header
 typedef struct cipl_ast AST;
 
+#include "data-structures/symbol-table/symbol.h"
+
 #include "data-structures/ast/types/assign.h"
 #include "data-structures/ast/types/bin-op.h"
 #include "data-structures/ast/types/block-items.h"
@@ -55,6 +57,6 @@ void ast_child_print_aux_label(const char *label, AST *ast);
  */
 AST *ast_cast(AstTypes type, int n_children, ...);
 void ast_free(AST *ast);
-double ast_eval(AST *ast);
+SymbolValues ast_eval(AST *ast);
 void ast_print(AST *ast);
 void ast_print_pretty(AST *ast, int depth);

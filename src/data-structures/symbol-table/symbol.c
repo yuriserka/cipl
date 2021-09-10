@@ -36,7 +36,6 @@ void symbol_update(Symbol *sym, char *name, SymbolTypes type, bool is_function,
   sym->name = name ? strdup(name) : NULL;
   sym->context_name = ctx_name;
   sym->scope = scope;
-  sym->value = 0;
   sym->def_pos = pos;
   sym->type = type;
   sym->is_fn = is_function;
@@ -46,6 +45,15 @@ void symbol_free(Symbol *sym) {
   if (!sym) return;
 
   if (sym->name) free(sym->name);
+
+  switch (sym->type) {
+    case SYM_INT_LIST:
+    case SYM_REAL_LIST:
+      list_free(sym->value.list, NULL);
+    default:
+      break;
+  }
+
   free(sym);
 }
 
@@ -67,6 +75,44 @@ void symbol_print_pretty(Symbol *sym) {
                     sym->is_fn ? "SYM_FUNC " : "",
                     symbol_type_from_enum(sym->type), color, sym->name,
                     sym->def_pos.line, sym->def_pos.col);
+  // disable value print
+  if (0) {
+    printf(BHBLK " #");
+    switch (sym->type) {
+      case SYM_REAL_LIST: {
+        if (!sym->value.list) {
+          printf("NIL");
+        } else {
+          printf("[");
+          LIST_FOR_EACH(sym->value.list, {
+            printf("%lf%s", *((double *)__IT__->data),
+                   __IT__->next ? ", " : "");
+          });
+          printf("]");
+        }
+      } break;
+      case SYM_INT_LIST: {
+        if (!sym->value.list) {
+          printf("NIL");
+        } else {
+          printf("[");
+          LIST_FOR_EACH(sym->value.list, {
+            printf("%d%s", *((int *)__IT__->data), __IT__->next ? ", " : "");
+          });
+          printf("]");
+        }
+      } break;
+      case SYM_INT:
+        printf("%d", sym->value.integer);
+        break;
+      case SYM_REAL:
+        printf("%lf", sym->value.real);
+        break;
+      default:
+        printf("NULL");
+    }
+    printf("\n" RESET);
+  }
 }
 
 SymbolTypes symbol_type_from_str(char *type) {
@@ -93,4 +139,50 @@ char *symbol_type_from_enum(SymbolTypes type) {
     default:
       return "SYM_INVALID";
   }
+}
+
+void symbol_init_value(Symbol *sym) {
+  switch (sym->type) {
+    case SYM_INT:
+      sym->value = (SymbolValues){.integer = 0};
+      break;
+    case SYM_REAL:
+      sym->value = (SymbolValues){.real = 0.0};
+      break;
+    case SYM_INT_LIST:
+    case SYM_REAL_LIST:
+      sym->value = (SymbolValues){.list = NULL};
+      break;
+    default:
+      CIPL_PRINTF_COLOR(BRED, "invalid symbol type");
+  }
+}
+
+void symbol_update_value(Symbol *sym, int mArgs, ...) {
+  va_list ptr;
+  va_start(ptr, mArgs);
+
+  switch (sym->type) {
+    case SYM_INT:
+    case SYM_INVALID:
+      sym->value = (SymbolValues){.integer = va_arg(ptr, int)};
+      break;
+    case SYM_REAL:
+      sym->value = (SymbolValues){.real = va_arg(ptr, double)};
+      break;
+    case SYM_INT_LIST: {
+      int *elemp = calloc(1, sizeof(int));
+      *elemp = va_arg(ptr, int);
+      list_push(&sym->value.list, elemp);
+    } break;
+    case SYM_REAL_LIST: {
+      double *elemp = calloc(1, sizeof(double));
+      *elemp = va_arg(ptr, double);
+      list_push(&sym->value.list, elemp);
+    } break;
+    default:
+      CIPL_PRINTF_COLOR(BRED, "invalid symbol type");
+  }
+
+  va_end(ptr);
 }

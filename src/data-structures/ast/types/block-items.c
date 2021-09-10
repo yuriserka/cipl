@@ -17,7 +17,9 @@ void ast_blockitems_free(AST *ast) {
   free(blockitems_ast);
 }
 
-double ast_blockitems_eval(AST *ast) { return 0; }
+SymbolValues ast_blockitems_eval(AST *ast) {
+  return (SymbolValues){.integer = 0};
+}
 
 void ast_blockitems_print(AST *ast) {
   BlockItemListAST *blockitems_ast = ast->value.blockitems;

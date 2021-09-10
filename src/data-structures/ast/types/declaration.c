@@ -17,7 +17,7 @@ void ast_declaration_free(AST *ast) {
   free(decl_ast);
 }
 
-double ast_declaration_eval(AST *ast) { return 0; }
+SymbolValues ast_declaration_eval(AST *ast) { return (SymbolValues){.integer = 0}; }
 
 void ast_declaration_print(AST *ast) {
   printf("declaration: { ");

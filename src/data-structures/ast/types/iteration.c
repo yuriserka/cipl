@@ -19,7 +19,7 @@ void ast_iter_free(AST *ast) {
   free(iter_ast);
 }
 
-double ast_iter_eval(AST *ast) { return 0; }
+SymbolValues ast_iter_eval(AST *ast) { return (SymbolValues){.integer = 0}; }
 
 void ast_iter_print(AST *ast) {
   AST *b4_all = list_peek(&ast->children, 0);

@@ -19,7 +19,7 @@ void ast_flow_free(AST *ast) {
   free(flow_ast);
 }
 
-double ast_flow_eval(AST *ast) { return 0; }
+SymbolValues ast_flow_eval(AST *ast) { return (SymbolValues){.integer = 0}; }
 
 void ast_flow_print(AST *ast) {
   AST *conditional = list_peek(&ast->children, 0);

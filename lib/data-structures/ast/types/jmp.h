@@ -8,6 +8,6 @@ typedef struct cipl_ast_jmp {
 
 void ast_jmp_free(AST *ast);
 AST *ast_jmp_init(AST *stmt);
-double ast_jmp_eval(AST *ast);
+SymbolValues ast_jmp_eval(AST *ast);
 void ast_jmp_print(AST *ast);
 void ast_jmp_print_pretty(AST *ast, int depth);

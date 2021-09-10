@@ -15,11 +15,16 @@ AST *ast_number_init(NumberType number_type, NumberValue value) {
 
 void ast_number_free(AST *ast) { free(ast->value.number); }
 
-double ast_number_eval(AST *ast) {
+SymbolValues ast_number_eval(AST *ast) {
   NumberAST *num_ast = ast->value.number;
-  return num_ast->num_type == K_REAL
-             ? num_ast->value.real
-             : (K_INTEGER ? (double)(num_ast->value.integer) : 0);
+  switch (num_ast->num_type) {
+    case K_REAL:
+      return (SymbolValues){.real = num_ast->value.real};
+    case K_INTEGER:
+      return (SymbolValues){.integer = num_ast->value.integer};
+    default:
+      return (SymbolValues){.integer = 0};
+  }
 }
 
 void ast_number_print(AST *ast) {
@@ -27,10 +32,12 @@ void ast_number_print(AST *ast) {
 
   switch (num_ast->num_type) {
     case K_REAL:
-    case K_INTEGER:
-      printf("number: %lf", ast_number_eval(ast));
+      printf("number: %lf", (double)num_ast->value.integer);
       break;
-    case K_NIL:
+    case K_INTEGER:
+      printf("number: %lf", num_ast->value.real);
+      break;
+    default:
       printf("constant: NIL");
       break;
   }
@@ -48,7 +55,7 @@ void ast_number_print_pretty(AST *ast, int depth) {
     case K_INTEGER:
       CIPL_PRINTF_COLOR(BYEL, "%d\n", num_ast->value.integer);
       break;
-    case K_NIL:
+    default:
       CIPL_PRINTF_COLOR(BYEL, "NIL\n");
       break;
   }

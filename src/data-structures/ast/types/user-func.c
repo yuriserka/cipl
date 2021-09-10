@@ -23,7 +23,7 @@ void ast_userfunc_free(AST *ast) {
   free(userfunc_ast);
 }
 
-double ast_userfunc_eval(AST *ast) { return 0; }
+SymbolValues ast_userfunc_eval(AST *ast) { return (SymbolValues){.integer = 0}; }
 
 void ast_userfunc_print(AST *ast) {
   AST *name = list_peek(&ast->children, 0);

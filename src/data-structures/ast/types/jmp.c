@@ -17,7 +17,7 @@ void ast_jmp_free(AST *ast) {
   free(flow_ast);
 }
 
-double ast_jmp_eval(AST *ast) { return 0; }
+SymbolValues ast_jmp_eval(AST *ast) { return (SymbolValues){.integer = 0}; }
 
 void ast_jmp_print(AST *ast) {
   AST *stmt = list_peek(&ast->children, 0);

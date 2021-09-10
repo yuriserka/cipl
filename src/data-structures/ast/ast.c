@@ -137,8 +137,8 @@ void ast_free(AST *ast) {
   free(ast);
 }
 
-double ast_eval(AST *ast) {
-  if (!ast) return 0;
+SymbolValues ast_eval(AST *ast) {
+  if (!ast) return (SymbolValues){.integer = 0};
 
   switch (ast->type) {
     case AST_NUMBER:
@@ -177,7 +177,8 @@ double ast_eval(AST *ast) {
       printf("AST type: %d eval not implemented yet", ast->type);
       break;
   }
-  return 0;
+
+  return (SymbolValues){.integer = 0};
 }
 
 void ast_child_print_aux_label(const char *label, AST *ast) {

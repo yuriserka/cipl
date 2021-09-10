@@ -19,7 +19,7 @@ AST *ast_builtinfn_init(AST *symref, AST *params) {
   return ast_cast(AST_BUILTIN_FUNC, 2, ast, symref, params);
 }
 
-double ast_builtinfn_eval(AST *ast) { return 0; }
+SymbolValues ast_builtinfn_eval(AST *ast) { return (SymbolValues){.integer = 0}; }
 
 void ast_builtinfn_print(AST *ast) {
   AST *name = list_peek(&ast->children, 0);

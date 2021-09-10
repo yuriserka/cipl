@@ -10,6 +10,6 @@ typedef struct cipl_ast_blockitems_list {
 
 void ast_blockitems_free(AST *ast);
 AST *ast_blockitems_init(ListNode *blockitems);
-double ast_blockitems_eval(AST *ast);
+SymbolValues ast_blockitems_eval(AST *ast);
 void ast_blockitems_print(AST *ast);
 void ast_blockitems_print_pretty(AST *ast, int depth);

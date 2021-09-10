@@ -10,6 +10,6 @@ typedef struct cipl_ast_assign {
 
 void ast_assign_free(AST *ast);
 AST *ast_assign_init(AST *l, AST *r);
-double ast_assign_eval(AST *ast);
+SymbolValues ast_assign_eval(AST *ast);
 void ast_assign_print(AST *ast);
 void ast_assign_print_pretty(AST *ast, int depth);

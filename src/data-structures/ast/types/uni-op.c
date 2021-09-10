@@ -20,17 +20,7 @@ void ast_uniop_free(AST *ast) {
   free(uniop_ast);
 }
 
-double ast_uniop_eval(AST *ast) {
-  UniOpAST *uniop_ast = ast->value.uniop;
-  AST *lhs = list_peek(&ast->children, 0);
-  switch (*uniop_ast->op) {
-    case '!':
-      return fabs(ast_eval(lhs));
-    case '-':
-      return -ast_eval(lhs);
-  }
-  return 0;
-}
+SymbolValues ast_uniop_eval(AST *ast) { return (SymbolValues){.integer = 0}; }
 
 void ast_uniop_print(AST *ast) {
   UniOpAST *uniop_ast = ast->value.uniop;

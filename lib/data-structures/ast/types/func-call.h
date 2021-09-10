@@ -10,6 +10,6 @@ typedef struct cipl_ast_func_call {
 
 void ast_funcall_free(AST *ast);
 AST *ast_funcall_init(AST *declarator, AST *args);
-double ast_funcall_eval(AST *ast);
+SymbolValues ast_funcall_eval(AST *ast);
 void ast_funcall_print(AST *ast);
 void ast_funcall_print_pretty(AST *ast, int depth);

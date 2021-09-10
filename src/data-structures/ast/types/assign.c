@@ -17,12 +17,7 @@ void ast_assign_free(AST *ast) {
   free(assign_ast);
 }
 
-double ast_assign_eval(AST *ast) {
-  AST *lhs = list_peek(&ast->children, 0);
-  AST *rhs = list_peek(&ast->children, 1);
-  lhs->value.symref->symbol->value = ast_eval(rhs);
-  return lhs->value.symref->symbol->value;
-}
+SymbolValues ast_assign_eval(AST *ast) { return (SymbolValues){.integer = 0}; }
 
 void ast_assign_print(AST *ast) {
   AssignAST *assign_ast = ast->value.assignop;

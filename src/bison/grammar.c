@@ -3963,7 +3963,7 @@ yyreduce:
   case 41: /* cond_stmt: IF '(' error ')' compound_stmt  */
 #line 308 "src/bison/grammar.y"
                                                 {
-        show_error((yylsp[-2]), "expected expression before " WHT "'%c'" RESET " token\n", yychar);
+        show_error((yylsp[-2]), "expected expression before " WHT "')'" RESET " token\n");
         (yyval.ast) = NULL;
         ast_free((yyvsp[0].ast));
         yyerrok;
@@ -3974,7 +3974,7 @@ yyreduce:
   case 42: /* cond_stmt: IF '(' error ')' compound_stmt ELSE compound_stmt  */
 #line 314 "src/bison/grammar.y"
                                                         {
-        show_error((yylsp[-4]), "expected expression before " WHT "'%c'" RESET " token\n", yychar);
+        show_error((yylsp[-4]), "expected expression before " WHT "')'" RESET " token\n");
         (yyval.ast) = NULL;
         ast_free((yyvsp[-2].ast));
         ast_free((yyvsp[0].ast));

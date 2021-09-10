@@ -4,6 +4,7 @@
 
 // fast-forward definition of Symbol
 typedef struct cipl_symbol Symbol;
+typedef union cipl_symbol_values SymbolValues;
 
 #include "data-structures/list.h"
 #include "utils/cursor-position.h"
@@ -16,10 +17,16 @@ typedef enum cipl_symbol_types {
   SYM_REAL_LIST,
 } SymbolTypes;
 
+union cipl_symbol_values {
+  int integer;
+  double real;
+  ListNode *list;
+};
+
 struct cipl_symbol {
   char *name;
   char *context_name;
-  double value;
+  SymbolValues value;
   int scope;
   bool is_fn;
   Cursor def_pos;
@@ -43,3 +50,6 @@ void symbol_print_pretty(Symbol *sym);
 
 SymbolTypes symbol_type_from_str(char *type);
 char *symbol_type_from_enum(SymbolTypes type);
+
+void symbol_update_value(Symbol *sym, int mArgs, ...);
+void symbol_init_value(Symbol *sym);

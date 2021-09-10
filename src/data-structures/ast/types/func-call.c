@@ -17,7 +17,7 @@ void ast_funcall_free(AST *ast) {
   free(funcall_ast);
 }
 
-double ast_funcall_eval(AST *ast) { return 0; }
+SymbolValues ast_funcall_eval(AST *ast) { return (SymbolValues){.integer = 0}; }
 
 void ast_funcall_print(AST *ast) {
   AST *declarator = list_peek(&ast->children, 0);

@@ -19,7 +19,7 @@ void ast_params_free(AST *ast) {
   free(params_ast);
 }
 
-double ast_params_eval(AST *ast) { return 0; }
+SymbolValues ast_params_eval(AST *ast) { return (SymbolValues){.integer = 0}; }
 
 void ast_params_print(AST *ast) {
   ParamsAST *params_ast = ast->value.params;

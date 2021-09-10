@@ -12,6 +12,6 @@ struct cipl_ast_symbol_ref {
 
 void ast_symref_free(AST *ast);
 AST *ast_symref_init(Symbol *symbol);
-double ast_symref_eval(AST *ast);
+SymbolValues ast_symref_eval(AST *ast);
 void ast_symref_print(AST *ast);
 void ast_symref_print_pretty(AST *ast, int depth);

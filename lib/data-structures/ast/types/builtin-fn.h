@@ -15,7 +15,7 @@ typedef struct cipl_ast_builtin_fn {
 
 void ast_builtinfn_free(AST *ast);
 AST *ast_builtinfn_init(AST *name, AST *params);
-double ast_builtinfn_eval(AST *ast);
+SymbolValues ast_builtinfn_eval(AST *ast);
 void ast_builtinfn_print(AST *ast);
 void ast_builtinfn_print_pretty(AST *ast, int depth);
 

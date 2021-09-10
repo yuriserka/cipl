@@ -72,6 +72,7 @@ Symbol *context_declare_variable(Context *ctx, Symbol *sym) {
   if (entry) {
     symbol_update(entry, sym->name, sym->type, false, current_scope->index,
                   ctx->name, sym->def_pos);
+    symbol_init_value(entry);
     ++current_scope->size;
   }
   return entry;
@@ -85,6 +86,7 @@ Symbol *context_declare_function(Context *ctx, Symbol *sym) {
     symbol_update(entry, sym->name, sym->type, true, current_scope->index,
                   ctx->name, sym->def_pos);
     ++current_scope->size;
+    symbol_init_value(entry);
   }
   return entry;
 }
