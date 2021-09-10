@@ -43,8 +43,19 @@ void ast_iter_print_pretty(AST *ast, int depth) {
   for (int i = depth; i > 0; --i) printf("\t");
   CIPL_PRINTF_COLOR(BMAG, "<iteration-statement>\n");
 
-  ast_print_pretty(b4_all, depth + 1);
-  ast_print_pretty(b4_each, depth + 1);
-  ast_print_pretty(after_each, depth + 1);
-  ast_print_pretty(stmts, depth + 1);
+  for (int i = depth + 1; i > 0; --i) printf("\t");
+  CIPL_PRINTF_COLOR(BMAG, "<before_all>\n");
+  ast_print_pretty(b4_all, depth + 2);
+
+  for (int i = depth + 1; i > 0; --i) printf("\t");
+  CIPL_PRINTF_COLOR(BMAG, "<before_each>\n");
+  ast_print_pretty(b4_each, depth + 2);
+
+  for (int i = depth + 1; i > 0; --i) printf("\t");
+  CIPL_PRINTF_COLOR(BMAG, "<after_each>\n");
+  ast_print_pretty(after_each, depth + 2);
+
+  for (int i = depth + 1; i > 0; --i) printf("\t");
+  CIPL_PRINTF_COLOR(BMAG, "<statement>\n");
+  ast_print_pretty(stmts, depth + 2);
 }

@@ -17,7 +17,7 @@ CXX := gcc
 INCLUDES := -I"lib/"
 CXXFLAGS := -std=gnu11
 CFLAGS := $(INCLUDES) -g -Wall -pedantic -Wpedantic -Werror -lm -lfl
-
+filename=
 # $@  Nome da regra. 
 # $<  Nome da primeira dependência 
 # $^ Lista de dependências
@@ -62,7 +62,7 @@ format:
 	@rm ./.clang-format
 
 mem_check: all
-	@valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all ./$(EXEC) $(filename)
+	@valgrind -v --tool=memcheck --leak-check=full --track-origins=yes --show-leak-kinds=all ./$(EXEC) $(filename)
 
 docs:
 	doxygen ./Doxyfile

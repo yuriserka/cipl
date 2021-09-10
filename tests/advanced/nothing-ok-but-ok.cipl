@@ -49,7 +49,7 @@ int params_err(int a, b c) {
     int b;
 }
 
-int flows() {
+int flows(int list f) {
     if () {}
     if() {} else {}
 
@@ -59,7 +59,17 @@ int flows() {
     // if () ?
 
     int a;
+    int i;
     for(a=a a;;){}
+    for(int list i=0; i<2 ; i = i + 1) {
+        a = a + %f;
+    }
+    for(a = 2; int list i=0 ; i = i + 1) {
+        a = a + %f;
+    }
+    for(a = a a; a = 10 < 2 ; int list i=0) {
+        a = a + %f;
+    }
 }
 
 int x;

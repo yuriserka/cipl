@@ -40,7 +40,15 @@ void ast_flow_print_pretty(AST *ast, int depth) {
   for (int i = depth; i > 0; --i) printf("\t");
   CIPL_PRINTF_COLOR(BMAG, "<if_else-statement>\n");
 
-  ast_print_pretty(conditional, depth + 1);
-  ast_print_pretty(then_branch, depth + 1);
-  ast_print_pretty(else_branch, depth + 1);
+  for (int i = depth + 1; i > 0; --i) printf("\t");
+  CIPL_PRINTF_COLOR(BMAG, "<condition>\n");
+  ast_print_pretty(conditional, depth + 2);
+
+  for (int i = depth + 1; i > 0; --i) printf("\t");
+  CIPL_PRINTF_COLOR(BMAG, "<then_branch>\n");
+  ast_print_pretty(then_branch, depth + 2);
+
+  for (int i = depth + 1; i > 0; --i) printf("\t");
+  CIPL_PRINTF_COLOR(BMAG, "<else_branch>\n");
+  ast_print_pretty(else_branch, depth + 2);
 }

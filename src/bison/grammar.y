@@ -171,6 +171,12 @@ var_declaration: type id <ast>{
         free($1);
         $$ = NULL;
     }
+    | type id '=' error {
+        show_error_range(@3, "expected " WHT "';'" RESET "\n");
+        free($1);
+        symbol_free($2);
+        $$ = NULL;
+    }
     ;
 
 func_declaration: type id '(' <ast>{
@@ -295,6 +301,11 @@ io_stmt: READ '(' id ')' ';' {
         $$ = ast_builtinfn_init(ast_symref_init(func), $3);
         symbol_free($1);
     }
+    | WRITE '(' string_literal ')' ';' {
+        Symbol *func = context_search_symbol_scopes(current_context, $1);
+        $$ = ast_builtinfn_init(ast_symref_init(func), $3);
+        symbol_free($1);
+    }
     | WRITE '(' error ')' ';' {
         show_error_range(@4, "expected expression before " WHT "')'" RESET " token\n");
         symbol_free($1);
@@ -348,6 +359,27 @@ jmp_stmt: RETURN expression ';' { $$ = ast_jmp_init($2); }
 
 iter_stmt: FOR '(' expression.opt ';' expression.opt ';' expression.opt ')' statement {
         $$ = ast_iter_init(current_context, $3, $5, $7, $9);
+    }
+    | FOR '(' error ';' expression.opt ';' expression.opt ')' statement {
+        show_error_range(@3, "expected expression before " WHT "';'" RESET " token\n");
+        ast_free($5);
+        ast_free($7);
+        ast_free($9);
+        $$ = NULL;
+    }
+    | FOR '(' expression.opt ';' error ';' expression.opt ')' statement {
+        show_error_range(@5, "expected expression before " WHT "';'" RESET " token\n");
+        ast_free($3);
+        ast_free($7);
+        ast_free($9);
+        $$ = NULL;
+    }
+    | FOR '(' expression.opt ';' expression.opt ';' error ')' statement {
+        show_error_range(@7, "expected expression before " WHT "';'" RESET " token\n");
+        ast_free($3);
+        ast_free($5);
+        ast_free($9);
+        $$ = NULL;
     }
     ;
 
@@ -554,7 +586,6 @@ primary_expr: id {
         symbol_free($1);
     }
     | constant
-    | string_literal
     | '(' expression ')' { $$ = $2; }
     | '(' error ')' {
         show_error_range(@2, "expected expression\n");
