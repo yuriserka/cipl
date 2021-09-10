@@ -124,6 +124,7 @@
 %destructor { free($$); } <pchar>
 %destructor { symbol_free($$); } <sym>
 %destructor { ast_free($$); } <ast>
+%destructor { LIST_FREE($$, { ast_free(__IT__->data); });  } <list>
 %%
 
 prog: external_declaration_list
@@ -138,8 +139,8 @@ external_declaration: func_declaration
     | var_declaration
     | statement {
         show_error_range(@$, "statements are not allowed at top level\n");
-        $$ = NULL;
         ast_free($1);
+        $$ = NULL;
     }
     ;
 
@@ -167,8 +168,8 @@ var_declaration: type id <ast>{
     }
     | type ';' {
         show_error_range(@1, "useless " BGRN "'%s'" RESET " in empty declaration\n", $1);
-        $$ = NULL;
         free($1);
+        $$ = NULL;
     }
     ;
 
@@ -214,14 +215,25 @@ func_declaration: type id '(' <ast>{
         current_context = previous_context;
         p_ctx_name = true;
     }
+    | type '(' param_list.opt ')' compound_stmt {
+        show_error_range(@2, "expected identifier before " WHT "')'" RESET "\n");
+        free($1);
+        LIST_FREE($3, { ast_free(__IT__->data); });
+        ast_free($5);
+        $$ = NULL;
+    }
     ;
 
 param_list.opt: %empty { $$ = NULL; }
     | params_list
     ;
 
-params_list: params_list ',' param_decl { list_push(&$$, $3); }
+params_list: params_list ',' param_decl { list_push(&$1, $3); $$ = $1; }
     | param_decl { $$ = list_node_init($1); }
+    | error {
+        show_error_range(@1, "invalid list of parameters\n");
+        $$ = NULL;
+    }
     ;
 
 param_decl: type id {
@@ -240,7 +252,6 @@ param_decl: type id {
 
 compound_stmt: '{' {
         parent_stacknode_ref = context_get_current_stacknode_ref();
-        // hack to update the current scope
         if (!is_fn_blck) context_push_scope(current_context);
         is_fn_blck = false;
     } block_item_list.opt '}' {
@@ -256,7 +267,7 @@ block_item_list.opt: block_item_list { $$ = $1; }
     | %empty { $$ = NULL; }
     ;
 
-block_item_list: block_item_list block_item { list_push(&$$, $2); }
+block_item_list: block_item_list block_item { list_push(&$1, $2); $$ = $1; }
     | block_item { $$ = list_node_init($1); }
     ;
 
@@ -286,45 +297,52 @@ io_stmt: READ '(' id ')' ';' {
     }
     | WRITE '(' error ')' ';' {
         show_error_range(@4, "expected expression before " WHT "')'" RESET " token\n");
-        $$ = NULL;
         symbol_free($1);
+        $$ = NULL;
     }
     | READ '(' error ')' ';' {
         show_error_range(@4, "expected expression before " WHT "')'" RESET " token\n");
-        $$ = NULL;
         symbol_free($1);
+        $$ = NULL;
     }
     ;
 
 expr_stmt: expression ';' { $$ = $1; }
     ;
 
-cond_stmt: IF '(' expression ')' compound_stmt %prec THEN {
+cond_stmt: IF '(' expression ')' statement %prec THEN {
         $$ = ast_flow_init(current_context, $3, $5, NULL);
     }
-    | IF '(' expression ')' compound_stmt ELSE compound_stmt {
+    | IF '(' expression ')' statement ELSE statement {
         $$ = ast_flow_init(current_context, $3, $5, $7);
     }
-    | IF '(' error ')' compound_stmt %prec THEN {
-        show_error(@3, "expected expression before " WHT "')'" RESET " token\n");
+    | IF '(' expression ')' ELSE {
+        show_error_range(@5, "expected expression before " WHT "'else'" RESET "\n");
+        ast_free($3);
         $$ = NULL;
-        ast_free($5);
-        yyerrok;
     }
-    | IF '(' error ')' compound_stmt ELSE compound_stmt {
+    | IF '(' error ')' statement %prec THEN {
         show_error(@3, "expected expression before " WHT "')'" RESET " token\n");
+        ast_free($5);
         $$ = NULL;
+    }
+    | IF '(' error ')' statement ELSE statement {
+        show_error(@3, "expected expression before " WHT "')'" RESET " token\n");
         ast_free($5);
         ast_free($7);
-        yyerrok;
+        $$ = NULL;
+    }
+    | IF '(' error ')' ELSE statement {
+        show_error(@3, "expected expression before " WHT "')'" RESET " token\n");
+        ast_free($6);
+        $$ = NULL;
     }
     ;
 
 jmp_stmt: RETURN expression ';' { $$ = ast_jmp_init($2); }
     | RETURN error ';' {
-        show_error_range(@1, WHT "'return'" RESET " with no value\n");
+        show_error_range(@2, "expected expression before " WHT "';'" RESET " token\n");
         $$ = NULL;
-        yyerrok;
     }
     ;
 
@@ -336,7 +354,7 @@ iter_stmt: FOR '(' expression.opt ';' expression.opt ';' expression.opt ')' stat
 expression: logical_or_expr
     | unary_expr '=' logical_or_expr { $$ = ast_assign_init($1, $3); }
     | unary_expr '=' error {
-        show_error(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
+        show_error_range(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         ast_free($1);
         $$ = NULL;
     }
@@ -352,7 +370,7 @@ logical_or_expr: logical_and_expr
         free($2);
     }
     | logical_or_expr OR error {
-        show_error(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
+        show_error_range(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         cleanup_expr_err($2, $1);
         $$ = NULL;
     }
@@ -369,7 +387,7 @@ logical_and_expr: eq_expr
         free($2);
     }
     | logical_and_expr AND error {
-        show_error(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
+        show_error_range(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         cleanup_expr_err($2, $1);
         $$ = NULL;
     }
@@ -386,7 +404,7 @@ eq_expr: rel_expr
         free($2);
     }
     | eq_expr EQ error {
-        show_error(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
+        show_error_range(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         cleanup_expr_err($2, $1);
         $$ = NULL;
     }
@@ -403,7 +421,7 @@ rel_expr: list_expr
         free($2);
     }
     | rel_expr REL error {
-        show_error(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
+        show_error_range(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         cleanup_expr_err($2, $1);
         $$ = NULL;
     }
@@ -424,12 +442,12 @@ list_expr: add_expr
         free($2);
     }
     | add_expr DL_DG error {
-        show_error(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
+        show_error_range(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         cleanup_expr_err($2, $1);
         $$ = NULL;
     }
     | add_expr COLON error {
-        show_error(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
+        show_error_range(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         cleanup_expr_err($2, $1);
         $$ = NULL;
     }
@@ -451,7 +469,7 @@ add_expr: mult_expr
         free($2);
     }
     | add_expr ADD error {
-        show_error(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
+        show_error_range(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         cleanup_expr_err($2, $1);
         $$ = NULL;
     }
@@ -468,7 +486,7 @@ mult_expr: unary_expr
         free($2);
     }
     | mult_expr MULT error {
-        show_error(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
+        show_error_range(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         cleanup_expr_err($2, $1);
         $$ = NULL;
     }
@@ -513,8 +531,12 @@ postfix_expr: primary_expr
     }
     ;
 
-arg_expr_list: expression { $$ = list_node_init($1); }
-    | arg_expr_list ',' expression { list_push(&$$, $3); }
+arg_expr_list: arg_expr_list ',' expression { list_push(&$1, $3); $$ = $1; }
+    | expression { $$ = list_node_init($1); }
+    | error {
+        show_error_range(@1, "invalid list of arguments\n");
+        $$ = NULL;
+    }
     ;
 
 arg_expr_list.opt: arg_expr_list

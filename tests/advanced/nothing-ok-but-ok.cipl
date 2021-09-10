@@ -7,6 +7,14 @@ int func(int param, int param, float param) {
     int x;
 }
 
+float (int p1, int p2, int list _list) {
+    int b;
+}
+
+int fn(int a) {
+    return a * 0;
+}
+
 float func;
 
 int invalid_fn;
@@ -18,18 +26,40 @@ int main() {
     invalid_fn();
     not_declared_fn();
 
+    fn(1 aaaa);
+    fn(1 + 2 aaaa);
+
     float;
-
-    if () {}
-    if() {} else {}
-
     int list;
+    float list;
 
     undeclared_var = 2;
 
-    float list;
-
     return;
+}
+
+float builtin() {
+    // all of them has arity 1
+    read();
+    write();
+    writeln();
+}
+
+int params_err(int a, b c) {
+    int b;
+}
+
+int flows() {
+    if () {}
+    if() {} else {}
+
+    // cant cover this yet
+    // if (1) if() ?
+    // if () ? else ?
+    // if () ?
+
+    int a;
+    for(a=a a;;){}
 }
 
 int x;
@@ -88,11 +118,4 @@ int list invalid_exprs(int a) {
     // a = (a) a;
 
     return NIL;
-}
-
-float builtin() {
-    // all of them has arity 1
-    read();
-    write();
-    writeln();
 }
