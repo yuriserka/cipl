@@ -105,7 +105,7 @@ BUILTIN_FUNCTIONS read|write|writeln
 }
 
 {BUILTIN_FUNCTIONS} {
-  yylval.sym = symbol_found(yytext, cursor);  
+  yylval.pchar = strdup(yytext);
   return yytext[0] == 'r' ? READ : WRITE;
 }
 

@@ -925,7 +925,7 @@ case 6:
 YY_RULE_SETUP
 #line 107 "src/flex/lexer.l"
 {
-  yylval.sym = symbol_found(yytext, cursor);  
+  yylval.pchar = strdup(yytext);
   return yytext[0] == 'r' ? READ : WRITE;
 }
 	YY_BREAK

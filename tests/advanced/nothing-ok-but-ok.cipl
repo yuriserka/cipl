@@ -17,13 +17,13 @@ int fn(int a) {
 
 float func;
 
-int invalid_fn;
+int a_var_not_a_fn;
 
 int main() {
     int aaaa;
     int aaaa;
 
-    invalid_fn();
+    a_var_not_a_fn();
     not_declared_fn();
 
     fn(1 aaaa);
@@ -43,6 +43,7 @@ float builtin() {
     read();
     write();
     writeln();
+    read(undefined_var);
 }
 
 int params_err(int a, b c) {

@@ -58,23 +58,23 @@ extern int yydebug;
     NIL = 259,                     /* NIL  */
     NUMBER_REAL = 260,             /* NUMBER_REAL  */
     NAME = 261,                    /* NAME  */
-    READ = 262,                    /* READ  */
-    WRITE = 263,                   /* WRITE  */
-    MULT = 264,                    /* MULT  */
-    ADD = 265,                     /* ADD  */
-    REL = 266,                     /* REL  */
-    AND = 267,                     /* AND  */
-    OR = 268,                      /* OR  */
-    EQ = 269,                      /* EQ  */
-    COLON = 270,                   /* COLON  */
-    DL_DG = 271,                   /* DL_DG  */
-    EXCLAMATION = 272,             /* EXCLAMATION  */
-    PERCENT = 273,                 /* PERCENT  */
-    QUESTION = 274,                /* QUESTION  */
-    STR_LITERAL = 275,             /* STR_LITERAL  */
-    INT = 276,                     /* INT  */
-    FLOAT = 277,                   /* FLOAT  */
-    LIST = 278,                    /* LIST  */
+    MULT = 262,                    /* MULT  */
+    ADD = 263,                     /* ADD  */
+    REL = 264,                     /* REL  */
+    AND = 265,                     /* AND  */
+    OR = 266,                      /* OR  */
+    EQ = 267,                      /* EQ  */
+    COLON = 268,                   /* COLON  */
+    DL_DG = 269,                   /* DL_DG  */
+    EXCLAMATION = 270,             /* EXCLAMATION  */
+    PERCENT = 271,                 /* PERCENT  */
+    QUESTION = 272,                /* QUESTION  */
+    STR_LITERAL = 273,             /* STR_LITERAL  */
+    INT = 274,                     /* INT  */
+    FLOAT = 275,                   /* FLOAT  */
+    LIST = 276,                    /* LIST  */
+    READ = 277,                    /* READ  */
+    WRITE = 278,                   /* WRITE  */
     IF = 279,                      /* IF  */
     ELSE = 280,                    /* ELSE  */
     FOR = 281,                     /* FOR  */
@@ -88,7 +88,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 91 "src/bison/grammar.y"
+#line 110 "src/bison/grammar.y"
 
 	struct cipl_ast *ast;
     struct cipl_symbol *sym;

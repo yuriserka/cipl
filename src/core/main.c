@@ -7,30 +7,6 @@
 #include "core/globals.h"
 #include "utils/io.h"
 
-void init_global_context(Context *global_ctx) {
-  Cursor definition = (Cursor){.line = 0, .col = 0};
-  SymbolTypes type = symbol_type_from_str("int");
-  Symbol *write_fnref =
-      symbol_init("write", type, true, global_ctx->current_scope,
-                  global_ctx->name, definition);
-
-  Symbol *writeln_fnref =
-      symbol_init("writeln", type, true, global_ctx->current_scope,
-                  global_ctx->name, definition);
-
-  Symbol *read_fnref =
-      symbol_init("read", type, true, global_ctx->current_scope,
-                  global_ctx->name, definition);
-
-  context_declare_function(global_ctx, write_fnref);
-  context_declare_function(global_ctx, writeln_fnref);
-  context_declare_function(global_ctx, read_fnref);
-
-  symbol_free(write_fnref);
-  symbol_free(writeln_fnref);
-  symbol_free(read_fnref);
-}
-
 void print_all_contexts() {
   printf("{ contexts: [ ");
   LIST_FOR_EACH(contexts, { context_print(__IT__->data); });
@@ -79,7 +55,6 @@ int cipl_main(int argc, char *argv[]) {
   contexts = list_node_init(context_init("global"));
   current_context = list_peek(&contexts, 0);
   curr_line_info = line_init(1, "");
-  init_global_context(current_context);
 
   int got_erros = yyparse() || errors_count;
 

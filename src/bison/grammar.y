@@ -52,6 +52,25 @@
         }                                                                            \
     }
 
+    #define show_error_end(__R__, __FMT__, ...) {       \
+        p_error_ctx_info;                               \
+        Cursor beg = (Cursor){                          \
+            .line=__R__.last_line - 1,                  \
+            .col=__R__.last_column                      \
+        };                                              \
+        yyerror(beg.line, beg.col, NULL);               \
+        LineInfo *li = list_peek(&lines, beg.line - 1); \
+        li = li ? li : curr_line_info;                  \
+        beg.col = strlen(li->text) + 1;                 \
+        CIPL_PERROR_CURSOR(                             \
+            __FMT__,                                    \
+            li->text,                                   \
+            beg,                                        \
+            ##__VA_ARGS__                               \
+        );                                              \
+        yyerrok;                                        \
+    }
+
     #define show_error_range(__R__, __FMT__, ...) {                             \
         p_error_ctx_info;                                                       \
         Cursor beg = (Cursor){.line=__R__.first_line, .col=__R__.first_column}; \
@@ -99,9 +118,9 @@
 
 %token<integer> NUMBER_INT NIL
 %token<real> NUMBER_REAL
-%token<sym> NAME READ WRITE
+%token<sym> NAME
 %token<pchar> MULT ADD REL AND OR EQ COLON DL_DG EXCLAMATION PERCENT QUESTION STR_LITERAL
-%token<pchar> INT FLOAT LIST
+%token<pchar> INT FLOAT LIST READ WRITE
 %token IF ELSE FOR RETURN
 
 %type<pchar> unary_ops type
@@ -144,7 +163,7 @@ external_declaration: func_declaration
     }
     ;
 
-var_declaration: type id <ast>{
+var_declaration: type id ';' {
         Symbol *sym = context_has_symbol(current_context, $2);
         SymbolTypes decl_type = symbol_type_from_str($1);
         if (sym) {
@@ -159,12 +178,12 @@ var_declaration: type id <ast>{
         }
         else {
             symbol_update_type($2, decl_type);
-            $$ = ast_symref_init(context_declare_variable(current_context, $2));
+            $$ = ast_declaration_init(
+                ast_symref_init(context_declare_variable(current_context, $2))
+            );
         }
         symbol_free($2);
         free($1);
-    } ';' {
-        $$ = $3 ? ast_declaration_init($3) : NULL;
     }
     | type ';' {
         show_error_range(@1, "useless " BGRN "'%s'" RESET " in empty declaration\n", $1);
@@ -221,12 +240,19 @@ func_declaration: type id '(' <ast>{
         current_context = previous_context;
         p_ctx_name = true;
     }
-    | type '(' param_list.opt ')' compound_stmt {
-        show_error_range(@2, "expected identifier before " WHT "')'" RESET "\n");
+    | type '(' {
+        previous_context = current_context;
+        list_push(&contexts, context_init("invalid"));
+        current_context = list_peek_last(&contexts);
+    } param_list.opt {
+        is_fn_blck = true;
+    } ')' compound_stmt {
+        show_error_range(@2, "expected identifier before " WHT "'('" RESET "\n");
         free($1);
-        LIST_FREE($3, { ast_free(__IT__->data); });
-        ast_free($5);
+        LIST_FREE($4, { ast_free(__IT__->data); });
+        ast_free($7);
         $$ = NULL;
+        current_context = previous_context;
     }
     ;
 
@@ -290,30 +316,50 @@ statement: expr_stmt
     ;
 
 io_stmt: READ '(' id ')' ';' {
-        Symbol *func = context_search_symbol_scopes(current_context, $1);
         Symbol *param = context_search_symbol_scopes(current_context, $3);
-        $$ = ast_builtinfn_init(ast_symref_init(func), ast_symref_init(param));
-        symbol_free($1);
+        if (!param) {
+            show_error_range(@3, BCYN "'%s'" RESET " undeclared (first use in this function)\n", $3->name);
+            $$ = NULL;
+        } else {
+            $$ = ast_builtinfn_init($1, ast_symref_init(param));
+        }
+        free($1);
         symbol_free($3);
     }
     | WRITE '(' expression ')' ';' {
-        Symbol *func = context_search_symbol_scopes(current_context, $1);
-        $$ = ast_builtinfn_init(ast_symref_init(func), $3);
-        symbol_free($1);
+        $$ = ast_builtinfn_init($1, $3);
+        free($1);
     }
     | WRITE '(' string_literal ')' ';' {
-        Symbol *func = context_search_symbol_scopes(current_context, $1);
-        $$ = ast_builtinfn_init(ast_symref_init(func), $3);
-        symbol_free($1);
+        $$ = ast_builtinfn_init($1, $3);
+        free($1);
     }
     | WRITE '(' error ')' ';' {
         show_error_range(@4, "expected expression before " WHT "')'" RESET " token\n");
-        symbol_free($1);
+        free($1);
         $$ = NULL;
     }
     | READ '(' error ')' ';' {
         show_error_range(@4, "expected expression before " WHT "')'" RESET " token\n");
-        symbol_free($1);
+        free($1);
+        $$ = NULL;
+    }
+    | READ '(' id ')' error {
+        show_error_end(@5, "expected " WHT "';'" RESET " \n");
+        free($1);
+        symbol_free($3);
+        $$ = NULL;
+    }
+    | WRITE '(' expression ')' error {
+        show_error_end(@5, "expected " WHT "';'" RESET " \n");
+        free($1);
+        ast_free($3);
+        $$ = NULL;
+    }
+    | WRITE '(' string_literal ')' error {
+        show_error_end(@5, "expected " WHT "';'" RESET " \n");
+        free($1);
+        ast_free($3);
         $$ = NULL;
     }
     ;
@@ -375,7 +421,7 @@ iter_stmt: FOR '(' expression.opt ';' expression.opt ';' expression.opt ')' stat
         $$ = NULL;
     }
     | FOR '(' expression.opt ';' expression.opt ';' error ')' statement {
-        show_error_range(@7, "expected expression before " WHT "';'" RESET " token\n");
+        show_error_range(@7, "expected expression before " WHT "')'" RESET " token\n");
         ast_free($3);
         ast_free($5);
         ast_free($9);
