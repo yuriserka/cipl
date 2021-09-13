@@ -52,23 +52,24 @@
         }                                                                            \
     }
 
-    #define show_error_end(__R__, __FMT__, ...) {       \
-        p_error_ctx_info;                               \
-        Cursor beg = (Cursor){                          \
-            .line=__R__.last_line - 1,                  \
-            .col=__R__.last_column                      \
-        };                                              \
-        yyerror(beg.line, beg.col, NULL);               \
-        LineInfo *li = list_peek(&lines, beg.line - 1); \
-        li = li ? li : curr_line_info;                  \
-        beg.col = strlen(li->text) + 1;                 \
-        CIPL_PERROR_CURSOR(                             \
-            __FMT__,                                    \
-            li->text,                                   \
-            beg,                                        \
-            ##__VA_ARGS__                               \
-        );                                              \
-        yyerrok;                                        \
+    #define show_error_end(__R__, __FMT__, ...) {                  \
+        p_error_ctx_info;                                          \
+        Cursor beg = (Cursor){                                     \
+            .line=__R__.first_line,                                \
+            .col=__R__.last_column                                 \
+        };                                                         \
+        yyerror(beg.line, beg.col, NULL);                          \
+        beg.line = (beg.line - 1) > 0 ? (beg.line - 1) : beg.line; \
+        LineInfo *li = list_peek(&lines, beg.line - 1);            \
+        li = li ? li : curr_line_info;                             \
+        beg.col = strlen(li->text) + 1;                            \
+        CIPL_PERROR_CURSOR(                                        \
+            __FMT__,                                               \
+            li->text,                                              \
+            beg,                                                   \
+            ##__VA_ARGS__                                          \
+        );                                                         \
+        yyerrok;                                                   \
     }
 
     #define show_error_range(__R__, __FMT__, ...) {                             \
@@ -148,6 +149,11 @@
 
 prog: external_declaration_list
     | %empty { show_error(@$, "ISO C-IPL forbids an empty translation unit\n"); }
+    | error {
+        // idk if this is the best solution
+        // actually dont work properly
+        show_error_end(@1, "expected " WHT "';'" RESET " \n");
+    }
     ;
 
 external_declaration_list: external_declaration_list external_declaration { list_push(&root->children, $2); }
@@ -233,9 +239,7 @@ func_declaration: type id '(' <ast>{
 
         symbol_free($2);
         free($1);
-    } param_list.opt {
-        is_fn_blck = true;
-    } ')' compound_stmt {
+    } param_list.opt { is_fn_blck = true; } ')' compound_stmt {
         $$ = ast_userfunc_init(current_context, $4, ast_params_init($5), $8);
         current_context = previous_context;
         p_ctx_name = true;
@@ -244,9 +248,7 @@ func_declaration: type id '(' <ast>{
         previous_context = current_context;
         list_push(&contexts, context_init("invalid"));
         current_context = list_peek_last(&contexts);
-    } param_list.opt {
-        is_fn_blck = true;
-    } ')' compound_stmt {
+        } param_list.opt { is_fn_blck = true; } ')' compound_stmt {
         show_error_range(@2, "expected identifier before " WHT "'('" RESET "\n");
         free($1);
         LIST_FREE($4, { ast_free(__IT__->data); });

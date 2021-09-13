@@ -30,5 +30,5 @@ void ast_str_print_pretty(AST *ast, int depth) {
 
   for (int i = depth; i > 0; --i) printf("\t");
 
-  CIPL_PRINTF_COLOR(BYEL, "%s\n", str_ast->value);
+  CIPL_PRINTF_COLOR(BYEL, "'%s'\n", str_ast->value);
 }

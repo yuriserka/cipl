@@ -44,6 +44,7 @@ float builtin() {
     write();
     writeln();
     read(undefined_var);
+    write("a")
 }
 
 int params_err(int a, b c) {

@@ -17,6 +17,7 @@
   Cursor cursor = {.line=1, .col=1};
 
   void show_str_literal_err();
+  void string_literal_rm_dquote(char *s);
 
   #define YY_USER_ACTION                                           \
     yylloc.first_line = yylloc.last_line = yylineno;               \
@@ -30,9 +31,17 @@
       memset(curr_line_info->text, 0, 100);                        \
     }                                                              \
     else {                                                         \
-      strcat(curr_line_info->text, yytext);                        \
-      strcat(curr_line_buffer, yytext);                            \
-      cursor.col += yyleng;                                        \
+      if (yytext[0] == '\"') {                                     \
+        if (yyleng > 1 && yytext[yyleng - 1] == '\"') {            \
+          strcat(curr_line_info->text, yytext);                    \
+          strcat(curr_line_buffer, yytext);                        \
+          cursor.col += yyleng;                                    \
+        }                                                          \
+      } else {                                                     \
+        strcat(curr_line_info->text, yytext);                      \
+        strcat(curr_line_buffer, yytext);                          \
+        cursor.col += yyleng;                                      \
+      }                                                            \
     }                                                              \
     yylloc.last_column = cursor.col - 1;
 
@@ -181,6 +190,7 @@ BUILTIN_FUNCTIONS read|write|writeln
   }
   ["] {    
     yylval.pchar = strdup(yytext);
+    string_literal_rm_dquote(yylval.pchar);
     BEGIN(INITIAL);
     return STR_LITERAL;
   }
@@ -225,4 +235,14 @@ void show_str_literal_err() {
   ++errors_count;
   CIPL_PERROR_CURSOR("missing terminating '\"' character\n", curr_line_buffer, dquote_open_pos);
   BEGIN(INITIAL);
+}
+
+void str_rm_char_at(char *str, unsigned int index) {
+  memmove(&str[index], &str[index + 1], strlen(str) - index);
+}
+
+void string_literal_rm_dquote(char *s) {
+  unsigned int len = strlen(s);
+  str_rm_char_at(s, 0); --len;
+  str_rm_char_at(s, len - 1); --len;
 }
