@@ -22,6 +22,7 @@ int operators(int list l) {
         tail = NIL;
         tail = !l;
         tail = %l;
+        ?tail = x + ?!%tail;
     }
 }
 
@@ -145,6 +146,11 @@ int scopes_redecl() { // s1-p:0
     a = 111;
 }
 
+int list recursive(int list l, int n) {
+    if (n == 0) return l;
+    return n : recursive(l, n - 1);
+}
+
 int main(int argc, int argv) {
     if (argc < 2 + !argv) {
         return 1;
@@ -157,6 +163,9 @@ int main(int argc, int argv) {
 
     test_builtin();
     scopes_redecl(ret);
+
+    int list _5_elems;
+    _5_elems = recursive(_5_elems, 5);
 
     return ret;
 }

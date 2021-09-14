@@ -12,6 +12,7 @@ typedef struct cipl_scope {
 
 Scope *scope_init();
 Scope *scope_init_copy(Scope *other);
+void scope_fill(Scope *dest, Scope *src);
 void scope_free(Scope *scope);
 
 Scope *scope_add(StackNode **scopes, Scope *curr);

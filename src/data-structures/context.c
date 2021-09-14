@@ -10,12 +10,8 @@
 
 Context *context_init(char *name) {
   Context *ctx = calloc(1, sizeof(Context));
-  Context *global_ctx_defined = list_peek(&contexts, 0);
   ctx->current_scope = 0;
-  ctx->scopes =
-      global_ctx_defined
-          ? list_node_init(scope_init_copy(global_ctx_defined->scopes->data))
-          : list_node_init(scope_init());
+  ctx->scopes = list_node_init(scope_init());
   ctx->name = strdup(name);
   return ctx;
 }
@@ -107,13 +103,18 @@ Scope *context_found_scope(Context *ctx) {
 
 void context_print_pretty(Context *ctx) {
   int wd = 0;
-  CIPL_PRINTF_COLOR(UYEL, "Symbol Table for Context: %s\n", ctx->name);
+  if (!strcmp(ctx->name, "global")) {
+    CIPL_PRINTF_COLOR(UYEL, "%s symbol table\n", ctx->name);
+  } else {
+    CIPL_PRINTF_COLOR(
+        UYEL, "symbol table for function:" RESET BBLU " '%s'\n" RESET, ctx->name);
+  }
   LIST_FOR_EACH_REVERSE(ctx->scopes, {
     Scope *scope = __IT__->data;
 
     if (scope->size) {
       for (int i = 0; i < wd; ++i) printf("\t");
-      CIPL_PRINTF_COLOR(UMAG, "Scope %d has %d entr%s\n", scope->index,
+      CIPL_PRINTF_COLOR(UMAG, "scope %d has %d entr%s\n", scope->index,
                         scope->size, scope->size > 1 ? "ies" : "y");
 
       for (int i = 0; i < NHASH; ++i) {

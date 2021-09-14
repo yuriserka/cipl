@@ -30,6 +30,18 @@ Scope *scope_init_copy(Scope *other) {
   return scope;
 }
 
+void scope_fill(Scope *dest, Scope *src) {
+  for (int i = 0; i < NHASH; ++i) {
+    Symbol *others_sym = &src->symbol_table[i];
+    if (others_sym->name) {
+      symbol_update(&dest->symbol_table[i], others_sym->name, others_sym->type,
+                    others_sym->is_fn, others_sym->scope,
+                    others_sym->context_name, others_sym->def_pos);
+      ++dest->size;
+    }
+  }
+}
+
 void scope_free(Scope *scope) {
   for (int i = 0; i < NHASH; ++i) {
     Symbol *sym = &scope->symbol_table[i];

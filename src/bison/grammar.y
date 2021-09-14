@@ -202,6 +202,12 @@ var_declaration: type id ';' {
         symbol_free($2);
         $$ = NULL;
     }
+    | id id '=' error {
+        show_error_range(@1, "unknown type name " BGRN "'%s'" RESET "\n", $1->name);
+        symbol_free($1);
+        symbol_free($2);
+        $$ = NULL;
+    }
     ;
 
 func_declaration: type id '(' <ast>{
@@ -248,7 +254,7 @@ func_declaration: type id '(' <ast>{
         previous_context = current_context;
         list_push(&contexts, context_init("invalid"));
         current_context = list_peek_last(&contexts);
-        } param_list.opt { is_fn_blck = true; } ')' compound_stmt {
+    } param_list.opt { is_fn_blck = true; } ')' compound_stmt {
         show_error_range(@2, "expected identifier before " WHT "'('" RESET "\n");
         free($1);
         LIST_FREE($4, { ast_free(__IT__->data); });
@@ -286,7 +292,14 @@ param_decl: type id {
 
 compound_stmt: '{' {
         parent_stacknode_ref = context_get_current_stacknode_ref();
-        if (!is_fn_blck) context_push_scope(current_context);
+        if (!is_fn_blck) {
+            context_push_scope(current_context);
+        } else {
+            scope_fill(
+                list_peek_reverse(&current_context->scopes, 1),
+                stack_peek(&previous_context->scopes)
+            );
+        }
         is_fn_blck = false;
     } block_item_list.opt '}' {
         $$ = ast_blockitems_init($3);
@@ -367,6 +380,10 @@ io_stmt: READ '(' id ')' ';' {
     ;
 
 expr_stmt: expression ';' { $$ = $1; }
+    | error ';' {
+        show_error_range(@1, "expected expression before " WHT "';'" RESET "\n");
+        $$ = NULL;
+    }
     ;
 
 cond_stmt: IF '(' expression ')' statement %prec THEN {
@@ -436,6 +453,11 @@ expression: logical_or_expr
     | unary_expr '=' error {
         show_error_range(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         ast_free($1);
+        $$ = NULL;
+    }
+    | error '=' logical_or_expr {
+        show_error_range(@1, "expected expression before " WHT "'='" RESET " token\n");
+        ast_free($3);
         $$ = NULL;
     }
     ;
@@ -637,6 +659,11 @@ primary_expr: id {
     | '(' expression ')' { $$ = $2; }
     | '(' error ')' {
         show_error_range(@2, "expected expression\n");
+        $$ = NULL;
+    }
+    | id error {
+        show_error_range(@2, "expected " WHT "';'" RESET "\n");
+        symbol_free($1);
         $$ = NULL;
     }
     ;
