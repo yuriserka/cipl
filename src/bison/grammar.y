@@ -208,6 +208,12 @@ var_declaration: type id ';' {
         symbol_free($2);
         $$ = NULL;
     }
+    | id id ';' {
+        show_error_range(@1, "unknown type name " BGRN "'%s'" RESET "\n", $1->name);
+        symbol_free($1);
+        symbol_free($2);
+        $$ = NULL;
+    }
     ;
 
 func_declaration: type id '(' <ast>{
@@ -254,6 +260,7 @@ func_declaration: type id '(' <ast>{
         previous_context = current_context;
         list_push(&contexts, context_init("invalid"));
         current_context = list_peek_last(&contexts);
+        context_push_scope(current_context);
     } param_list.opt { is_fn_blck = true; } ')' compound_stmt {
         show_error_range(@2, "expected identifier before " WHT "'('" RESET "\n");
         free($1);
@@ -287,6 +294,16 @@ param_decl: type id {
         }
         symbol_free($2);
         free($1);
+    }
+    | type {
+        show_error_range(@1, "expected identifier after " BGRN "'%s'" RESET "\n", $1);
+        free($1);
+        $$ = NULL;
+    }
+    | id {
+        show_error_range(@1, "unknown type name for " BCYN "'%s'\n" RESET , $1->name);
+        symbol_free($1);
+        $$ = NULL;
     }
     ;
 

@@ -11,7 +11,13 @@ float (int p1, int p2, int list _list) {
     int b;
 }
 
+int g(int) {}
+
+int f(x) {}
+
 int fn(int a) {
+    string s = "hello";
+    double s;
     return a * 0;
 }
 
