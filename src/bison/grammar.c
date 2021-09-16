@@ -4648,7 +4648,7 @@ yyreduce:
   case 9: /* external_declaration: statement  */
 #line 165 "src/bison/grammar.y"
                 {
-        show_error_range((yylsp[0]), "statements are not allowed at top level\n");
+        show_error_range((yyloc), "statements are not allowed at top level\n");
         ast_free((yyvsp[0].ast));
         (yyval.ast) = NULL;
     }
@@ -4883,10 +4883,10 @@ yyreduce:
         if (!is_fn_blck) {
             context_push_scope(current_context);
         } else {
-            Scope *tobe_filled = list_peek_reverse(&current_context->scopes, 1);
+            Scope *fn_scope = list_peek_reverse(&current_context->scopes, 1);
             scope_fill(
-                tobe_filled,
-                context_found_scope(previous_context, tobe_filled->last_parent)
+                fn_scope,
+                context_found_scope(previous_context, fn_scope->last_parent)
             );
         }
         is_fn_blck = false;
