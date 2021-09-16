@@ -258,7 +258,7 @@ func_declaration: type id '(' <ast>{
     }
     | type '(' {
         previous_context = current_context;
-        list_push(&contexts, context_init("invalid"));
+        list_push(&contexts, context_init("unnamed-func"));
         current_context = list_peek_last(&contexts);
         context_push_scope(current_context);
     } param_list.opt { is_fn_blck = true; } ')' compound_stmt {
@@ -312,9 +312,10 @@ compound_stmt: '{' {
         if (!is_fn_blck) {
             context_push_scope(current_context);
         } else {
+            Scope *fn_scope = list_peek_reverse(&current_context->scopes, 1);
             scope_fill(
-                list_peek_reverse(&current_context->scopes, 1),
-                stack_peek(&previous_context->scopes)
+                fn_scope,
+                context_found_scope(previous_context, fn_scope->last_parent)
             );
         }
         is_fn_blck = false;

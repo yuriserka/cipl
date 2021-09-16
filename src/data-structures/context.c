@@ -38,7 +38,7 @@ Symbol *context_search_symbol_scopes(Context *ctx, Symbol *sym) {
 }
 
 Symbol *context_has_symbol(Context *ctx, Symbol *sym) {
-  Scope *scope = context_found_scope(ctx);
+  Scope *scope = context_found_scope(ctx, ctx->current_scope);
   return symbol_table_lookup(scope->symbol_table, sym->name);
 }
 
@@ -56,13 +56,13 @@ Scope *context_push_scope(Context *ctx) {
 }
 
 Scope *context_pop_scope(Context *ctx) {
-  Scope *nxt_curr_scope = context_found_scope(ctx);
+  Scope *nxt_curr_scope = context_found_scope(ctx, ctx->current_scope);
   ctx->current_scope = nxt_curr_scope->last_parent;
   return nxt_curr_scope;
 }
 
 Symbol *context_declare_variable(Context *ctx, Symbol *sym) {
-  Scope *current_scope = context_found_scope(ctx);
+  Scope *current_scope = context_found_scope(ctx, ctx->current_scope);
   Symbol *entry =
       symbol_table_get_valid_entry(current_scope->symbol_table, sym->name);
   if (entry) {
@@ -75,7 +75,7 @@ Symbol *context_declare_variable(Context *ctx, Symbol *sym) {
 }
 
 Symbol *context_declare_function(Context *ctx, Symbol *sym) {
-  Scope *current_scope = context_found_scope(ctx);
+  Scope *current_scope = context_found_scope(ctx, ctx->current_scope);
   Symbol *entry =
       symbol_table_get_valid_entry(current_scope->symbol_table, sym->name);
   if (entry) {
@@ -93,10 +93,10 @@ void context_print(Context *ctx) {
   printf("], }, ");
 }
 
-Scope *context_found_scope(Context *ctx) {
+Scope *context_found_scope(Context *ctx, int idx) {
   LIST_FOR_EACH_REVERSE(ctx->scopes, {
     Scope *scope = __IT__->data;
-    if (scope->index == ctx->current_scope) return scope;
+    if (scope->index == idx) return scope;
   });
   return NULL;
 }

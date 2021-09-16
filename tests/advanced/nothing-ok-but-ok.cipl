@@ -13,7 +13,9 @@ float (int p1, int p2, int list _list) {
 
 int g(int) {}
 
-int f(x) {}
+int f(x) {
+    int list h;
+}
 
 int fn(int a) {
     string s = "hello";
@@ -85,10 +87,15 @@ int x;
 x = 2.6;
 
 if (1) {
-    if (2) {}
+    int x;
+    if (2) {
+        int x;
+    }
 }
 
-int list x() {}
+int list x() {
+    int x;
+}
 
 int list invalid_exprs(int a) {
     a = ||a;

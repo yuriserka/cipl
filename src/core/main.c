@@ -61,9 +61,7 @@ int cipl_main(int argc, char *argv[]) {
   if (got_erros) {
     CIPL_PRINTF_COLOR(BRED, "\n\n%d error%s", errors_count,
                       errors_count > 1 ? "s" : "");
-    CIPL_PRINTF(
-        " generated.\n\tIs not possible to print the AST or the Symbol "
-        "Table.\n");
+    CIPL_PRINTF(" generated.\n\tIs not possible to print the AST.\n");
   }
 
   fclose(yyin);
@@ -71,8 +69,9 @@ int cipl_main(int argc, char *argv[]) {
 
   if (!got_erros) {
     main_ast_pretty();
-    main_context_pretty();
   }
+
+  main_context_pretty();
 
   ast_free(root);
   LIST_FREE(contexts, { context_free(__IT__->data); });
