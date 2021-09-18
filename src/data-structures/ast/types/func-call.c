@@ -6,9 +6,9 @@
 #include "data-structures/context.h"
 #include "utils/io.h"
 
-AST *ast_funcall_init(AST *declarator, AST *args) {
+AST *ast_funcall_init(YYLTYPE rule_pos, AST *declarator, AST *args) {
   FunctionCallAST *ast = calloc(1, sizeof(FunctionCallAST));
-  return ast_cast(AST_FUNC_CALL, 2, ast, declarator, args);
+  return ast_cast(AST_FUNC_CALL, rule_pos, 2, ast, declarator, args);
 }
 
 void ast_funcall_free(AST *ast) {
@@ -37,4 +37,9 @@ void ast_funcall_print_pretty(AST *ast, int depth) {
 
   ast_print_pretty(declarator, depth + 1);
   ast_print_pretty(args, depth + 1);
+}
+
+SymbolTypes ast_funcall_type_check(AST *ast) {
+  AST *declarator = list_peek(&ast->children, 0);
+  return ast_validate_types(declarator);
 }

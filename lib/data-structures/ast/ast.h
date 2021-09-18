@@ -2,6 +2,8 @@
 
 #include <stdarg.h>
 
+#include "bison/grammar.h"
+
 // fast-forward definition of AST structure to use in each ast node type header
 typedef struct cipl_ast AST;
 
@@ -44,6 +46,7 @@ typedef union cipl_ast_node_value {
 } AstNodeValue;
 
 struct cipl_ast {
+  YYLTYPE rule_pos;
   AstTypes type;
   ListNode *children;
   AstNodeValue value;
@@ -55,8 +58,10 @@ void ast_child_print_aux_label(const char *label, AST *ast);
  * 1st variadic arg = the actual value (some of AstNodeValue)
  * 2nd+ variadic arg = children nodes
  */
-AST *ast_cast(AstTypes type, int n_children, ...);
+AST *ast_cast(AstTypes type, YYLTYPE rule_pos, int n_children, ...);
 void ast_free(AST *ast);
 SymbolValues ast_eval(AST *ast);
 void ast_print(AST *ast);
 void ast_print_pretty(AST *ast, int depth);
+
+SymbolTypes ast_validate_types(AST *ast);

@@ -136,6 +136,25 @@ char *symbol_type_from_enum(SymbolTypes type) {
       return "SYM_REAL";
     case SYM_REAL_LIST:
       return "SYM_REAL_LIST";
+    case SYM_PTR:
+      return "SYM_PTR";
+    default:
+      return "SYM_INVALID";
+  }
+}
+
+char *symbol_canonical_type_from_enum(SymbolTypes type) {
+  switch (type) {
+    case SYM_INT:
+      return "int";
+    case SYM_INT_LIST:
+      return "int list";
+    case SYM_REAL:
+      return "float";
+    case SYM_REAL_LIST:
+      return "float list";
+    case SYM_PTR:
+      return "NIL";
     default:
       return "SYM_INVALID";
   }

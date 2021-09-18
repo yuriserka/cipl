@@ -10,8 +10,10 @@ typedef struct cipl_ast_userfunc {
 #include "data-structures/ast/ast.h"
 
 void ast_userfunc_free(AST *ast);
-AST *ast_userfunc_init(struct cipl_context *context, AST *declarator,
-                       AST *params, AST *statements);
+AST *ast_userfunc_init(YYLTYPE rule_pos, struct cipl_context *context,
+                       AST *declarator, AST *params, AST *statements);
 SymbolValues ast_userfunc_eval(AST *ast);
 void ast_userfunc_print(AST *ast);
 void ast_userfunc_print_pretty(AST *ast, int depth);
+
+SymbolTypes ast_userfunc_type_check(AST *ast);

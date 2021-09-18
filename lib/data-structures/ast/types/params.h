@@ -10,7 +10,9 @@ typedef struct cipl_ast_params {
 #include "data-structures/ast/ast.h"
 
 void ast_params_free(AST *ast);
-AST *ast_params_init(ListNode *params);
+AST *ast_params_init(YYLTYPE rule_pos, ListNode *params);
 SymbolValues ast_params_eval(AST *ast);
 void ast_params_print(AST *ast);
 void ast_params_print_pretty(AST *ast, int depth);
+
+SymbolTypes ast_params_type_check(AST *ast);

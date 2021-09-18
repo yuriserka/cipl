@@ -37,3 +37,7 @@ extern ListNode *contexts;
     __X__ = __Y1__;               \
     __Y__ = __X1__;               \
   }
+
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))

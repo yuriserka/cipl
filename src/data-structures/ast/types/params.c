@@ -5,12 +5,12 @@
 
 #include "utils/io.h"
 
-AST *ast_params_init(ListNode *params) {
+AST *ast_params_init(YYLTYPE rule_pos, ListNode *params) {
   ParamsAST *ast = calloc(1, sizeof(ParamsAST));
   ast->value = params;
   ast->size = 0;
   LIST_FOR_EACH(params, { ++ast->size; });
-  return ast_cast(AST_PARAMS, 0, ast);
+  return ast_cast(AST_PARAMS, rule_pos, 0, ast);
 }
 
 void ast_params_free(AST *ast) {

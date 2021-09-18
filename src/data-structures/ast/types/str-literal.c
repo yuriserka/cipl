@@ -6,10 +6,10 @@
 
 #include "utils/io.h"
 
-AST *ast_str_init(char *value) {
+AST *ast_str_init(YYLTYPE rule_pos, char *value) {
   StringLiteralAST *ast = calloc(1, sizeof(StringLiteralAST));
   ast->value = strdup(value);
-  return ast_cast(AST_STR_LITERAL, 0, ast);
+  return ast_cast(AST_STR_LITERAL, rule_pos, 0, ast);
 }
 
 void ast_str_free(AST *ast) {

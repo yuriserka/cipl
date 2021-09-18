@@ -6,11 +6,11 @@
 #include "data-structures/context.h"
 #include "utils/io.h"
 
-AST *ast_flow_init(Context *context, AST *cond, AST *then_branch,
+AST *ast_flow_init(YYLTYPE rule_pos, Context *context, AST *cond, AST *then_branch,
                    AST *else_branch) {
   FlowAST *ast = calloc(1, sizeof(FlowAST));
   ast->context = context;
-  return ast_cast(AST_FLOW, 3, ast, cond, then_branch, else_branch);
+  return ast_cast(AST_FLOW, rule_pos, 3, ast, cond, then_branch, else_branch);
 }
 
 void ast_flow_free(AST *ast) {

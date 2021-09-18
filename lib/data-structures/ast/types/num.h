@@ -7,7 +7,7 @@ typedef enum cipl_ast_number_type {
 } NumberType;
 
 typedef union cipl_ast_number_value {
-  int integer;
+  long int integer;
   double real;
 } NumberValue;
 
@@ -22,7 +22,12 @@ typedef struct cipl_ast_number {
 #include "data-structures/ast/ast.h"
 
 void ast_number_free(AST *ast);
-AST *ast_number_init(NumberType type, NumberValue value);
+AST *ast_number_init(YYLTYPE rule_pos, NumberType type, NumberValue value);
 SymbolValues ast_number_eval(AST *ast);
 void ast_number_print(AST *ast);
 void ast_number_print_pretty(AST *ast, int depth);
+
+SymbolTypes ast_number_type_check(AST *ast);
+
+void ast_number_tofloat(AST *ast);
+void ast_number_tointeger(AST *ast);

@@ -184,8 +184,8 @@ var_declaration: type id ';' {
         }
         else {
             symbol_update_type($2, decl_type);
-            $$ = ast_declaration_init(
-                ast_symref_init(context_declare_variable(current_context, $2))
+            $$ = ast_declaration_init(@$, 
+                ast_symref_init(@$, context_declare_variable(current_context, $2))
             );
         }
         symbol_free($2);
@@ -242,7 +242,7 @@ func_declaration: type id '(' <ast>{
                 show_error(@2, BCYN "'%s'" RESET " redeclared as different kind of symbol\n", $2->name);
                 $$ = NULL;
             } else {
-                $$ = ast_symref_init(declared);
+                $$ = ast_symref_init(@$, declared);
             }
         }
 
@@ -252,7 +252,7 @@ func_declaration: type id '(' <ast>{
         symbol_free($2);
         free($1);
     } param_list.opt { is_fn_blck = true; } ')' compound_stmt {
-        $$ = ast_userfunc_init(current_context, $4, ast_params_init($5), $8);
+        $$ = ast_userfunc_init(@$, current_context, $4, ast_params_init(@$, $5), $8);
         current_context = previous_context;
         p_ctx_name = true;
     }
@@ -290,7 +290,7 @@ param_decl: type id {
             $$ = NULL;
         } else {
             symbol_update_type($2, symbol_type_from_str($1));
-            $$ = ast_symref_init(context_declare_variable(current_context, $2));
+            $$ = ast_symref_init(@$, context_declare_variable(current_context, $2));
         }
         symbol_free($2);
         free($1);
@@ -320,7 +320,7 @@ compound_stmt: '{' {
         }
         is_fn_blck = false;
     } block_item_list.opt '}' {
-        $$ = ast_blockitems_init($3);
+        $$ = ast_blockitems_init(@$, $3);
         context_pop_scope(current_context);
         if (parent_stacknode_ref) {
             parent_stacknode_ref = parent_stacknode_ref->parent;
@@ -354,17 +354,17 @@ io_stmt: READ '(' id ')' ';' {
             show_error_range(@3, BCYN "'%s'" RESET " undeclared (first use in this function)\n", $3->name);
             $$ = NULL;
         } else {
-            $$ = ast_builtinfn_init($1, ast_symref_init(param));
+            $$ = ast_builtinfn_init(@$, $1, ast_symref_init(@$, param));
         }
         free($1);
         symbol_free($3);
     }
     | WRITE '(' expression ')' ';' {
-        $$ = ast_builtinfn_init($1, $3);
+        $$ = ast_builtinfn_init(@$, $1, $3);
         free($1);
     }
     | WRITE '(' string_literal ')' ';' {
-        $$ = ast_builtinfn_init($1, $3);
+        $$ = ast_builtinfn_init(@$, $1, $3);
         free($1);
     }
     | WRITE '(' error ')' ';' {
@@ -405,10 +405,10 @@ expr_stmt: expression ';' { $$ = $1; }
     ;
 
 cond_stmt: IF '(' expression ')' statement %prec THEN {
-        $$ = ast_flow_init(current_context, $3, $5, NULL);
+        $$ = ast_flow_init(@$, current_context, $3, $5, NULL);
     }
     | IF '(' expression ')' statement ELSE statement {
-        $$ = ast_flow_init(current_context, $3, $5, $7);
+        $$ = ast_flow_init(@$, current_context, $3, $5, $7);
     }
     | IF '(' expression ')' ELSE {
         show_error_range(@5, "expected expression before " WHT "'else'" RESET "\n");
@@ -433,7 +433,7 @@ cond_stmt: IF '(' expression ')' statement %prec THEN {
     }
     ;
 
-jmp_stmt: RETURN expression ';' { $$ = ast_jmp_init($2); }
+jmp_stmt: RETURN expression ';' { $$ = ast_jmp_init(@$, $2); }
     | RETURN error ';' {
         show_error_range(@2, "expected expression before " WHT "';'" RESET " token\n");
         $$ = NULL;
@@ -441,7 +441,7 @@ jmp_stmt: RETURN expression ';' { $$ = ast_jmp_init($2); }
     ;
 
 iter_stmt: FOR '(' expression.opt ';' expression.opt ';' expression.opt ')' statement {
-        $$ = ast_iter_init(current_context, $3, $5, $7, $9);
+        $$ = ast_iter_init(@$, current_context, $3, $5, $7, $9);
     }
     | FOR '(' error ';' expression.opt ';' expression.opt ')' statement {
         show_error_range(@3, "expected expression before " WHT "';'" RESET " token\n");
@@ -467,7 +467,7 @@ iter_stmt: FOR '(' expression.opt ';' expression.opt ';' expression.opt ')' stat
     ;
 
 expression: logical_or_expr
-    | unary_expr '=' logical_or_expr { $$ = ast_assign_init($1, $3); }
+    | unary_expr '=' logical_or_expr { $$ = ast_assign_init(@$, $1, $3); }
     | unary_expr '=' error {
         show_error_range(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
         ast_free($1);
@@ -486,7 +486,7 @@ expression.opt: %empty { $$ = NULL; }
 
 logical_or_expr: logical_and_expr
     | logical_or_expr OR logical_and_expr {
-        $$ = ast_binop_init($2, $1, $3);
+        $$ = ast_binop_init(@$, $2, $1, $3);
         free($2);
     }
     | logical_or_expr OR error {
@@ -503,7 +503,7 @@ logical_or_expr: logical_and_expr
 
 logical_and_expr: eq_expr
     | logical_and_expr AND eq_expr {
-        $$ = ast_binop_init($2, $1, $3);
+        $$ = ast_binop_init(@$, $2, $1, $3);
         free($2);
     }
     | logical_and_expr AND error {
@@ -520,7 +520,7 @@ logical_and_expr: eq_expr
 
 eq_expr: rel_expr
     | eq_expr EQ rel_expr {
-        $$ = ast_binop_init($2, $1, $3);
+        $$ = ast_binop_init(@$, $2, $1, $3);
         free($2);
     }
     | eq_expr EQ error {
@@ -537,7 +537,7 @@ eq_expr: rel_expr
 
 rel_expr: list_expr
     | rel_expr REL list_expr {
-        $$ = ast_binop_init($2, $1, $3);
+        $$ = ast_binop_init(@$, $2, $1, $3);
         free($2);
     }
     | rel_expr REL error {
@@ -554,11 +554,11 @@ rel_expr: list_expr
 
 list_expr: add_expr
     | add_expr DL_DG list_expr {
-        $$ = ast_binop_init($2, $1, $3);
+        $$ = ast_binop_init(@$, $2, $1, $3);
         free($2);
     }
     | add_expr COLON list_expr {
-        $$ = ast_binop_init($2, $1, $3);
+        $$ = ast_binop_init(@$, $2, $1, $3);
         free($2);
     }
     | add_expr DL_DG error {
@@ -585,7 +585,7 @@ list_expr: add_expr
 
 add_expr: mult_expr
     | add_expr ADD mult_expr {
-        $$ = ast_binop_init($2, $1, $3);
+        $$ = ast_binop_init(@$, $2, $1, $3);
         free($2);
     }
     | add_expr ADD error {
@@ -602,7 +602,7 @@ add_expr: mult_expr
 
 mult_expr: unary_expr
     | mult_expr MULT unary_expr {
-        $$ = ast_binop_init($2, $1, $3);
+        $$ = ast_binop_init(@$, $2, $1, $3);
         free($2);
     }
     | mult_expr MULT error {
@@ -619,7 +619,7 @@ mult_expr: unary_expr
 
 unary_expr: postfix_expr
     | unary_ops unary_expr {
-        $$ = ast_uniop_init($1, $2);
+        $$ = ast_uniop_init(@$, $1, $2);
         free($1);
     }
     ;
@@ -633,7 +633,7 @@ unary_ops: EXCLAMATION
 postfix_expr: primary_expr
     | id '(' arg_expr_list.opt ')' {
         Symbol *sym = context_search_symbol_scopes(current_context, $1);
-        AST *params = ast_params_init($3);
+        AST *params = ast_params_init(@$, $3);
         if (!sym) {
             show_error_range(@1, "implicit declaration of function " BBLU "'%s'\n" RESET, $1->name);
             $$ = NULL;
@@ -644,7 +644,7 @@ postfix_expr: primary_expr
                 $$ = NULL;
                 ast_free(params);
             } else {
-                $$ = ast_funcall_init(ast_symref_init(sym), params);
+                $$ = ast_funcall_init(@$, ast_symref_init(@$, sym), params);
             }
         }
         symbol_free($1);
@@ -669,7 +669,7 @@ primary_expr: id {
             show_error_range(@1, BCYN "'%s'" RESET " undeclared (first use in this function)\n", $1->name);
             $$ = NULL;
         } else {
-            $$ = ast_symref_init(sym);
+            $$ = ast_symref_init(@$, sym);
         }
         symbol_free($1);
     }
@@ -707,13 +707,13 @@ type: INT
     }
     ;
 
-constant: NUMBER_REAL { $$ = ast_number_init(K_REAL, (NumberValue){ .real=$1 }); }
-    | NUMBER_INT { $$ = ast_number_init(K_INTEGER, (NumberValue){ .integer=$1 }); }
-    | NIL { $$ = ast_number_init(K_NIL, (NumberValue){ .integer=$1 }); }
+constant: NUMBER_REAL { $$ = ast_number_init(@$, K_REAL, (NumberValue){ .real=$1 }); }
+    | NUMBER_INT { $$ = ast_number_init(@$, K_INTEGER, (NumberValue){ .integer=$1 }); }
+    | NIL { $$ = ast_number_init(@$, K_NIL, (NumberValue){ .integer=$1 }); }
     ;
 
 string_literal: STR_LITERAL {
-        $$ = ast_str_init($1);
+        $$ = ast_str_init(@$, $1);
         free($1);
     }
     ;

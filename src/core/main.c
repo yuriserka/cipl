@@ -51,14 +51,21 @@ int cipl_main(int argc, char *argv[]) {
   yyin = pfile;
   (filename = strrchr(argv[1], '/')) ? ++filename : (filename = argv[1]);
 
-  root = ast_cast(AST_PROG, 0);
+  root = ast_cast(AST_PROG,
+                  (YYLTYPE){
+                      .first_line = 1,
+                      .first_column = 1,
+                      .last_line = 1,
+                      .last_column = 1,
+                  },
+                  0);
   contexts = list_node_init(context_init("global"));
   current_context = list_peek(&contexts, 0);
   curr_line_info = line_init(1, "");
 
-  int got_erros = yyparse() || errors_count;
+  int got_errors = yyparse(0, 0) || errors_count;
 
-  if (got_erros) {
+  if (got_errors) {
     CIPL_PRINTF_COLOR(BRED, "\n\n%d error%s", errors_count,
                       errors_count > 1 ? "s" : "");
     CIPL_PRINTF(" generated.\n\tIs not possible to print the AST.\n");
@@ -67,16 +74,16 @@ int cipl_main(int argc, char *argv[]) {
   fclose(yyin);
   yylex_destroy();
 
-  if (!got_erros) {
-    main_ast_pretty();
+  if (!got_errors) {
+    // main_ast_pretty();
+    // main_context_pretty();
+    got_errors = ast_validate_types(root) == SYM_INVALID;
   }
-
-  main_context_pretty();
 
   ast_free(root);
   LIST_FREE(contexts, { context_free(__IT__->data); });
   LIST_FREE(lines, { line_free(__IT__->data); });
   line_free(curr_line_info);
 
-  return errors_count > 0;
+  return got_errors;
 }

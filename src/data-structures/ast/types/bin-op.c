@@ -6,10 +6,10 @@
 
 #include "utils/io.h"
 
-AST *ast_binop_init(char *op, AST *l, AST *r) {
+AST *ast_binop_init(YYLTYPE rule_pos, char *op, AST *l, AST *r) {
   BinOpAST *ast = calloc(1, sizeof(BinOpAST));
   ast->op = strdup(op);
-  return ast_cast(AST_BIN_OP, 2, ast, l, r);
+  return ast_cast(AST_BIN_OP, rule_pos, 2, ast, l, r);
 }
 
 void ast_binop_free(AST *ast) {
@@ -44,4 +44,15 @@ void ast_binop_print_pretty(AST *ast, int depth) {
 
   ast_print_pretty(lhs, depth + 1);
   ast_print_pretty(rhs, depth + 1);
+}
+
+SymbolTypes ast_binop_type_check(AST *ast) {
+  SymbolTypes lhs_t = ast_validate_types(list_peek(&ast->children, 0));
+  SymbolTypes rhs_t = ast_validate_types(list_peek(&ast->children, 1));
+
+  printf("BINOP_T: { LHS_T: %s, RHS_T: %s }\n", symbol_type_from_enum(lhs_t),
+         symbol_type_from_enum(rhs_t));
+  SymbolTypes max_t = MAX(lhs_t, rhs_t);
+
+  return max_t;
 }

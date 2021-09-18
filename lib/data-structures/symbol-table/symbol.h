@@ -13,6 +13,7 @@ typedef enum cipl_symbol_types {
   SYM_INVALID,
   SYM_INT,
   SYM_REAL,
+  SYM_PTR,
   SYM_INT_LIST,
   SYM_REAL_LIST,
 } SymbolTypes;
@@ -50,6 +51,7 @@ void symbol_print_pretty(Symbol *sym);
 
 SymbolTypes symbol_type_from_str(char *type);
 char *symbol_type_from_enum(SymbolTypes type);
+char *symbol_canonical_type_from_enum(SymbolTypes type);
 
 void symbol_update_value(Symbol *sym, int mArgs, ...);
 void symbol_init_value(Symbol *sym);

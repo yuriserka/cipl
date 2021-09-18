@@ -7,7 +7,9 @@ typedef struct cipl_ast_binop {
 #include "data-structures/ast/ast.h"
 
 void ast_binop_free(AST *ast);
-AST *ast_binop_init(char *op, AST *l, AST *r);
+AST *ast_binop_init(YYLTYPE rule_pos, char *op, AST *l, AST *r);
 SymbolValues ast_binop_eval(AST *ast);
 void ast_binop_print(AST *ast);
 void ast_binop_print_pretty(AST *ast, int depth);
+
+SymbolTypes ast_binop_type_check(AST *ast);

@@ -67,6 +67,8 @@ void *list_peek_reverse(ListNode **head, unsigned int index) {
 
 void *list_peek_last(ListNode **head) {
   ListNode *it = *head;
+  if (!it) return NULL;
+
   while (it->next) it = it->next;
   return it->data;
 }

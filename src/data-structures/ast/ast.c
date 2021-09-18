@@ -8,9 +8,10 @@
 #define AST_INIT_UNION(MEM, TGT) \
   (AstNodeValue) { .MEM = va_arg(ptr, TGT *) }
 
-AST *ast_cast(AstTypes type, int n_children, ...) {
+AST *ast_cast(AstTypes type, YYLTYPE rule_pos, int n_children, ...) {
   AST *ast = calloc(1, sizeof(AST));
   ast->type = type;
+  ast->rule_pos = rule_pos;
 
   ++n_children;
 
@@ -304,4 +305,43 @@ void ast_print_pretty(AST *ast, int depth) {
       printf("AST type: %d print not implemented yet", ast->type);
       break;
   }
+}
+
+SymbolTypes ast_validate_types(AST *ast) {
+  if (!ast) return SYM_INVALID;
+
+  switch (ast->type) {
+    case AST_NUMBER:
+      return ast_number_type_check(ast);
+    case AST_BIN_OP:
+      return ast_binop_type_check(ast);
+    case AST_SYM_REF:
+      return ast_symref_type_check(ast);
+    case AST_ASSIGN_OP:
+      return ast_assign_type_check(ast);
+    case AST_USER_FUNC:
+      return ast_userfunc_type_check(ast);
+    case AST_JMP:
+      return ast_jmp_type_check(ast);
+    case AST_BLOCK_ITEM_LIST:
+      return ast_blockitems_type_check(ast);
+    case AST_DECLARATION:
+      return ast_declaration_type_check(ast);
+    case AST_FUNC_CALL:
+      return ast_funcall_type_check(ast);
+    case AST_PROG: {
+      SymbolTypes ret = SYM_INVALID;
+      LIST_FOR_EACH(ast->children, {
+        SymbolTypes t;
+        t = ast_validate_types(__IT__->data);
+        if (t != SYM_INVALID) ret = t;
+      });
+      return ret;
+    }
+    default:
+      printf("AST type: %d type_check not implemented yet", ast->type);
+      break;
+  }
+
+  return SYM_INVALID;
 }

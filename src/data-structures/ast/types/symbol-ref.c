@@ -6,10 +6,10 @@
 
 #include "utils/io.h"
 
-AST *ast_symref_init(Symbol *symbol) {
+AST *ast_symref_init(YYLTYPE rule_pos, Symbol *symbol) {
   SymbolRefAST *ast = calloc(1, sizeof(SymbolRefAST));
   ast->symbol = symbol;
-  return ast_cast(AST_SYM_REF, 0, ast);
+  return ast_cast(AST_SYM_REF, rule_pos, 0, ast);
 }
 
 void ast_symref_free(AST *ast) {
@@ -17,7 +17,9 @@ void ast_symref_free(AST *ast) {
   free(symref_ast);
 }
 
-SymbolValues ast_symref_eval(AST *ast) { return ast->value.symref->symbol->value; }
+SymbolValues ast_symref_eval(AST *ast) {
+  return ast->value.symref->symbol->value;
+}
 
 void ast_symref_print(AST *ast) {
   SymbolRefAST *symref = ast->value.symref;
@@ -35,4 +37,11 @@ void ast_symref_print_pretty(AST *ast, int depth) {
 
   for (int i = depth; i > 0; --i) printf("\t");
   symbol_print_pretty(symref->symbol);
+}
+
+SymbolTypes ast_symref_type_check(AST *ast) {
+  SymbolRefAST *symref = ast->value.symref;
+  printf("{ SYM_T: %s, NAME: %s }\n",
+         symbol_type_from_enum(symref->symbol->type), symref->symbol->name);
+  return symref->symbol->type;
 }

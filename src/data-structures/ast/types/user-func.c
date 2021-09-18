@@ -9,12 +9,12 @@
 #include "data-structures/context.h"
 #include "utils/io.h"
 
-AST *ast_userfunc_init(Context *context, AST *declarator, AST *params,
-                       AST *stmts) {
+AST *ast_userfunc_init(YYLTYPE rule_pos, Context *context, AST *declarator,
+                       AST *params, AST *stmts) {
   UserFuncAST *ast = calloc(1, sizeof(UserFuncAST));
   ast->context = context;
   ast->arity = params->value.params->size;
-  return ast_cast(AST_USER_FUNC, 3, ast, declarator, params, stmts);
+  return ast_cast(AST_USER_FUNC, rule_pos, 3, ast, declarator, params, stmts);
 }
 
 void ast_userfunc_free(AST *ast) {
@@ -23,7 +23,9 @@ void ast_userfunc_free(AST *ast) {
   free(userfunc_ast);
 }
 
-SymbolValues ast_userfunc_eval(AST *ast) { return (SymbolValues){.integer = 0}; }
+SymbolValues ast_userfunc_eval(AST *ast) {
+  return (SymbolValues){.integer = 0};
+}
 
 void ast_userfunc_print(AST *ast) {
   AST *name = list_peek(&ast->children, 0);
@@ -47,4 +49,41 @@ void ast_userfunc_print_pretty(AST *ast, int depth) {
   ast_print_pretty(name, depth + 1);
   ast_print_pretty(params, depth + 1);
   ast_print_pretty(statements, depth + 1);
+}
+
+SymbolTypes ast_userfunc_type_check(AST *ast) {
+  SymbolTypes name_t = ast_validate_types(list_peek(&ast->children, 0));
+  AST *statements = list_peek(&ast->children, 2);
+  BlockItemListAST *code_block_l = statements->value.blockitems;
+
+  LIST_FOR_EACH(code_block_l->value, {
+    AST *block_item = __IT__->data;
+    SymbolTypes bi_t = ast_validate_types(block_item);
+    if (block_item->type == AST_JMP) {
+      SymbolTypes max_t = MAX(name_t, bi_t);
+
+      if (max_t >= SYM_PTR) {
+        if (name_t <= SYM_REAL || name_t <= SYM_REAL) {
+          Cursor beg;
+          beg.line = block_item->rule_pos.first_line;
+          beg.col = block_item->rule_pos.first_column;
+          Cursor end;
+          end.line = block_item->rule_pos.first_line;
+          end.col = block_item->rule_pos.last_column;
+          LineInfo *li = list_peek(&lines, beg.line - 1);
+          li = li ? li : curr_line_info;
+          CIPL_PERROR_CURSOR_RANGE(
+              "incompatible types when returning type " BGRN "'%s'" RESET
+              " but " BGRN "'%s'" RESET " was expected\n",
+              li->text, beg, end, symbol_canonical_type_from_enum(bi_t),
+              symbol_canonical_type_from_enum(name_t));
+          return SYM_INVALID;
+        }
+      }
+    }
+  });
+
+  printf("FUNC_T: { FN_T: %s }\n", symbol_type_from_enum(name_t));
+
+  return name_t;
 }

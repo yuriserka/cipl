@@ -6,9 +6,9 @@
 #include "data-structures/context.h"
 #include "utils/io.h"
 
-AST *ast_jmp_init(AST *stmt) {
+AST *ast_jmp_init(YYLTYPE rule_pos, AST *stmt) {
   JumpAST *ast = calloc(1, sizeof(JumpAST));
-  return ast_cast(AST_JMP, 1, ast, stmt);
+  return ast_cast(AST_JMP, rule_pos, 1, ast, stmt);
 }
 
 void ast_jmp_free(AST *ast) {
@@ -33,4 +33,11 @@ void ast_jmp_print_pretty(AST *ast, int depth) {
   CIPL_PRINTF_COLOR(BMAG, "<return-statement>\n");
 
   ast_print_pretty(stmt, depth + 1);
+}
+
+SymbolTypes ast_jmp_type_check(AST *ast) {
+  AST *stmt = list_peek(&ast->children, 0);
+  SymbolTypes ret_t = ast_validate_types(stmt);
+  printf("JMP_T: { EXPR_T: %s }\n", symbol_type_from_enum(ret_t));
+  return ret_t;
 }

@@ -5,10 +5,10 @@
 
 #include "utils/io.h"
 
-AST *ast_blockitems_init(ListNode *blockitems) {
+AST *ast_blockitems_init(YYLTYPE rule_pos, ListNode *blockitems) {
   BlockItemListAST *ast = calloc(1, sizeof(BlockItemListAST));
   ast->value = blockitems;
-  return ast_cast(AST_BLOCK_ITEM_LIST, 0, ast);
+  return ast_cast(AST_BLOCK_ITEM_LIST, rule_pos, 0, ast);
 }
 
 void ast_blockitems_free(AST *ast) {
@@ -36,4 +36,21 @@ void ast_blockitems_print_pretty(AST *ast, int depth) {
   CIPL_PRINTF_COLOR(BMAG, "<code-block>\n");
   LIST_FOR_EACH(blockitems_ast->value,
                 { ast_print_pretty(__IT__->data, depth + 1); });
+}
+
+SymbolTypes ast_blockitems_type_check(AST *ast) {
+  BlockItemListAST *blockitems_ast = ast->value.blockitems;
+  LIST_FOR_EACH(blockitems_ast->value, {
+    SymbolTypes block_item_t = ast_validate_types(__IT__->data);
+    if (block_item_t == SYM_INVALID) {
+      return SYM_INVALID;
+    }
+  });
+
+  AST *possible_return = list_peek_last(&blockitems_ast->value);
+  if (!possible_return->value.jmp) {
+    return SYM_INVALID;
+  }
+
+  return ast_validate_types(possible_return);
 }

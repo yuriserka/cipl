@@ -12,11 +12,11 @@ void ast_builtinfn_free(AST *ast) {
   free(builtinfn_ast);
 }
 
-AST *ast_builtinfn_init(char *name, AST *params) {
+AST *ast_builtinfn_init(YYLTYPE rule_pos, char *name, AST *params) {
   BuiltinFuncAST *ast = calloc(1, sizeof(BuiltinFuncAST));
   ast->func_type = builtinfn_type_from_str(name);
   ast->arity = 1;
-  return ast_cast(AST_BUILTIN_FUNC, 1, ast, params);
+  return ast_cast(AST_BUILTIN_FUNC, rule_pos, 1, ast, params);
 }
 
 SymbolValues ast_builtinfn_eval(AST *ast) {

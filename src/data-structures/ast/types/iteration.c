@@ -6,11 +6,11 @@
 #include "data-structures/context.h"
 #include "utils/io.h"
 
-AST *ast_iter_init(Context *context, AST *start, AST *while_cond, AST *final,
-                   AST *stmts) {
+AST *ast_iter_init(YYLTYPE rule_pos, Context *context, AST *start,
+                   AST *while_cond, AST *final, AST *stmts) {
   IterationAST *ast = calloc(1, sizeof(IterationAST));
   ast->context = context;
-  return ast_cast(AST_ITER, 4, ast, start, while_cond, final, stmts);
+  return ast_cast(AST_ITER, rule_pos, 4, ast, start, while_cond, final, stmts);
 }
 
 void ast_iter_free(AST *ast) {

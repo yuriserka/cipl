@@ -11,7 +11,9 @@ struct cipl_ast_symbol_ref {
 #include "data-structures/ast/ast.h"
 
 void ast_symref_free(AST *ast);
-AST *ast_symref_init(Symbol *symbol);
+AST *ast_symref_init(YYLTYPE rule_pos, Symbol *symbol);
 SymbolValues ast_symref_eval(AST *ast);
 void ast_symref_print(AST *ast);
 void ast_symref_print_pretty(AST *ast, int depth);
+
+SymbolTypes ast_symref_type_check(AST *ast);
