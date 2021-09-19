@@ -12,7 +12,7 @@ typedef enum cipl_ast_types {
   AST_UNI_OP,
   AST_PROG,
   AST_USER_FUNC,
-  AST_PARAMS,
+  AST_PARAM_LIST,
   AST_BLOCK_ITEM_LIST,
   AST_JMP,
   AST_DECLARATION,
@@ -41,8 +41,8 @@ static inline const char *ast_type2str(AstTypes type) {
       return "AST_PROG";
     case AST_USER_FUNC:
       return "AST_USER_FUNC";
-    case AST_PARAMS:
-      return "AST_PARAMS";
+    case AST_PARAM_LIST:
+      return "AST_PARAM_LIST";
     case AST_BLOCK_ITEM_LIST:
       return "AST_BLOCK_ITEM_LIST";
     case AST_DECLARATION:

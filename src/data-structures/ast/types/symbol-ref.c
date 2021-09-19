@@ -41,7 +41,7 @@ void ast_symref_print_pretty(AST *ast, int depth) {
 
 SymbolTypes ast_symref_type_check(AST *ast) {
   SymbolRefAST *symref = ast->value.symref;
-  printf("{ SYM_T: %s, NAME: %s }\n",
-         symbol_type_from_enum(symref->symbol->type), symref->symbol->name);
+  // printf("{ SYM_T: %s, NAME: %s }\n",
+  //        symbol_type_from_enum(symref->symbol->type), symref->symbol->name);
   return symref->symbol->type;
 }

@@ -10,7 +10,7 @@ AST *ast_params_init(YYLTYPE rule_pos, ListNode *params) {
   ast->value = params;
   ast->size = 0;
   LIST_FOR_EACH(params, { ++ast->size; });
-  return ast_cast(AST_PARAMS, rule_pos, 0, ast);
+  return ast_cast(AST_PARAM_LIST, rule_pos, 0, ast);
 }
 
 void ast_params_free(AST *ast) {

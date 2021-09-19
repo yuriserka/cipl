@@ -12,5 +12,10 @@ typedef struct {
 
 void cursor_position_update(int qtd_line, int qtd_col);
 
+struct YYLTYPE;
+
+Cursor cursor_init_yylloc_begin(struct YYLTYPE loc);
+Cursor cursor_init_yylloc_end(struct YYLTYPE loc);
+
 LineInfo *line_init(int line, char *txt);
 void line_free(LineInfo *l);

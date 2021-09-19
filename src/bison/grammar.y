@@ -40,20 +40,7 @@
         return NULL;
     }
 
-    #define p_error_ctx_info {                                                       \
-        if (p_ctx_name) {                                                            \
-            if (current_context->current_scope) {                                    \
-                CIPL_PRINTF(WHT "%s:" RESET " In function " BBLU "'%s'" RESET ":\n", \
-                            filename, current_context->name);                        \
-            } else {                                                                 \
-                CIPL_PRINTF(WHT "%s:" RESET " At top level:\n", filename);           \
-            }                                                                        \
-            p_ctx_name = false;                                                      \
-        }                                                                            \
-    }
-
     #define show_error_end(__R__, __FMT__, ...) {                  \
-        p_error_ctx_info;                                          \
         Cursor beg = (Cursor){                                     \
             .line=__R__.first_line,                                \
             .col=__R__.last_column                                 \
@@ -73,7 +60,6 @@
     }
 
     #define show_error_range(__R__, __FMT__, ...) {                             \
-        p_error_ctx_info;                                                       \
         Cursor beg = (Cursor){.line=__R__.first_line, .col=__R__.first_column}; \
         Cursor end = (Cursor){.line=__R__.last_line, .col=__R__.last_column};   \
         yyerror(end.line, end.col, NULL);                                       \
@@ -90,7 +76,6 @@
     }
 
     #define show_error(__R__, __FMT__, ...) {                  \
-        p_error_ctx_info;                                      \
         yyerror(__R__.last_line, __R__.last_column, NULL);     \
         LineInfo *li = list_peek(&lines, __R__.last_line - 1); \
         li = li ? li : curr_line_info;                         \
@@ -242,7 +227,7 @@ func_declaration: type id '(' <ast>{
                 show_error(@2, BCYN "'%s'" RESET " redeclared as different kind of symbol\n", $2->name);
                 $$ = NULL;
             } else {
-                $$ = ast_symref_init(@$, declared);
+                $$ = ast_symref_init(@2, declared);
             }
         }
 

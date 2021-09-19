@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "data-structures/ast/ast.h"
 #include "data-structures/context.h"
@@ -27,6 +28,7 @@ extern FILE *yyin;
 extern AST *root;
 extern Context *current_context;
 extern ListNode *contexts;
+extern bool p_ctx_name;
 
 // utils
 

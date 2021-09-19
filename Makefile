@@ -16,7 +16,7 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEP_DIR)/$*.d
 CXX := gcc
 INCLUDES := -I"lib/"
 CXXFLAGS := -std=gnu11
-CFLAGS := $(INCLUDES) -g -Wall -pedantic -Wpedantic -Werror -lm -lfl
+CFLAGS := $(INCLUDES) -g -Wall -pedantic -Wpedantic -Werror -lm -lfl -g3 -ggdb
 filename=
 # $@  Nome da regra. 
 # $<  Nome da primeira dependência 

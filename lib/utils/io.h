@@ -15,8 +15,23 @@
 #define CIPL_PERROR(__FMT__, ...) \
   { CIPL_PRINTF_COLOR(BRED, __FMT__, ##__VA_ARGS__); }
 
+#define SHOULD_PRINT_ERROR_CONTEXT                                           \
+  {                                                                          \
+    if (p_ctx_name) {                                                        \
+      if (current_context->current_scope &&                                  \
+          strcmp(current_context->name, "top level")) {                      \
+        CIPL_PRINTF(WHT "%s:" RESET " In function " BBLU "'%s'" RESET ":\n", \
+                    filename, current_context->name);                        \
+      } else {                                                               \
+        CIPL_PRINTF(WHT "%s:" RESET " At top level:\n", filename);           \
+      }                                                                      \
+      p_ctx_name = false;                                                    \
+    }                                                                        \
+  }
+
 #define CIPL_PERROR_CURSOR(__FMT__, __LINE__, __C__, ...)                  \
   {                                                                        \
+    SHOULD_PRINT_ERROR_CONTEXT;                                            \
     CIPL_PRINTF_COLOR(WHT, "%s:%d:%d: ", filename, __C__.line, __C__.col); \
     CIPL_PRINTF_COLOR(BRED, "error: ");                                    \
     CIPL_PRINTF(__FMT__, ##__VA_ARGS__);                                   \
@@ -32,6 +47,7 @@
 
 #define CIPL_PERROR_CURSOR_RANGE(__FMT__, __LINE__, __B__, __E__, ...)     \
   {                                                                        \
+    SHOULD_PRINT_ERROR_CONTEXT;                                            \
     CIPL_PRINTF_COLOR(WHT, "%s:%d:%d: ", filename, __B__.line, __B__.col); \
     CIPL_PRINTF_COLOR(BRED, "error: ");                                    \
     CIPL_PRINTF(__FMT__, ##__VA_ARGS__);                                   \

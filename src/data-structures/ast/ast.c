@@ -43,7 +43,7 @@ AST *ast_cast(AstTypes type, YYLTYPE rule_pos, int n_children, ...) {
     case AST_USER_FUNC:
       ast->value = AST_INIT_UNION(userfunc, UserFuncAST);
       break;
-    case AST_PARAMS:
+    case AST_PARAM_LIST:
       ast->value = AST_INIT_UNION(params, ParamsAST);
       break;
     case AST_BLOCK_ITEM_LIST:
@@ -101,7 +101,7 @@ void ast_free(AST *ast) {
     case AST_USER_FUNC:
       ast_userfunc_free(ast);
       break;
-    case AST_PARAMS:
+    case AST_PARAM_LIST:
       ast_params_free(ast);
       break;
     case AST_BLOCK_ITEM_LIST:
@@ -154,7 +154,7 @@ SymbolValues ast_eval(AST *ast) {
       return ast_symref_eval(ast);
     case AST_USER_FUNC:
       return ast_userfunc_eval(ast);
-    case AST_PARAMS:
+    case AST_PARAM_LIST:
       return ast_params_eval(ast);
     case AST_BLOCK_ITEM_LIST:
       return ast_blockitems_eval(ast);
@@ -210,7 +210,7 @@ void ast_print(AST *ast) {
     case AST_USER_FUNC:
       ast_userfunc_print(ast);
       break;
-    case AST_PARAMS:
+    case AST_PARAM_LIST:
       ast_params_print(ast);
       break;
     case AST_BLOCK_ITEM_LIST:
@@ -272,7 +272,7 @@ void ast_print_pretty(AST *ast, int depth) {
     case AST_USER_FUNC:
       ast_userfunc_print_pretty(ast, depth);
       break;
-    case AST_PARAMS:
+    case AST_PARAM_LIST:
       ast_params_print_pretty(ast, depth);
       break;
     case AST_BLOCK_ITEM_LIST:

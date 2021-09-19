@@ -56,23 +56,24 @@ SymbolTypes ast_assign_type_check(AST *ast) {
   SymbolTypes lhs_t = ast_validate_types(lhs);
   SymbolTypes rhs_t = ast_validate_types(rhs);
 
-  printf("ASSIGN_T: { LHS_T: %s, RHS_T: %s }\n", symbol_type_from_enum(lhs_t),
-         symbol_type_from_enum(rhs_t));
+  // printf("ASSIGN_T: { LHS_T: %s, RHS_T: %s }\n",
+  // symbol_type_from_enum(lhs_t),
+  //        symbol_type_from_enum(rhs_t));
 
   SymbolTypes max_t = MAX(lhs_t, rhs_t);
 
   if (max_t >= SYM_PTR) {
     if (lhs_t <= SYM_REAL || rhs_t <= SYM_REAL) {
-      Cursor beg = {.line = rhs->rule_pos.first_line,
-                    .col = rhs->rule_pos.first_column};
-      Cursor end = {.line = rhs->rule_pos.last_line,
-                    .col = rhs->rule_pos.last_column};
-      LineInfo *li = list_peek(&lines, beg.line - 1);
-      CIPL_PERROR_CURSOR_RANGE(
-          "incompatible types when assigning to type " BGRN "'%s'" RESET
-          " from type " BGRN "'%s'" RESET "\n",
-          li->text, beg, end, symbol_canonical_type_from_enum(lhs_t),
-          symbol_canonical_type_from_enum(rhs_t));
+      Cursor c = {
+          .col = rhs->rule_pos.first_column -
+                 ((rhs->rule_pos.first_column - lhs->rule_pos.last_column) / 2),
+          .line = ast->rule_pos.last_line};
+      LineInfo *li = list_peek(&lines, c.line - 1);
+      CIPL_PERROR_CURSOR("incompatible types when assigning to type " BGRN
+                         "'%s'" RESET " from type " BGRN "'%s'" RESET "\n",
+                         li->text, c, symbol_canonical_type_from_enum(lhs_t),
+                         symbol_canonical_type_from_enum(rhs_t));
+      ++errors_count;
       return SYM_INVALID;
     }
   }

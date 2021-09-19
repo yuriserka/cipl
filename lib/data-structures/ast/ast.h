@@ -66,24 +66,43 @@ void ast_print_pretty(AST *ast, int depth);
 
 SymbolTypes ast_validate_types(AST *ast);
 
+#define AST_FIND_NODE_FN(__IT__, __TYPE__, __COND__, __FOUND__) \
+  {                                                             \
+    AST *__AST__ = __IT__->data;                                \
+    if (__AST__) {                                              \
+      if (__AST__->type == __TYPE__) {                          \
+        __COND__;                                               \
+        if (__FOUND__) break;                                   \
+      }                                                         \
+      LIST_FOR_EACH(__AST__->children, {                        \
+        AST *__AST__ = __IT__->data;                            \
+        if (__AST__->type == __TYPE__) {                        \
+          __COND__;                                             \
+          if (__FOUND__) break;                                 \
+        }                                                       \
+      });                                                       \
+    }                                                           \
+  }
+
 #define AST_FIND_NODE(__ROOT__, __TYPE__, __COND__, __NOT_FOUND_ACTION__) \
   {                                                                       \
     int __FOUND__ = 0;                                                    \
-    LIST_FOR_EACH(__ROOT__->children, {                                   \
-      AST *__AST__ = __IT__->data;                                        \
-      if (__AST__->type == __TYPE__) {                                    \
-        __COND__;                                                         \
-        if (__FOUND__) break;                                             \
+    if (__ROOT__) {                                                       \
+      if (__ROOT__->type == AST_BLOCK_ITEM_LIST) {                        \
+        LIST_FOR_EACH(__ROOT__->value.blockitems->value, {                \
+          AST_FIND_NODE_FN(__IT__, __TYPE__, __COND__, __FOUND__);        \
+        });                                                               \
+      } else if (__ROOT__->type == AST_PARAM_LIST) {                      \
+        LIST_FOR_EACH(__ROOT__->value.params->value, {                    \
+          AST_FIND_NODE_FN(__IT__, __TYPE__, __COND__, __FOUND__);        \
+        });                                                               \
+      } else {                                                            \
+        LIST_FOR_EACH(__ROOT__->children, {                               \
+          AST_FIND_NODE_FN(__IT__, __TYPE__, __COND__, __FOUND__);        \
+        });                                                               \
       }                                                                   \
-      LIST_FOR_EACH(__AST__->children, {                                  \
-        AST *__AST__ = __IT__->data;                                      \
-        if (__AST__->type == __TYPE__) {                                  \
-          __COND__;                                                       \
-          if (__FOUND__) break;                                           \
-        }                                                                 \
-      });                                                                 \
-    });                                                                   \
-    if (!__FOUND__) {                                                     \
-      __NOT_FOUND_ACTION__;                                               \
+      if (!__FOUND__) {                                                   \
+        __NOT_FOUND_ACTION__;                                             \
+      }                                                                   \
     }                                                                     \
   }

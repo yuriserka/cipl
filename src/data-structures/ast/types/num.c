@@ -66,19 +66,19 @@ void ast_number_print_pretty(AST *ast, int depth) {
 
 SymbolTypes ast_number_type_check(AST *ast) {
   NumberAST *num_ast = ast->value.number;
-  printf("{ NUM_T: %s, ", symbol_type_from_enum(num_ast->sym_type));
-  switch (num_ast->num_type) {
-    case K_REAL:
-      printf("VAL: %lf", num_ast->value.real);
-      break;
-    case K_INTEGER:
-      printf("VAL: %ld", num_ast->value.integer);
-      break;
-    default:
-      printf("VAL: NIL");
-      break;
-  }
-  printf(" }\n");
+  // printf("{ NUM_T: %s, ", symbol_type_from_enum(num_ast->sym_type));
+  // switch (num_ast->num_type) {
+  //   case K_REAL:
+  //     printf("VAL: %lf", num_ast->value.real);
+  //     break;
+  //   case K_INTEGER:
+  //     printf("VAL: %ld", num_ast->value.integer);
+  //     break;
+  //   default:
+  //     printf("VAL: NIL");
+  //     break;
+  // }
+  // printf(" }\n");
   return num_ast->sym_type;
 }
 

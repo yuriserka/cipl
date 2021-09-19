@@ -60,10 +60,8 @@ SymbolTypes ast_funcall_type_check(AST *ast) {
 
   if (params_l->size != args_l->size) {
     ++errors_count;
-    Cursor beg = {.line = declarator->rule_pos.first_line,
-                  .col = declarator->rule_pos.first_column};
-    Cursor end = {.line = declarator->rule_pos.last_line,
-                  .col = declarator->rule_pos.last_column};
+    Cursor beg = cursor_init_yylloc_begin(declarator->rule_pos);
+    Cursor end = cursor_init_yylloc_end(declarator->rule_pos);
     LineInfo *li = list_peek(&lines, beg.line - 1);
     CIPL_PERROR_CURSOR_RANGE(
         "too %s arguments to function " BBLU "'%s'" RESET "\n", li->text, beg,
@@ -72,29 +70,28 @@ SymbolTypes ast_funcall_type_check(AST *ast) {
     return SYM_INVALID;
   }
 
-  LIST_FOR_EACH(args->value.params->value, {
+  LIST_FOR_EACH(args_l->value, {
     AST *arg_symref = __IT__->data;
-    AST *param_decl = list_peek(&func_decl_params->value.params->value, __K__);
+    AST *param_decl = list_peek(&params_l->value, __K__);
 
     SymbolTypes a_t = ast_validate_types(arg_symref);
     SymbolTypes p_t = ast_validate_types(param_decl);
 
+    // printf("FUNCALL_T: { ARG_T: %s, PARAM_T: %s }\n",
+    //        symbol_type_from_enum(a_t), symbol_type_from_enum(p_t));
+
     SymbolTypes max_t = MAX(a_t, p_t);
     if (max_t >= SYM_PTR) {
       if (a_t <= SYM_REAL || p_t <= SYM_REAL) {
-        ++errors_count;
-        Cursor beg;
-        beg.line = arg_symref->rule_pos.first_line;
-        beg.col = arg_symref->rule_pos.first_column;
-        Cursor end;
-        end.line = arg_symref->rule_pos.last_line;
-        end.col = arg_symref->rule_pos.last_column;
+        Cursor beg = cursor_init_yylloc_begin(declarator->rule_pos);
+        Cursor end = cursor_init_yylloc_end(declarator->rule_pos);
         LineInfo *li = list_peek(&lines, beg.line - 1);
         CIPL_PERROR_CURSOR_RANGE(
             "expected " BGRN "'%s'" RESET " but argument is of type " BGRN
             "'%s'" RESET "\n",
             li->text, beg, end, symbol_canonical_type_from_enum(p_t),
             symbol_canonical_type_from_enum(a_t));
+        ++errors_count;
         return SYM_INVALID;
       }
     }

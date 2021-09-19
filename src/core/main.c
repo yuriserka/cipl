@@ -59,7 +59,7 @@ int cipl_main(int argc, char *argv[]) {
                       .last_column = 1,
                   },
                   0);
-  contexts = list_node_init(context_init("global"));
+  contexts = list_node_init(context_init("top level"));
   current_context = list_peek(&contexts, 0);
   curr_line_info = line_init(1, "");
 
@@ -78,21 +78,22 @@ int cipl_main(int argc, char *argv[]) {
     // main_ast_pretty();
     // main_context_pretty();
     got_errors = ast_validate_types(root) == SYM_INVALID;
-  }
 
-  AST_FIND_NODE(
-      root, AST_USER_FUNC,
-      {
-        AST *declarator = list_peek(&__AST__->children, 0);
-        if (!strcmp(declarator->value.symref->symbol->name, "main")) {
-          __FOUND__ = 1;
-        }
-      },
-      {
-        CIPL_PRINTF(BRED "error:" RESET " undefined reference to function " BBLU
-                         "'main'" RESET "\n");
-        ++errors_count;
-      });
+    AST_FIND_NODE(
+        root, AST_USER_FUNC,
+        {
+          AST *declarator = list_peek(&__AST__->children, 0);
+          if (!strcmp(declarator->value.symref->symbol->name, "main")) {
+            __FOUND__ = 1;
+          }
+        },
+        {
+          CIPL_PRINTF(BRED "error:" RESET
+                           " undefined reference to function " BBLU
+                           "'main'" RESET "\n");
+          ++errors_count;
+        });
+  }
 
   if (got_errors || errors_count) {
     CIPL_PRINTF_COLOR(BRED, "\n\n%d error%s" RESET " generated\n", errors_count,

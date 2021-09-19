@@ -38,6 +38,6 @@ void ast_jmp_print_pretty(AST *ast, int depth) {
 SymbolTypes ast_jmp_type_check(AST *ast) {
   AST *stmt = list_peek(&ast->children, 0);
   SymbolTypes ret_t = ast_validate_types(stmt);
-  printf("JMP_T: { EXPR_T: %s }\n", symbol_type_from_enum(ret_t));
+  // printf("JMP_T: { EXPR_T: %s }\n", symbol_type_from_enum(ret_t));
   return ret_t;
 }

@@ -52,38 +52,56 @@ void ast_userfunc_print_pretty(AST *ast, int depth) {
 }
 
 SymbolTypes ast_userfunc_type_check(AST *ast) {
-  SymbolTypes name_t = ast_validate_types(list_peek(&ast->children, 0));
-  AST *statements = list_peek(&ast->children, 2);
-  BlockItemListAST *code_block_l = statements->value.blockitems;
-
-  LIST_FOR_EACH(code_block_l->value, {
-    AST *block_item = __IT__->data;
-    SymbolTypes bi_t = ast_validate_types(block_item);
-    if (block_item->type == AST_JMP) {
-      SymbolTypes max_t = MAX(name_t, bi_t);
-
-      if (max_t >= SYM_PTR) {
-        if (name_t <= SYM_REAL || name_t <= SYM_REAL) {
-          Cursor beg;
-          beg.line = block_item->rule_pos.first_line;
-          beg.col = block_item->rule_pos.first_column;
-          Cursor end;
-          end.line = block_item->rule_pos.first_line;
-          end.col = block_item->rule_pos.last_column;
-          LineInfo *li = list_peek(&lines, beg.line - 1);
-          li = li ? li : curr_line_info;
-          CIPL_PERROR_CURSOR_RANGE(
-              "incompatible types when returning type " BGRN "'%s'" RESET
-              " but " BGRN "'%s'" RESET " was expected\n",
-              li->text, beg, end, symbol_canonical_type_from_enum(bi_t),
-              symbol_canonical_type_from_enum(name_t));
-          return SYM_INVALID;
-        }
-      }
+  AST *declarator = list_peek(&ast->children, 0);
+  LIST_FOR_EACH(contexts, {
+    Context *ctx = __IT__->data;
+    if (!strcmp(ctx->name, declarator->value.symref->symbol->name)) {
+      p_ctx_name = true;
+      current_context = ctx;
+      break;
     }
   });
+  SymbolTypes name_t = ast_validate_types(declarator);
+  AST *statements = list_peek(&ast->children, 2);
 
-  printf("FUNC_T: { FN_T: %s }\n", symbol_type_from_enum(name_t));
+  int qtd_ret = 0;
+  AST_FIND_NODE(
+      statements, AST_JMP,
+      {
+        SymbolTypes bi_t = ast_validate_types(__AST__);
+        SymbolTypes max_t = MAX(name_t, bi_t);
+        if (max_t >= SYM_PTR) {
+          if (name_t <= SYM_REAL || bi_t <= SYM_REAL) {
+            ++errors_count;
+            AST *invalid_expr = list_peek(&__AST__->children, 0);
+            Cursor beg = cursor_init_yylloc_begin(invalid_expr->rule_pos);
+            Cursor end = cursor_init_yylloc_end(invalid_expr->rule_pos);
+            LineInfo *li = list_peek(&lines, beg.line - 1);
+            CIPL_PERROR_CURSOR_RANGE(
+                "incompatible types when returning type " BGRN "'%s'" RESET
+                " but " BGRN "'%s'" RESET " was expected\n",
+                li->text, beg, end, symbol_canonical_type_from_enum(bi_t),
+                symbol_canonical_type_from_enum(name_t));
+          }
+        }
+        ++qtd_ret;
+      },
+      {
+        if (!qtd_ret) {
+          ++errors_count;
+          Cursor beg = cursor_init_yylloc_begin(declarator->rule_pos);
+          Cursor end = cursor_init_yylloc_end(declarator->rule_pos);
+          LineInfo *li = list_peek(&lines, beg.line - 1);
+          CIPL_PERROR_CURSOR_RANGE("control reaches end of non-void function\n",
+                                   li->text, beg, end);
+        }
+      });
 
+  LIST_FOR_EACH(statements->value.blockitems->value, {
+    AST *block_item = __IT__->data;
+    if (block_item->type != AST_JMP) ast_validate_types(block_item);
+  });
+
+  // printf("FUNC_T: { FN_T: %s }\n", symbol_type_from_enum(name_t));
   return name_t;
 }
