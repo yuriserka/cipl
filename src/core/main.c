@@ -80,6 +80,25 @@ int cipl_main(int argc, char *argv[]) {
     got_errors = ast_validate_types(root) == SYM_INVALID;
   }
 
+  AST_FIND_NODE(
+      root, AST_USER_FUNC,
+      {
+        AST *declarator = list_peek(&__AST__->children, 0);
+        if (!strcmp(declarator->value.symref->symbol->name, "main")) {
+          __FOUND__ = 1;
+        }
+      },
+      {
+        CIPL_PRINTF(BRED "error:" RESET " undefined reference to function " BBLU
+                         "'main'" RESET "\n");
+        ++errors_count;
+      });
+
+  if (got_errors || errors_count) {
+    CIPL_PRINTF_COLOR(BRED, "\n\n%d error%s" RESET " generated\n", errors_count,
+                      errors_count > 1 ? "s" : "");
+  }
+
   ast_free(root);
   LIST_FREE(contexts, { context_free(__IT__->data); });
   LIST_FREE(lines, { line_free(__IT__->data); });

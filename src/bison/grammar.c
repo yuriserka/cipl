@@ -4673,7 +4673,7 @@ yyreduce:
         else {
             symbol_update_type((yyvsp[-1].sym), decl_type);
             (yyval.ast) = ast_declaration_init((yyloc), 
-                ast_symref_init((yyloc), context_declare_variable(current_context, (yyvsp[-1].sym)))
+                ast_symref_init((yylsp[-1]), context_declare_variable(current_context, (yyvsp[-1].sym)))
             );
         }
         symbol_free((yyvsp[-1].sym));
@@ -4775,7 +4775,7 @@ yyreduce:
   case 17: /* func_declaration: type id '(' @1 param_list.opt $@2 ')' compound_stmt  */
 #line 254 "src/bison/grammar.y"
                                                               {
-        (yyval.ast) = ast_userfunc_init((yyloc), current_context, (yyvsp[-4].ast), ast_params_init((yyloc), (yyvsp[-3].list)), (yyvsp[0].ast));
+        (yyval.ast) = ast_userfunc_init((yyloc), current_context, (yyvsp[-4].ast), ast_params_init((yylsp[-3]), (yyvsp[-3].list)), (yyvsp[0].ast));
         current_context = previous_context;
         p_ctx_name = true;
     }
@@ -5425,7 +5425,7 @@ yyreduce:
 #line 634 "src/bison/grammar.y"
                                    {
         Symbol *sym = context_search_symbol_scopes(current_context, (yyvsp[-3].sym));
-        AST *params = ast_params_init((yyloc), (yyvsp[-1].list));
+        AST *params = ast_params_init((yylsp[-1]), (yyvsp[-1].list));
         if (!sym) {
             show_error_range((yylsp[-3]), "implicit declaration of function " BBLU "'%s'\n" RESET, (yyvsp[-3].sym)->name);
             (yyval.ast) = NULL;
@@ -5436,7 +5436,7 @@ yyreduce:
                 (yyval.ast) = NULL;
                 ast_free(params);
             } else {
-                (yyval.ast) = ast_funcall_init((yyloc), ast_symref_init((yyloc), sym), params);
+                (yyval.ast) = ast_funcall_init((yyloc), ast_symref_init((yylsp[-3]), sym), params);
             }
         }
         symbol_free((yyvsp[-3].sym));

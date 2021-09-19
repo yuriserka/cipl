@@ -132,7 +132,7 @@ void ast_free(AST *ast) {
       LIST_FREE(ast->children, { ast_free(__IT__->data); });
       break;
     default:
-      printf("AST type: %d free not implemented yet", ast->type);
+      printf("AST type: %d free not implemented yet\n", ast->type);
       break;
   }
   free(ast);
@@ -175,7 +175,7 @@ SymbolValues ast_eval(AST *ast) {
     case AST_PROG:
       return ast_eval(ast->children->data);
     default:
-      printf("AST type: %d eval not implemented yet", ast->type);
+      printf("AST type: %d eval not implemented yet\n", ast->type);
       break;
   }
 
@@ -241,7 +241,7 @@ void ast_print(AST *ast) {
       LIST_FOR_EACH(ast->children, { ast_print(__IT__->data); });
       return;
     default:
-      printf("AST type: %d print not implemented yet", ast->type);
+      printf("AST type: %d print not implemented yet\n", ast->type);
       break;
   }
   printf(", ");
@@ -302,7 +302,7 @@ void ast_print_pretty(AST *ast, int depth) {
                     { ast_print_pretty(__IT__->data, depth + 1); });
       break;
     default:
-      printf("AST type: %d print not implemented yet", ast->type);
+      printf("AST type: %d print not implemented yet\n", ast->type);
       break;
   }
 }
@@ -330,16 +330,14 @@ SymbolTypes ast_validate_types(AST *ast) {
     case AST_FUNC_CALL:
       return ast_funcall_type_check(ast);
     case AST_PROG: {
-      SymbolTypes ret = SYM_INVALID;
+      SymbolTypes ret = SYM_PTR;
       LIST_FOR_EACH(ast->children, {
-        SymbolTypes t;
-        t = ast_validate_types(__IT__->data);
-        if (t != SYM_INVALID) ret = t;
+        ret = ret && ast_validate_types(__IT__->data);
       });
       return ret;
     }
     default:
-      printf("AST type: %d type_check not implemented yet", ast->type);
+      printf("AST type: %d type_check not implemented yet\n", ast->type);
       break;
   }
 

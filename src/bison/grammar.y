@@ -185,7 +185,7 @@ var_declaration: type id ';' {
         else {
             symbol_update_type($2, decl_type);
             $$ = ast_declaration_init(@$, 
-                ast_symref_init(@$, context_declare_variable(current_context, $2))
+                ast_symref_init(@2, context_declare_variable(current_context, $2))
             );
         }
         symbol_free($2);
@@ -252,7 +252,7 @@ func_declaration: type id '(' <ast>{
         symbol_free($2);
         free($1);
     } param_list.opt { is_fn_blck = true; } ')' compound_stmt {
-        $$ = ast_userfunc_init(@$, current_context, $4, ast_params_init(@$, $5), $8);
+        $$ = ast_userfunc_init(@$, current_context, $4, ast_params_init(@5, $5), $8);
         current_context = previous_context;
         p_ctx_name = true;
     }
@@ -633,7 +633,7 @@ unary_ops: EXCLAMATION
 postfix_expr: primary_expr
     | id '(' arg_expr_list.opt ')' {
         Symbol *sym = context_search_symbol_scopes(current_context, $1);
-        AST *params = ast_params_init(@$, $3);
+        AST *params = ast_params_init(@3, $3);
         if (!sym) {
             show_error_range(@1, "implicit declaration of function " BBLU "'%s'\n" RESET, $1->name);
             $$ = NULL;
@@ -644,7 +644,7 @@ postfix_expr: primary_expr
                 $$ = NULL;
                 ast_free(params);
             } else {
-                $$ = ast_funcall_init(@$, ast_symref_init(@$, sym), params);
+                $$ = ast_funcall_init(@$, ast_symref_init(@1, sym), params);
             }
         }
         symbol_free($1);
