@@ -1,0 +1,21 @@
+float m(int i) {
+    i = i * 1.98;
+    return i;
+}
+
+int f(float i) {
+    return i > 5.0 || i <= 10.0;
+}
+
+int main() {
+    int list l;
+    l = NIL;
+
+    int i;
+    float j;
+
+    i = m(j);
+    j = f(i);
+
+    return 0;
+}
