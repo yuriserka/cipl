@@ -18,8 +18,7 @@
 #define SHOULD_PRINT_ERROR_CONTEXT                                           \
   {                                                                          \
     if (p_ctx_name) {                                                        \
-      if (current_context->current_scope &&                                  \
-          strcmp(current_context->name, "top level")) {                      \
+      if (strcmp(current_context->name, "top level")) {                      \
         CIPL_PRINTF(WHT "%s:" RESET " In function " BBLU "'%s'" RESET ":\n", \
                     filename, current_context->name);                        \
       } else {                                                               \

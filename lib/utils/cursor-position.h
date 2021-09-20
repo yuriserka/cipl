@@ -16,6 +16,7 @@ struct YYLTYPE;
 
 Cursor cursor_init_yylloc_begin(struct YYLTYPE loc);
 Cursor cursor_init_yylloc_end(struct YYLTYPE loc);
+Cursor cursor_init_yyloc_between(struct YYLTYPE lhs, struct YYLTYPE rhs);
 
 LineInfo *line_init(int line, char *txt);
 void line_free(LineInfo *l);

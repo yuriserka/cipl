@@ -92,7 +92,7 @@ SymbolTypes ast_userfunc_type_check(AST *ast) {
           Cursor beg = cursor_init_yylloc_begin(declarator->rule_pos);
           Cursor end = cursor_init_yylloc_end(declarator->rule_pos);
           LineInfo *li = list_peek(&lines, beg.line - 1);
-          CIPL_PERROR_CURSOR_RANGE("control reaches end of non-void function\n",
+          CIPL_PERROR_CURSOR_RANGE("missing return at end of function\n",
                                    li->text, beg, end);
         }
       });

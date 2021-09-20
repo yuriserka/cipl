@@ -47,6 +47,12 @@ void ast_binop_print_pretty(AST *ast, int depth) {
   ast_print_pretty(rhs, depth + 1);
 }
 
+static int is_rel(char *op) {
+  const int is_dless = !strcmp(op, "<<");
+  const int is_dgreat = !strcmp(op, ">>");
+  return (*op == '<' || *op == '>' || *op == '!') && !is_dless && !is_dgreat;
+}
+
 SymbolTypes ast_binop_type_check(AST *ast) {
   BinOpAST *binop_ast = ast->value.binop;
   AST *lhs = list_peek(&ast->children, 0), *rhs = list_peek(&ast->children, 1);
@@ -61,7 +67,9 @@ SymbolTypes ast_binop_type_check(AST *ast) {
     case ':':
       break;
     case '<':
-    case '>': {
+    case '>':
+    case '=':
+    case '!': {
       const int is_dless = !strcmp(binop_ast->op, "<<");
       const int is_dgreat = !strcmp(binop_ast->op, ">>");
 
@@ -70,11 +78,8 @@ SymbolTypes ast_binop_type_check(AST *ast) {
       if (is_cmp) {
         if (max_t >= SYM_PTR) {
           if (lhs_t <= SYM_REAL || rhs_t <= SYM_REAL) {
-            Cursor beg = {.col = rhs->rule_pos.first_column -
-                                 ceil((rhs->rule_pos.first_column -
-                                       lhs->rule_pos.last_column) /
-                                      2.0),
-                          .line = ast->rule_pos.last_line};
+            Cursor beg =
+                cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
             Cursor end = {.col = beg.col + 1, .line = beg.line};
             LineInfo *li = list_peek(&lines, beg.line - 1);
             CIPL_PERROR_CURSOR_RANGE("comparison between " BGRN "'%s'" RESET
@@ -83,7 +88,21 @@ SymbolTypes ast_binop_type_check(AST *ast) {
                                      symbol_canonical_type_from_enum(lhs_t),
                                      symbol_canonical_type_from_enum(rhs_t));
             ++errors_count;
-            return SYM_INVALID;
+          }
+        } else if (lhs->type == AST_BIN_OP || rhs->type == AST_BIN_OP) {
+          int show_error = lhs->type == AST_BIN_OP
+                               ? is_rel(lhs->value.binop->op)
+                               : is_rel(rhs->value.binop->op);
+          if (show_error) {
+            Cursor beg =
+                cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
+            Cursor end = {.col = beg.col + 1, .line = beg.line};
+            LineInfo *li = list_peek(&lines, beg.line - 1);
+            CIPL_PERROR_CURSOR_RANGE(
+                "comparisons like ‘X<=Y<=Z’ do not have their mathematical "
+                "meaning\n",
+                li->text, beg, end);
+            ++errors_count;
           }
         }
       } else {
@@ -92,18 +111,21 @@ SymbolTypes ast_binop_type_check(AST *ast) {
     default:
       if (max_t >= SYM_PTR) {
         if (lhs_t <= SYM_REAL || rhs_t <= SYM_REAL) {
-          Cursor c = {
-              .col = rhs->rule_pos.first_column -
-                     ((rhs->rule_pos.first_column - lhs->rule_pos.last_column) /
-                      2),
-              .line = ast->rule_pos.last_line};
+          Cursor c = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
           LineInfo *li = list_peek(&lines, c.line - 1);
           CIPL_PERROR_CURSOR(
               BGRN "'%s'" RESET " used in arithmetic\n", li->text, c,
               symbol_canonical_type_from_enum(lhs_t > SYM_REAL ? lhs_t
                                                                : rhs_t));
           ++errors_count;
-          return SYM_INVALID;
+        }
+      } else if (binop_ast->op[0] == '/' && rhs->type == AST_NUMBER) {
+        long rhs_num_val = rhs->value.number->value.integer;
+        if (!rhs_num_val) {
+          Cursor c = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
+          LineInfo *li = list_peek(&lines, c.line - 1);
+          CIPL_PERROR_CURSOR("division by zero\n", li->text, c);
+          ++errors_count;
         }
       }
   }

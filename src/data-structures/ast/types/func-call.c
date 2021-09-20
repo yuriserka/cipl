@@ -67,14 +67,13 @@ SymbolTypes ast_funcall_type_check(AST *ast) {
         "too %s arguments to function " BBLU "'%s'" RESET "\n", li->text, beg,
         end, args_l->size > params_l->size ? "many" : "few",
         declarator->value.symref->symbol->name);
-    return SYM_INVALID;
   }
 
   LIST_FOR_EACH(args_l->value, {
-    AST *arg_symref = __IT__->data;
+    AST *arg = __IT__->data;
     AST *param_decl = list_peek(&params_l->value, __K__);
 
-    SymbolTypes a_t = ast_validate_types(arg_symref);
+    SymbolTypes a_t = ast_validate_types(arg);
     SymbolTypes p_t = ast_validate_types(param_decl);
 
     // printf("FUNCALL_T: { ARG_T: %s, PARAM_T: %s }\n",
@@ -83,8 +82,8 @@ SymbolTypes ast_funcall_type_check(AST *ast) {
     SymbolTypes max_t = MAX(a_t, p_t);
     if (max_t >= SYM_PTR) {
       if (a_t <= SYM_REAL || p_t <= SYM_REAL) {
-        Cursor beg = cursor_init_yylloc_begin(declarator->rule_pos);
-        Cursor end = cursor_init_yylloc_end(declarator->rule_pos);
+        Cursor beg = cursor_init_yylloc_begin(arg->rule_pos);
+        Cursor end = cursor_init_yylloc_end(arg->rule_pos);
         LineInfo *li = list_peek(&lines, beg.line - 1);
         CIPL_PERROR_CURSOR_RANGE(
             "expected " BGRN "'%s'" RESET " but argument is of type " BGRN
@@ -92,7 +91,6 @@ SymbolTypes ast_funcall_type_check(AST *ast) {
             li->text, beg, end, symbol_canonical_type_from_enum(p_t),
             symbol_canonical_type_from_enum(a_t));
         ++errors_count;
-        return SYM_INVALID;
       }
     }
   });

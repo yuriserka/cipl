@@ -1,5 +1,6 @@
 #include "utils/cursor-position.h"
 
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -19,6 +20,12 @@ Cursor cursor_init_yylloc_begin(YYLTYPE loc) {
 
 Cursor cursor_init_yylloc_end(YYLTYPE loc) {
   return (Cursor){.line = loc.last_line, .col = loc.last_column};
+}
+
+Cursor cursor_init_yyloc_between(struct YYLTYPE lhs, struct YYLTYPE rhs) {
+  return (Cursor){.col = rhs.first_column -
+                         ceil((rhs.first_column - lhs.last_column) / 2.0),
+                  .line = lhs.last_line};
 }
 
 LineInfo *line_init(int l, char *txt) {

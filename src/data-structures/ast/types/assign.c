@@ -64,17 +64,13 @@ SymbolTypes ast_assign_type_check(AST *ast) {
 
   if (max_t >= SYM_PTR) {
     if (lhs_t <= SYM_REAL || rhs_t <= SYM_REAL) {
-      Cursor c = {
-          .col = rhs->rule_pos.first_column -
-                 ((rhs->rule_pos.first_column - lhs->rule_pos.last_column) / 2),
-          .line = ast->rule_pos.last_line};
+      Cursor c = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
       LineInfo *li = list_peek(&lines, c.line - 1);
       CIPL_PERROR_CURSOR("incompatible types when assigning to type " BGRN
                          "'%s'" RESET " from type " BGRN "'%s'" RESET "\n",
                          li->text, c, symbol_canonical_type_from_enum(lhs_t),
                          symbol_canonical_type_from_enum(rhs_t));
       ++errors_count;
-      return SYM_INVALID;
     }
   }
 
