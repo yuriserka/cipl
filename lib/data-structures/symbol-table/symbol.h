@@ -55,3 +55,11 @@ char *symbol_canonical_type_from_enum(SymbolTypes type);
 
 void symbol_update_value(Symbol *sym, int mArgs, ...);
 void symbol_init_value(Symbol *sym);
+
+bool can_arith(SymbolTypes lhs, SymbolTypes rhs);
+bool can_compare(SymbolTypes lhs, SymbolTypes rhs);
+bool can_assign(SymbolTypes lhs, SymbolTypes rhs);
+bool can_mapfil_list(SymbolTypes lhs, SymbolTypes rhs);
+
+struct cipl_ast;
+char *symbol_canonical_type_function(struct cipl_ast *func_declarator);

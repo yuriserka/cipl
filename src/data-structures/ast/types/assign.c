@@ -44,35 +44,37 @@ void ast_assign_print_pretty(AST *ast, int depth) {
   ast_print_pretty(rhs, depth + 1);
 }
 
+static void handle_lvalue_required() {
+  CIPL_PRINTF_COLOR(BRED, "lvalue required as left operand of assignment");
+  ++errors_count;
+}
+
+static void handle_mismatch_assign(AST *lhs, AST *rhs, SymbolTypes lhs_t,
+                                   SymbolTypes rhs_t) {
+  Cursor c = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
+  LineInfo *li = list_peek(&lines, c.line - 1);
+  CIPL_PERROR_CURSOR("incompatible types when assigning to type " BGRN
+                     "'%s'" RESET " from type " BGRN "'%s'" RESET "\n",
+                     li->text, c, symbol_canonical_type_from_enum(lhs_t),
+                     symbol_canonical_type_from_enum(rhs_t));
+  ++errors_count;
+}
+
 SymbolTypes ast_assign_type_check(AST *ast) {
   AST *lhs = list_peek(&ast->children, 0);
   AST *rhs = list_peek(&ast->children, 1);
 
   if (lhs->type != AST_SYM_REF) {
-    CIPL_PRINTF_COLOR(BRED, "lvalue required as left operand of assignment");
+    handle_lvalue_required();
     return SYM_INVALID;
   }
 
   SymbolTypes lhs_t = ast_validate_types(lhs);
   SymbolTypes rhs_t = ast_validate_types(rhs);
 
-  // printf("ASSIGN_T: { LHS_T: %s, RHS_T: %s }\n",
-  // symbol_type_from_enum(lhs_t),
-  //        symbol_type_from_enum(rhs_t));
-
-  SymbolTypes max_t = MAX(lhs_t, rhs_t);
-
-  if (max_t >= SYM_PTR) {
-    if (lhs_t <= SYM_REAL || rhs_t <= SYM_REAL) {
-      Cursor c = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
-      LineInfo *li = list_peek(&lines, c.line - 1);
-      CIPL_PERROR_CURSOR("incompatible types when assigning to type " BGRN
-                         "'%s'" RESET " from type " BGRN "'%s'" RESET "\n",
-                         li->text, c, symbol_canonical_type_from_enum(lhs_t),
-                         symbol_canonical_type_from_enum(rhs_t));
-      ++errors_count;
-    }
+  if (!can_assign(lhs_t, rhs_t)) {
+    handle_mismatch_assign(lhs, rhs, lhs_t, rhs_t);
   }
 
-  return max_t;
+  return MAX(lhs_t, rhs_t);
 }

@@ -39,6 +39,31 @@ void ast_funcall_print_pretty(AST *ast, int depth) {
   ast_print_pretty(args, depth + 1);
 }
 
+static void handle_mismatch_arg_type(AST *arg, SymbolTypes arg_t,
+                                     SymbolTypes param_t) {
+  Cursor beg = cursor_init_yylloc_begin(arg->rule_pos);
+  Cursor end = cursor_init_yylloc_end(arg->rule_pos);
+  LineInfo *li = list_peek(&lines, beg.line - 1);
+  CIPL_PERROR_CURSOR_RANGE("expected " BGRN "'%s'" RESET
+                           " but argument is of type " BGRN "'%s'" RESET "\n",
+                           li->text, beg, end,
+                           symbol_canonical_type_from_enum(param_t),
+                           symbol_canonical_type_from_enum(arg_t));
+  ++errors_count;
+}
+
+static void handle_mismatch_number_of_args(AST *fn_declarator, int args_size,
+                                           int params_size) {
+  Cursor beg = cursor_init_yylloc_begin(fn_declarator->rule_pos);
+  Cursor end = cursor_init_yylloc_end(fn_declarator->rule_pos);
+  LineInfo *li = list_peek(&lines, beg.line - 1);
+  CIPL_PERROR_CURSOR_RANGE(
+      "too %s arguments to function " BBLU "'%s'" RESET "\n", li->text, beg,
+      end, args_size > params_size ? "many" : "few",
+      fn_declarator->value.symref->symbol->name);
+  ++errors_count;
+}
+
 SymbolTypes ast_funcall_type_check(AST *ast) {
   AST *declarator = list_peek(&ast->children, 0);
   AST *args = list_peek(&ast->children, 1);
@@ -59,14 +84,7 @@ SymbolTypes ast_funcall_type_check(AST *ast) {
   ParamsAST *params_l = func_decl_params->value.params;
 
   if (params_l->size != args_l->size) {
-    ++errors_count;
-    Cursor beg = cursor_init_yylloc_begin(declarator->rule_pos);
-    Cursor end = cursor_init_yylloc_end(declarator->rule_pos);
-    LineInfo *li = list_peek(&lines, beg.line - 1);
-    CIPL_PERROR_CURSOR_RANGE(
-        "too %s arguments to function " BBLU "'%s'" RESET "\n", li->text, beg,
-        end, args_l->size > params_l->size ? "many" : "few",
-        declarator->value.symref->symbol->name);
+    handle_mismatch_number_of_args(declarator, args_l->size, params_l->size);
   }
 
   LIST_FOR_EACH(args_l->value, {
@@ -79,19 +97,8 @@ SymbolTypes ast_funcall_type_check(AST *ast) {
     // printf("FUNCALL_T: { ARG_T: %s, PARAM_T: %s }\n",
     //        symbol_type_from_enum(a_t), symbol_type_from_enum(p_t));
 
-    SymbolTypes max_t = MAX(a_t, p_t);
-    if (max_t >= SYM_PTR) {
-      if (a_t <= SYM_REAL || p_t <= SYM_REAL) {
-        Cursor beg = cursor_init_yylloc_begin(arg->rule_pos);
-        Cursor end = cursor_init_yylloc_end(arg->rule_pos);
-        LineInfo *li = list_peek(&lines, beg.line - 1);
-        CIPL_PERROR_CURSOR_RANGE(
-            "expected " BGRN "'%s'" RESET " but argument is of type " BGRN
-            "'%s'" RESET "\n",
-            li->text, beg, end, symbol_canonical_type_from_enum(p_t),
-            symbol_canonical_type_from_enum(a_t));
-        ++errors_count;
-      }
+    if (!can_assign(p_t, a_t)) {
+      handle_mismatch_arg_type(arg, a_t, p_t);
     }
   });
 

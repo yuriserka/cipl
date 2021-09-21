@@ -47,10 +47,150 @@ void ast_binop_print_pretty(AST *ast, int depth) {
   ast_print_pretty(rhs, depth + 1);
 }
 
-static int is_rel(char *op) {
+static bool is_relop(char *op) {
   const int is_dless = !strcmp(op, "<<");
   const int is_dgreat = !strcmp(op, ">>");
   return (*op == '<' || *op == '>' || *op == '!') && !is_dless && !is_dgreat;
+}
+
+static void handle_mismatch_comparison(AST *lhs, AST *rhs, SymbolTypes lhs_t,
+                                       SymbolTypes rhs_t) {
+  Cursor beg = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
+  Cursor end = {.col = beg.col + 1, .line = beg.line};
+  LineInfo *li = list_peek(&lines, beg.line - 1);
+  if (!can_compare(lhs_t, rhs_t)) {
+    CIPL_PERROR_CURSOR_RANGE(
+        "comparison between " BGRN "'%s'" RESET " and " BGRN "'%s'" RESET "\n",
+        li->text, beg, end, symbol_canonical_type_from_enum(lhs_t),
+        symbol_canonical_type_from_enum(rhs_t));
+    ++errors_count;
+  }
+}
+
+static void handle_comparison_chain(AST *lhs, AST *rhs, SymbolTypes lhs_t,
+                                    SymbolTypes rhs_t) {
+  int show_error = lhs->type == AST_BIN_OP ? is_relop(lhs->value.binop->op)
+                                           : is_relop(rhs->value.binop->op);
+  if (show_error) {
+    Cursor beg = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
+    Cursor end = {.col = beg.col + 1, .line = beg.line};
+    LineInfo *li = list_peek(&lines, beg.line - 1);
+    CIPL_PERROR_CURSOR_RANGE(
+        "comparisons like ‘X<=Y<=Z’ do not have their mathematical "
+        "meaning\n",
+        li->text, beg, end);
+    ++errors_count;
+  }
+}
+
+static void handle_mismatch_arithmetic(AST *lhs, AST *rhs, SymbolTypes lhs_t,
+                                       SymbolTypes rhs_t, char *op) {
+  Cursor c = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
+  LineInfo *li = list_peek(&lines, c.line - 1);
+  if (lhs_t < SYM_PTR || rhs_t < SYM_PTR) {
+    CIPL_PERROR_CURSOR(
+        BGRN "'%s'" RESET " used in arithmetic\n", li->text, c,
+        symbol_canonical_type_from_enum(lhs_t > SYM_REAL ? lhs_t : rhs_t));
+    ++errors_count;
+  } else {
+    CIPL_PERROR_CURSOR("invalid operands to binary " WHT "'%s'" RESET
+                       " (have " BGRN "'%s'" RESET " and " BGRN "'%s'" RESET
+                       ")\n",
+                       li->text, c, op, symbol_canonical_type_from_enum(lhs_t),
+                       symbol_canonical_type_from_enum(rhs_t));
+    ++errors_count;
+  }
+}
+
+static void handle_div_by_zero(AST *lhs, AST *rhs, SymbolTypes lhs_t,
+                               SymbolTypes rhs_t) {
+  NumberAST *rhs_num_val = rhs->value.number;
+  if (rhs_num_val->sym_type == SYM_INT && !rhs_num_val->value.integer) {
+    Cursor c = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
+    LineInfo *li = list_peek(&lines, c.line - 1);
+    CIPL_PERROR_CURSOR("division by zero\n", li->text, c);
+    ++errors_count;
+  }
+}
+
+static void handle_mapfil_mismatch_params(AST *fn, SymbolTypes list_type) {
+  Cursor beg = cursor_init_yylloc_begin(fn->rule_pos);
+  Cursor end = cursor_init_yylloc_end(fn->rule_pos);
+  LineInfo *li = list_peek(&lines, beg.line - 1);
+  AST *func_decl;
+  AST_FIND_NODE(root, AST_USER_FUNC,
+                {
+                  AST *key = list_peek(&__AST__->children, 0);
+                  if (!strcmp(key->value.symref->symbol->name,
+                              fn->value.symref->symbol->name)) {
+                    func_decl = __AST__;
+                    __FOUND__ = 1;
+                  }
+                },
+                {});
+  AST *func_decl_params = list_peek(&func_decl->children, 1);
+  ParamsAST *params_l = func_decl_params->value.params;
+  if (params_l->size > 1) {
+    CIPL_PERROR_CURSOR_RANGE(
+        "function " BBLU "'%s'" RESET " should have arity 1\n", li->text, beg,
+        end, fn->value.symref->symbol->name);
+    ++errors_count;
+  }
+
+  if (list_type > SYM_PTR) {
+    SymbolTypes param_t = ast_validate_types(params_l->value->data);
+    if (!can_assign(param_t, list_type - SYM_PTR)) {
+      CIPL_PERROR_CURSOR_RANGE(
+          "expected " BGRN "'%s'" RESET " as argument but list is of type " BGRN
+          "'%s'" RESET "\n",
+          li->text, beg, end, symbol_canonical_type_from_enum(param_t),
+          symbol_canonical_type_from_enum(list_type - SYM_PTR));
+      ++errors_count;
+    }
+  }
+}
+
+static void handle_mismatch_mapfil(AST *lhs, AST *rhs, SymbolTypes lhs_t,
+                                   SymbolTypes rhs_t, char *op) {
+  Cursor beg = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
+  Cursor end = {.col = beg.col + 1, .line = beg.line};
+  LineInfo *li = list_peek(&lines, beg.line - 1);
+  char tmp[1024] = "";
+
+  if (lhs->type == AST_SYM_REF && lhs->value.symref->symbol->is_fn) {
+    handle_mapfil_mismatch_params(lhs, rhs_t);
+  }
+
+  if (lhs->type != AST_SYM_REF || rhs->type != AST_SYM_REF) {
+    if (lhs->type == AST_SYM_REF && lhs->value.symref->symbol->is_fn) {
+      char *func_str = symbol_canonical_type_function(lhs);
+      sprintf(tmp, "%s", func_str);
+      free(func_str);
+    } else {
+      sprintf(tmp, "%s", symbol_canonical_type_from_enum(lhs_t));
+    }
+    CIPL_PERROR_CURSOR_RANGE(
+        "invalid operands to binary " WHT "'%s'" RESET " (have " BGRN
+        "'%s'" RESET " and " BGRN "'%s'" RESET ")\n",
+        li->text, beg, end, op, tmp, symbol_canonical_type_from_enum(rhs_t));
+    ++errors_count;
+  } else if (lhs->type == AST_SYM_REF || rhs->type == AST_SYM_REF) {
+    if (!lhs->value.symref->symbol->is_fn ||
+        ast_validate_types(rhs) < SYM_PTR) {
+      if (lhs->value.symref->symbol->is_fn) {
+        char *func_str = symbol_canonical_type_function(lhs);
+        sprintf(tmp, "%s", func_str);
+        free(func_str);
+      } else {
+        sprintf(tmp, "%s", symbol_canonical_type_from_enum(lhs_t));
+      }
+      CIPL_PERROR_CURSOR_RANGE(
+          "invalid operands to binary " WHT "'%s'" RESET " (have " BGRN
+          "'%s'" RESET " and " BGRN "'%s'" RESET ")\n",
+          li->text, beg, end, op, tmp, symbol_canonical_type_from_enum(rhs_t));
+      ++errors_count;
+    }
+  }
 }
 
 SymbolTypes ast_binop_type_check(AST *ast) {
@@ -61,7 +201,6 @@ SymbolTypes ast_binop_type_check(AST *ast) {
 
   // printf("BINOP_T: { LHS_T: %s, RHS_T: %s }\n", symbol_type_from_enum(lhs_t),
   //        symbol_type_from_enum(rhs_t));
-  SymbolTypes max_t = MAX(lhs_t, rhs_t);
 
   switch (binop_ast->op[0]) {
     case ':':
@@ -70,65 +209,27 @@ SymbolTypes ast_binop_type_check(AST *ast) {
     case '>':
     case '=':
     case '!': {
-      const int is_dless = !strcmp(binop_ast->op, "<<");
-      const int is_dgreat = !strcmp(binop_ast->op, ">>");
-
-      const int is_cmp = !is_dless && !is_dgreat;
-
-      if (is_cmp) {
-        if (max_t >= SYM_PTR) {
-          if (lhs_t <= SYM_REAL || rhs_t <= SYM_REAL) {
-            Cursor beg =
-                cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
-            Cursor end = {.col = beg.col + 1, .line = beg.line};
-            LineInfo *li = list_peek(&lines, beg.line - 1);
-            CIPL_PERROR_CURSOR_RANGE("comparison between " BGRN "'%s'" RESET
-                                     " and " BGRN "'%s'" RESET "\n",
-                                     li->text, beg, end,
-                                     symbol_canonical_type_from_enum(lhs_t),
-                                     symbol_canonical_type_from_enum(rhs_t));
-            ++errors_count;
-          }
+      if (is_relop(binop_ast->op)) {
+        if (!can_compare(lhs_t, rhs_t)) {
+          handle_mismatch_comparison(lhs, rhs, lhs_t, rhs_t);
         } else if (lhs->type == AST_BIN_OP || rhs->type == AST_BIN_OP) {
-          int show_error = lhs->type == AST_BIN_OP
-                               ? is_rel(lhs->value.binop->op)
-                               : is_rel(rhs->value.binop->op);
-          if (show_error) {
-            Cursor beg =
-                cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
-            Cursor end = {.col = beg.col + 1, .line = beg.line};
-            LineInfo *li = list_peek(&lines, beg.line - 1);
-            CIPL_PERROR_CURSOR_RANGE(
-                "comparisons like ‘X<=Y<=Z’ do not have their mathematical "
-                "meaning\n",
-                li->text, beg, end);
-            ++errors_count;
-          }
+          handle_comparison_chain(lhs, rhs, lhs_t, rhs_t);
         }
+        return SYM_INT;
       } else {
+        handle_mismatch_mapfil(lhs, rhs, lhs_t, rhs_t, binop_ast->op);
+        return rhs_t > SYM_PTR ? rhs_t : SYM_PTR;
       }
     } break;
-    default:
-      if (max_t >= SYM_PTR) {
-        if (lhs_t <= SYM_REAL || rhs_t <= SYM_REAL) {
-          Cursor c = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
-          LineInfo *li = list_peek(&lines, c.line - 1);
-          CIPL_PERROR_CURSOR(
-              BGRN "'%s'" RESET " used in arithmetic\n", li->text, c,
-              symbol_canonical_type_from_enum(lhs_t > SYM_REAL ? lhs_t
-                                                               : rhs_t));
-          ++errors_count;
-        }
-      } else if (binop_ast->op[0] == '/' && rhs->type == AST_NUMBER) {
-        long rhs_num_val = rhs->value.number->value.integer;
-        if (!rhs_num_val) {
-          Cursor c = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
-          LineInfo *li = list_peek(&lines, c.line - 1);
-          CIPL_PERROR_CURSOR("division by zero\n", li->text, c);
-          ++errors_count;
-        }
+    default: {
+      if (!can_arith(lhs_t, rhs_t)) {
+        handle_mismatch_arithmetic(lhs, rhs, lhs_t, rhs_t, binop_ast->op);
+      } else if (*binop_ast->op == '/' && rhs->type == AST_NUMBER) {
+        handle_div_by_zero(lhs, rhs, lhs_t, rhs_t);
       }
+    }
   }
 
+  SymbolTypes max_t = MAX(lhs_t, rhs_t);
   return max_t;
 }

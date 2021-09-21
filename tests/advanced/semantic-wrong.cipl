@@ -23,6 +23,18 @@ int nil_rel(float x) {
     return x;
 }
 
+int list_in_arith_op(int list l) {
+    l = l + NIL;
+    l = 3 != 2;
+    l = NIL <= 2;
+    l = 3 < NIL;
+    l = 3 == l;
+    l = l >= 2;
+    int x;
+    x = l == NIL;
+    return x;
+}
+
 int many_or_few_args_fn_call(int i) {
     return many_or_few_args_fn_call(i);
     return many_or_few_args_fn_call(i, i);
@@ -50,6 +62,32 @@ int err_assign() {
     return 0;
 }
 
-int main() {
+int map(int i, int j) {
+    return i + 1;
+}
+
+int filter(float i) {
+    return i < 10;
+}
+
+int invalid_filter(int list l) {
+    return 0;
+}
+
+int list_mapfil() {
+    int list l;
+    int x;
+    x = 10;
+    l = x >> l;
+    l = map >> x;
+    l = map >> l;
+    l = filter >> l;
+    l = invalid_filter >> l;
+    x = filter << l;
+
+    return x;
+}
+
+int no_main() {
     return 0;
 }

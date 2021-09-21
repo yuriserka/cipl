@@ -143,6 +143,33 @@ char *symbol_type_from_enum(SymbolTypes type) {
   }
 }
 
+char *symbol_canonical_type_function(AST *func_declarator) {
+  AST *func_decl;
+  AST_FIND_NODE(root, AST_USER_FUNC,
+                {
+                  AST *key = list_peek(&__AST__->children, 0);
+                  if (!strcmp(key->value.symref->symbol->name,
+                              func_declarator->value.symref->symbol->name)) {
+                    func_decl = __AST__;
+                    __FOUND__ = 1;
+                  }
+                },
+                {});
+  AST *func_decl_params = list_peek(&func_decl->children, 1);
+  ParamsAST *params_l = func_decl_params->value.params;
+  SymbolTypes fun_t = ast_validate_types(func_declarator);
+  char *tmp = calloc(1024, sizeof(char));
+  sprintf(tmp, "%s (", symbol_canonical_type_from_enum(fun_t));
+  LIST_FOR_EACH(params_l->value, {
+    AST *param = __IT__->data;
+    SymbolTypes p_t = ast_validate_types(param);
+    strcat(tmp, symbol_canonical_type_from_enum(p_t));
+    strcat(tmp, __IT_NXT__ ? ", " : "");
+  });
+  strcat(tmp, ")");
+  return tmp;
+}
+
 char *symbol_canonical_type_from_enum(SymbolTypes type) {
   switch (type) {
     case SYM_INT:
@@ -204,4 +231,37 @@ void symbol_update_value(Symbol *sym, int mArgs, ...) {
   }
 
   va_end(ptr);
+}
+
+bool can_assign(SymbolTypes lhs, SymbolTypes rhs) {
+  SymbolTypes max_t = MAX(lhs, rhs);
+  if (max_t >= SYM_PTR) {
+    if (lhs < SYM_PTR || rhs < SYM_PTR) {
+      return false;
+    }
+    //  else {
+    //   return (rhs == SYM_PTR) || (lhs == rhs);
+    // }
+  }
+  return true;
+}
+
+bool can_arith(SymbolTypes lhs, SymbolTypes rhs) {
+  return MAX(lhs, rhs) < SYM_PTR;
+}
+
+bool can_compare(SymbolTypes lhs, SymbolTypes rhs) {
+  SymbolTypes max_t = MAX(lhs, rhs);
+  if (max_t >= SYM_PTR) {
+    if (lhs < SYM_PTR || rhs < SYM_PTR) {
+      return false;
+    } else {
+      return (rhs == SYM_PTR) || (lhs == rhs);
+    }
+  }
+  return true;
+}
+
+bool can_mapfil_list(SymbolTypes lhs, SymbolTypes rhs) {
+  return MAX(lhs, rhs) > SYM_PTR;
 }

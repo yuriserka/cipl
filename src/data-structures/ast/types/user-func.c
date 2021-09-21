@@ -51,6 +51,31 @@ void ast_userfunc_print_pretty(AST *ast, int depth) {
   ast_print_pretty(statements, depth + 1);
 }
 
+static void handle_mismatch_return_type(AST *block_item, SymbolTypes func_t) {
+  SymbolTypes bi_t = ast_validate_types(block_item);
+  if (!can_assign(func_t, bi_t)) {
+    ++errors_count;
+    AST *invalid_expr = list_peek(&block_item->children, 0);
+    Cursor beg = cursor_init_yylloc_begin(invalid_expr->rule_pos);
+    Cursor end = cursor_init_yylloc_end(invalid_expr->rule_pos);
+    LineInfo *li = list_peek(&lines, beg.line - 1);
+    CIPL_PERROR_CURSOR_RANGE(
+        "incompatible types when returning type " BGRN "'%s'" RESET " but " BGRN
+        "'%s'" RESET " was expected\n",
+        li->text, beg, end, symbol_canonical_type_from_enum(bi_t),
+        symbol_canonical_type_from_enum(func_t));
+  }
+}
+
+static void handle_no_return(AST *func_declarator) {
+  Cursor beg = cursor_init_yylloc_begin(func_declarator->rule_pos);
+  Cursor end = cursor_init_yylloc_end(func_declarator->rule_pos);
+  LineInfo *li = list_peek(&lines, beg.line - 1);
+  CIPL_PERROR_CURSOR_RANGE("missing return at end of function\n", li->text, beg,
+                           end);
+  ++errors_count;
+}
+
 SymbolTypes ast_userfunc_type_check(AST *ast) {
   AST *declarator = list_peek(&ast->children, 0);
   LIST_FOR_EACH(contexts, {
@@ -68,32 +93,12 @@ SymbolTypes ast_userfunc_type_check(AST *ast) {
   AST_FIND_NODE(
       statements, AST_JMP,
       {
-        SymbolTypes bi_t = ast_validate_types(__AST__);
-        SymbolTypes max_t = MAX(name_t, bi_t);
-        if (max_t >= SYM_PTR) {
-          if (name_t <= SYM_REAL || bi_t <= SYM_REAL) {
-            ++errors_count;
-            AST *invalid_expr = list_peek(&__AST__->children, 0);
-            Cursor beg = cursor_init_yylloc_begin(invalid_expr->rule_pos);
-            Cursor end = cursor_init_yylloc_end(invalid_expr->rule_pos);
-            LineInfo *li = list_peek(&lines, beg.line - 1);
-            CIPL_PERROR_CURSOR_RANGE(
-                "incompatible types when returning type " BGRN "'%s'" RESET
-                " but " BGRN "'%s'" RESET " was expected\n",
-                li->text, beg, end, symbol_canonical_type_from_enum(bi_t),
-                symbol_canonical_type_from_enum(name_t));
-          }
-        }
+        handle_mismatch_return_type(__AST__, name_t);
         ++qtd_ret;
       },
       {
         if (!qtd_ret) {
-          ++errors_count;
-          Cursor beg = cursor_init_yylloc_begin(declarator->rule_pos);
-          Cursor end = cursor_init_yylloc_end(declarator->rule_pos);
-          LineInfo *li = list_peek(&lines, beg.line - 1);
-          CIPL_PERROR_CURSOR_RANGE("missing return at end of function\n",
-                                   li->text, beg, end);
+          handle_no_return(declarator);
         }
       });
 
