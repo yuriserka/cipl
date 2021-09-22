@@ -33,6 +33,43 @@ void main_context_pretty() {
   LIST_FOR_EACH(contexts, { context_print_pretty(__IT__->data); });
 }
 
+static int cipl_syntax() {
+  int got_errors = yyparse(0, 0) || errors_count;
+
+  if (got_errors) {
+    CIPL_PRINTF_COLOR(BRED, "\n\n%d error%s", errors_count,
+                      errors_count > 1 ? "s" : "");
+    CIPL_PRINTF(" generated.\n\tIs not possible to print the AST.\n");
+  }
+
+  return !got_errors;
+}
+
+static int cipl_semantic() {
+  int got_errors = ast_validate_types(root) == SYM_INVALID;
+
+  AST_FIND_NODE(
+      root, AST_USER_FUNC,
+      {
+        AST *declarator = list_peek(&__AST__->children, 0);
+        if (!strcmp(declarator->value.symref->symbol->name, "main")) {
+          __FOUND__ = 1;
+        }
+      },
+      {
+        CIPL_PRINTF(BRED "error:" RESET " undefined reference to function " BBLU
+                         "'main'" RESET "\n");
+        ++errors_count;
+      });
+
+  if (got_errors || errors_count) {
+    CIPL_PRINTF_COLOR(BRED, "\n\n%d error%s" RESET " generated\n", errors_count,
+                      errors_count > 1 ? "s" : "");
+  }
+
+  return !got_errors;
+}
+
 int cipl_main(int argc, char *argv[]) {
   if (argc < 2) {
     CIPL_PRINTF_COLOR(RED, "error: ");
@@ -63,47 +100,19 @@ int cipl_main(int argc, char *argv[]) {
   current_context = list_peek(&contexts, 0);
   curr_line_info = line_init(1, "");
 
-  int got_errors = yyparse(0, 0) || errors_count;
-
-  if (got_errors) {
-    CIPL_PRINTF_COLOR(BRED, "\n\n%d error%s", errors_count,
-                      errors_count > 1 ? "s" : "");
-    CIPL_PRINTF(" generated.\n\tIs not possible to print the AST.\n");
+  int succeeded = cipl_syntax();
+  if (succeeded) {
+    // main_ast_pretty();
+    // main_context_pretty();
   }
+  succeeded = succeeded && cipl_semantic();
 
   fclose(yyin);
   yylex_destroy();
-
-  if (!got_errors) {
-    // main_ast_pretty();
-    // main_context_pretty();
-    got_errors = ast_validate_types(root) == SYM_INVALID;
-
-    AST_FIND_NODE(
-        root, AST_USER_FUNC,
-        {
-          AST *declarator = list_peek(&__AST__->children, 0);
-          if (!strcmp(declarator->value.symref->symbol->name, "main")) {
-            __FOUND__ = 1;
-          }
-        },
-        {
-          CIPL_PRINTF(BRED "error:" RESET
-                           " undefined reference to function " BBLU
-                           "'main'" RESET "\n");
-          ++errors_count;
-        });
-  }
-
-  if (got_errors || errors_count) {
-    CIPL_PRINTF_COLOR(BRED, "\n\n%d error%s" RESET " generated\n", errors_count,
-                      errors_count > 1 ? "s" : "");
-  }
-
   ast_free(root);
   LIST_FREE(contexts, { context_free(__IT__->data); });
   LIST_FREE(lines, { line_free(__IT__->data); });
   line_free(curr_line_info);
 
-  return got_errors;
+  return succeeded;
 }

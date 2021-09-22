@@ -238,10 +238,9 @@ bool can_assign(SymbolTypes lhs, SymbolTypes rhs) {
   if (max_t >= SYM_PTR) {
     if (lhs < SYM_PTR || rhs < SYM_PTR) {
       return false;
+    } else {
+      return (rhs == SYM_PTR) || (lhs == rhs);
     }
-    //  else {
-    //   return (rhs == SYM_PTR) || (lhs == rhs);
-    // }
   }
   return true;
 }

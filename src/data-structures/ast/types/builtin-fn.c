@@ -59,3 +59,37 @@ const char *builtinfn_str_from_type(BuiltInFuncTypes type) {
       return "write";
   }
 }
+
+// static void handle_read_args_list(AST *arg, SymbolTypes type) {
+//   Cursor beg = cursor_init_yylloc_begin(arg->rule_pos);
+//   Cursor end = cursor_init_yylloc_end(arg->rule_pos);
+//   LineInfo *li = list_peek(&lines, beg.line - 1);
+//   CIPL_PERROR_CURSOR_RANGE("expected " BGRN "'%s'" RESET " or " BGRN "'%s'" RESET
+//                            " but argument is of type " BGRN "'%s'" RESET "\n",
+//                            li->text, beg, end,
+//                            symbol_canonical_type_from_enum(SYM_INT),
+//                            symbol_canonical_type_from_enum(SYM_REAL),
+//                            symbol_canonical_type_from_enum(type));
+//   ++errors_count;
+// }
+
+// SymbolTypes ast_builtinfn_type_check(AST *ast) {
+//   AST *args = list_peek(&ast->children, 0);
+//   BuiltinFuncAST *builtin = ast->value.builtinfn;
+
+//   if (builtin->func_type == BUILTIN_FN_READ) {
+//     switch (args->type) {
+//       case AST_SYM_REF: {
+//         SymbolTypes sym_t = ast_validate_types(args);
+//         if (sym_t >= SYM_PTR) {
+//           handle_read_args_list(args, sym_t);
+//         }
+//       } break;
+//       default:
+//         break;
+//     }
+//   } else {
+//   }
+
+//   return SYM_INT;
+// }

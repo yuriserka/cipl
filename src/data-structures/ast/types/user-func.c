@@ -97,9 +97,7 @@ SymbolTypes ast_userfunc_type_check(AST *ast) {
         ++qtd_ret;
       },
       {
-        if (!qtd_ret) {
-          handle_no_return(declarator);
-        }
+        if (!qtd_ret) handle_no_return(declarator);
       });
 
   LIST_FOR_EACH(statements->value.blockitems->value, {

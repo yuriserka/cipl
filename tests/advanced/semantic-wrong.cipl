@@ -10,84 +10,130 @@ int div0() {
 }
 
 int nil_arith(int x) {
-    x = NIL + 2 - 3 * 4 / 5;
-    x = 1 + 2 - 3 * NIL / 5;
-    x = (1 * 2) - (3 + NIL);
-    return x;
+  x = NIL + 2 - 3 * 4 / 5;
+  x = 1 + 2 - 3 * NIL / 5;
+  x = (1 * 2) - (3 + NIL);
+  return x;
 }
 
 int nil_rel(float x) {
-    x = NIL < 2 >= 3 <= 4 > 5 == 6 != 7;
-    x = 1 < 2 >= 3 <= 4 > 5 == NIL != 7;
-    x = 1 < 2 > 3;
-    return x;
+  x = NIL < 2 >= 3 <= 4 > 5 == 6 != 7;
+  x = 1 < 2 >= 3 <= 4 > 5 == NIL != 7;
+  x = 1 < 2 > 3;
+  return x;
 }
 
 int list_in_arith_op(int list l) {
-    l = l + NIL;
-    l = 3 != 2;
-    l = NIL <= 2;
-    l = 3 < NIL;
-    l = 3 == l;
-    l = l >= 2;
-    int x;
-    x = l == NIL;
-    return x;
+  l = l + NIL;
+  l = 3 != 2;
+  l = NIL <= 2;
+  l = 3 < NIL;
+  l = 3 == l;
+  l = l >= 2;
+  int x;
+  x = l == NIL;
+  return x;
 }
 
 int many_or_few_args_fn_call(int i) {
-    return many_or_few_args_fn_call(i);
-    return many_or_few_args_fn_call(i, i);
-    return many_or_few_args_fn_call();
+  return many_or_few_args_fn_call(i);
+  return many_or_few_args_fn_call(i, i);
+  return many_or_few_args_fn_call();
 }
 
 int mismatch_types_fn_call(int i, int list l) {
-    return mismatch_types_fn_call(NIL, NIL);
-    return mismatch_types_fn_call(12312.237123, 100);
+  return mismatch_types_fn_call(NIL, NIL);
+  return mismatch_types_fn_call(12312.237123, 100);
 }
 
 int list get_l(int n) {
-    return NIL;
+  return NIL;
 }
 
 int err_assign() {
-    int list x;
-    x = mismatch_types_fn_call(100, x);
-    x = 1203;
-    x = 213.51;
-    {
+  int list x;
+  x = mismatch_types_fn_call(100, x);
+  x = 1203;
+  x = 213.51;
+  {
+      int x;
+      x = get_l(x);
+      {
         int x;
-        x = get_l(x);
-    }
-    return 0;
+        x = NIL;
+      }
+  }
+  x = NIL;
+  return 0;
 }
 
 int map(int i, int j) {
-    return i + 1;
+  return i + 1;
 }
 
 int filter(float i) {
-    return i < 10;
+  return i < 10;
 }
 
 int invalid_filter(int list l) {
-    return 0;
+  return 0;
 }
 
 int list_mapfil() {
-    int list l;
-    int x;
-    x = 10;
-    l = x >> l;
-    l = map >> x;
-    l = map >> l;
-    l = filter >> l;
-    l = invalid_filter >> l;
-    x = filter << l;
+  int list l;
+  int x;
+  x = 10;
+  l = x >> l;
+  l = map >> x;
+  l = map >> l;
+  l = filter >> l;
+  l = invalid_filter >> l;
+  l = invalid_filter >> x;
+  x = filter << l;
 
-    return x;
+  return x;
+}
+
+int list ll() {
+  return NIL;
+}
+
+int list_arg(int list l) {
+  return ?l;
+}
+
+int uniops() {
+  int list l;
+  float x;
+
+  x = !l; // a `number` cant be the tail of `int list`
+  l = !x; // a `int list` cant be the tail of `number`
+  l = %123; // a `int list` cant be the pop-tail of `number`
+  x = %l; // a `number` cant be the pop-tail of `int list` 
+  l = ?x; // a `int list` cant be the head of `number`
+
+  x = ?l;
+  x = ?ll();
+  x = list_arg(l);
+  x = list_arg(NIL);
+
+  x = %ll(); // a `number` cant be the pop-tail of `int list` 
+  x = !ll(); // a `number` cant be the tail of `int list`
+
+  float list L_;
+  L_ = ?ll(); // a `float list` cant be the head of `float list`
+  L_ = %ll(); // a `float list` cant be the pop-tail of `int list`
+  L_ = !ll(); // a `float list` cant be the tail of `int list`
+  x = list_arg(L_); // a `int list` argument cant be `float list`
+
+  int list x_;
+  x_ = ?NIL;
+  x_ = %NIL;
+  x_ = !NIL;
+
+  return x;
 }
 
 int no_main() {
-    return 0;
+  return 0;
 }

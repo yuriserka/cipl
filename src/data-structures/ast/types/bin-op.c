@@ -50,8 +50,10 @@ void ast_binop_print_pretty(AST *ast, int depth) {
 static bool is_relop(char *op) {
   const int is_dless = !strcmp(op, "<<");
   const int is_dgreat = !strcmp(op, ">>");
-  return (*op == '<' || *op == '>' || *op == '!') && !is_dless && !is_dgreat;
+  return (*op == '<' || *op == '>') && (!is_dless && !is_dgreat);
 }
+
+static bool is_rel_equality(char *op) { return (*op == '!' || *op == '='); }
 
 static void handle_mismatch_comparison(AST *lhs, AST *rhs, SymbolTypes lhs_t,
                                        SymbolTypes rhs_t) {
@@ -83,6 +85,19 @@ static void handle_comparison_chain(AST *lhs, AST *rhs, SymbolTypes lhs_t,
   }
 }
 
+static void handle_mismatch_equality(AST *lhs, AST *rhs, SymbolTypes lhs_t,
+                                     SymbolTypes rhs_t, char *op) {
+  Cursor beg = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
+  Cursor end = {.col = beg.col + 1, .line = beg.line};
+  LineInfo *li = list_peek(&lines, beg.line - 1);
+  CIPL_PERROR_CURSOR_RANGE(
+      "invalid operands to binary " WHT "'%s'" RESET " (have " BGRN "'%s'" RESET
+      " and " BGRN "'%s'" RESET ")\n",
+      li->text, beg, end, op, symbol_canonical_type_from_enum(lhs_t),
+      symbol_canonical_type_from_enum(rhs_t));
+  ++errors_count;
+}
+
 static void handle_mismatch_arithmetic(AST *lhs, AST *rhs, SymbolTypes lhs_t,
                                        SymbolTypes rhs_t, char *op) {
   Cursor c = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
@@ -93,7 +108,7 @@ static void handle_mismatch_arithmetic(AST *lhs, AST *rhs, SymbolTypes lhs_t,
         symbol_canonical_type_from_enum(lhs_t > SYM_REAL ? lhs_t : rhs_t));
     ++errors_count;
   } else {
-    CIPL_PERROR_CURSOR("invalid operands to binary " WHT "'%s'" RESET
+    CIPL_PERROR_CURSOR("invalid operands to binary  xx" WHT "'%s'" RESET
                        " (have " BGRN "'%s'" RESET " and " BGRN "'%s'" RESET
                        ")\n",
                        li->text, c, op, symbol_canonical_type_from_enum(lhs_t),
@@ -206,9 +221,7 @@ SymbolTypes ast_binop_type_check(AST *ast) {
     case ':':
       break;
     case '<':
-    case '>':
-    case '=':
-    case '!': {
+    case '>': {
       if (is_relop(binop_ast->op)) {
         if (!can_compare(lhs_t, rhs_t)) {
           handle_mismatch_comparison(lhs, rhs, lhs_t, rhs_t);
@@ -222,7 +235,12 @@ SymbolTypes ast_binop_type_check(AST *ast) {
       }
     } break;
     default: {
-      if (!can_arith(lhs_t, rhs_t)) {
+      if (is_rel_equality(binop_ast->op)) {
+        if (!can_compare(lhs_t, rhs_t)) {
+          handle_mismatch_equality(lhs, rhs, lhs_t, rhs_t, binop_ast->op);
+        }
+        return SYM_INT;
+      } else if (!can_arith(lhs_t, rhs_t)) {
         handle_mismatch_arithmetic(lhs, rhs, lhs_t, rhs_t, binop_ast->op);
       } else if (*binop_ast->op == '/' && rhs->type == AST_NUMBER) {
         handle_div_by_zero(lhs, rhs, lhs_t, rhs_t);

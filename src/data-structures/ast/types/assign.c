@@ -72,6 +72,8 @@ SymbolTypes ast_assign_type_check(AST *ast) {
   SymbolTypes lhs_t = ast_validate_types(lhs);
   SymbolTypes rhs_t = ast_validate_types(rhs);
 
+  if (!lhs_t || !rhs_t) return SYM_INVALID;
+
   if (!can_assign(lhs_t, rhs_t)) {
     handle_mismatch_assign(lhs, rhs, lhs_t, rhs_t);
   }

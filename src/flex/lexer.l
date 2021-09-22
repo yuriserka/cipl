@@ -19,6 +19,12 @@
   void show_str_literal_err();
   void string_literal_rm_dquote(char *s);
 
+  #define cat_yytext {                    \
+    strcat(curr_line_info->text, yytext); \
+    strcat(curr_line_buffer, yytext);     \
+    cursor.col += yyleng;                 \
+  }
+
   #define YY_USER_ACTION                                           \
     yylloc.first_line = yylloc.last_line = yylineno;               \
     yylloc.first_column = cursor.col;                              \
@@ -31,16 +37,18 @@
       memset(curr_line_info->text, 0, 100);                        \
     }                                                              \
     else {                                                         \
-      if (yytext[0] == '\"') {                                     \
-        if (yyleng > 1 && yytext[yyleng - 1] == '\"') {            \
-          strcat(curr_line_info->text, yytext);                    \
-          strcat(curr_line_buffer, yytext);                        \
-          cursor.col += yyleng;                                    \
-        }                                                          \
-      } else {                                                     \
-        strcat(curr_line_info->text, yytext);                      \
-        strcat(curr_line_buffer, yytext);                          \
-        cursor.col += yyleng;                                      \
+      switch (yytext[0]) {                                         \
+        case '/':                                                  \
+          if (yytext[1] != '/' && yytext[1] != '*') cat_yytext;    \
+          break;                                                   \
+        case '*':                                                  \
+          if (yytext[1] != '/') cat_yytext;                        \
+          break;                                                   \
+        case '"':                                                  \
+          if (yyleng > 1 && yytext[yyleng - 1] == '"') cat_yytext; \
+          break;                                                   \
+        default:                                                   \
+          cat_yytext;                                              \
       }                                                            \
     }                                                              \
     yylloc.last_column = cursor.col - 1;
@@ -196,7 +204,6 @@ BUILTIN_FUNCTIONS read|write|writeln
   }
   \n {
     show_str_literal_err();
-    cursor_position_update(1, 0);
   }
   <<EOF>> {
     show_str_literal_err();
@@ -212,10 +219,9 @@ BUILTIN_FUNCTIONS read|write|writeln
 <SCANNING_MULTILINE_COMMENT>{
   ([^*\n]|"*"[^/\n])* { /* noop */ }
   "\n" {
-    cursor_position_update(1, 0);
   }
   "*/" {
-    BEGIN(INITIAL);    
+    BEGIN(INITIAL);
   }
   <<EOF>> {
     ++errors_count;

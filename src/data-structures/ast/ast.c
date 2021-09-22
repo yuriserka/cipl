@@ -315,6 +315,8 @@ SymbolTypes ast_validate_types(AST *ast) {
       return ast_number_type_check(ast);
     case AST_BIN_OP:
       return ast_binop_type_check(ast);
+    case AST_UNI_OP:
+      return ast_uniop_type_check(ast);
     case AST_SYM_REF:
       return ast_symref_type_check(ast);
     case AST_ASSIGN_OP:
