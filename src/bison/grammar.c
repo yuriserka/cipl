@@ -634,8 +634,8 @@ static const yytype_int16 yyrline[] =
      507,   511,   516,   523,   524,   528,   533,   540,   541,   545,
      549,   554,   559,   564,   571,   572,   576,   581,   588,   589,
      593,   598,   605,   606,   612,   613,   614,   615,   618,   619,
-     639,   640,   641,   647,   648,   651,   661,   662,   663,   667,
-     674,   677,   678,   679,   686,   695,   696,   697,   700
+     639,   640,   641,   647,   648,   651,   661,   662,   667,   671,
+     678,   681,   682,   683,   690,   699,   700,   701,   704
 };
 #endif
 
@@ -5473,31 +5473,35 @@ yyreduce:
 
   case 117: /* primary_expr: '(' expression ')'  */
 #line 662 "src/bison/grammar.y"
-                         { (yyval.ast) = (yyvsp[-1].ast); }
-#line 5478 "src/bison/grammar.c"
+                         {
+        --(yyvsp[-1].ast)->rule_pos.first_column;
+        ++(yyvsp[-1].ast)->rule_pos.last_column;
+        (yyval.ast) = (yyvsp[-1].ast);
+    }
+#line 5482 "src/bison/grammar.c"
     break;
 
   case 118: /* primary_expr: '(' error ')'  */
-#line 663 "src/bison/grammar.y"
+#line 667 "src/bison/grammar.y"
                     {
         show_error_range((yylsp[-1]), "expected expression\n");
         (yyval.ast) = NULL;
     }
-#line 5487 "src/bison/grammar.c"
+#line 5491 "src/bison/grammar.c"
     break;
 
   case 119: /* primary_expr: id error  */
-#line 667 "src/bison/grammar.y"
+#line 671 "src/bison/grammar.y"
                {
         show_error_range((yylsp[0]), "expected " WHT "';'" RESET "\n");
         symbol_free((yyvsp[-1].sym));
         (yyval.ast) = NULL;
     }
-#line 5497 "src/bison/grammar.c"
+#line 5501 "src/bison/grammar.c"
     break;
 
   case 123: /* type: INT LIST  */
-#line 679 "src/bison/grammar.y"
+#line 683 "src/bison/grammar.y"
                {
         char *type = calloc(strlen((yyvsp[-1].pchar)) + strlen((yyvsp[0].pchar)) + 2, sizeof(char));
         sprintf(type, "%s %s", (yyvsp[-1].pchar), (yyvsp[0].pchar));
@@ -5505,11 +5509,11 @@ yyreduce:
         free((yyvsp[0].pchar));
         (yyval.pchar) = type;
     }
-#line 5509 "src/bison/grammar.c"
+#line 5513 "src/bison/grammar.c"
     break;
 
   case 124: /* type: FLOAT LIST  */
-#line 686 "src/bison/grammar.y"
+#line 690 "src/bison/grammar.y"
                  {
         char *type = calloc(strlen((yyvsp[-1].pchar)) + strlen((yyvsp[0].pchar)) + 2, sizeof(char));
         sprintf(type, "%s %s", (yyvsp[-1].pchar), (yyvsp[0].pchar));
@@ -5517,38 +5521,38 @@ yyreduce:
         free((yyvsp[0].pchar));
         (yyval.pchar) = type;
     }
-#line 5521 "src/bison/grammar.c"
+#line 5525 "src/bison/grammar.c"
     break;
 
   case 125: /* constant: NUMBER_REAL  */
-#line 695 "src/bison/grammar.y"
+#line 699 "src/bison/grammar.y"
                       { (yyval.ast) = ast_number_init((yyloc), K_REAL, (NumberValue){ .real=(yyvsp[0].real) }); }
-#line 5527 "src/bison/grammar.c"
+#line 5531 "src/bison/grammar.c"
     break;
 
   case 126: /* constant: NUMBER_INT  */
-#line 696 "src/bison/grammar.y"
+#line 700 "src/bison/grammar.y"
                  { (yyval.ast) = ast_number_init((yyloc), K_INTEGER, (NumberValue){ .integer=(yyvsp[0].integer) }); }
-#line 5533 "src/bison/grammar.c"
+#line 5537 "src/bison/grammar.c"
     break;
 
   case 127: /* constant: NIL  */
-#line 697 "src/bison/grammar.y"
+#line 701 "src/bison/grammar.y"
           { (yyval.ast) = ast_number_init((yyloc), K_NIL, (NumberValue){ .integer=(yyvsp[0].integer) }); }
-#line 5539 "src/bison/grammar.c"
+#line 5543 "src/bison/grammar.c"
     break;
 
   case 128: /* string_literal: STR_LITERAL  */
-#line 700 "src/bison/grammar.y"
+#line 704 "src/bison/grammar.y"
                             {
         (yyval.ast) = ast_str_init((yyloc), (yyvsp[0].pchar));
         free((yyvsp[0].pchar));
     }
-#line 5548 "src/bison/grammar.c"
+#line 5552 "src/bison/grammar.c"
     break;
 
 
-#line 5552 "src/bison/grammar.c"
+#line 5556 "src/bison/grammar.c"
 
         default: break;
       }
@@ -5789,7 +5793,7 @@ yyreturn:
   return yyresult;
 }
 
-#line 706 "src/bison/grammar.y"
+#line 710 "src/bison/grammar.y"
 
 
 void yyerror(int l, int c, const char *s, ...) {

@@ -264,3 +264,9 @@ bool can_compare(SymbolTypes lhs, SymbolTypes rhs) {
 bool can_mapfil_list(SymbolTypes lhs, SymbolTypes rhs) {
   return MAX(lhs, rhs) > SYM_PTR;
 }
+
+bool can_cons_list(SymbolTypes lhs, SymbolTypes rhs) {
+  if (rhs < SYM_PTR || lhs >= SYM_PTR) return false;
+  if ((rhs - SYM_PTR) != lhs) return false;
+  return true;
+}

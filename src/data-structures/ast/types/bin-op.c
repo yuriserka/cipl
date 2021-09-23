@@ -208,6 +208,19 @@ static void handle_mismatch_mapfil(AST *lhs, AST *rhs, SymbolTypes lhs_t,
   }
 }
 
+static void handle_mismatch_cons(AST *lhs, AST *rhs, SymbolTypes lhs_t,
+                                 SymbolTypes rhs_t, char *op) {
+  Cursor beg = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
+  Cursor end = {.col = beg.col + 1, .line = beg.line};
+  LineInfo *li = list_peek(&lines, beg.line - 1);
+  CIPL_PERROR_CURSOR_RANGE(
+      "invalid operands to binary " WHT "'%s'" RESET " (have " BGRN "'%s'" RESET
+      " and " BGRN "'%s'" RESET ")\n",
+      li->text, beg, end, op, symbol_canonical_type_from_enum(lhs_t),
+      symbol_canonical_type_from_enum(rhs_t));
+  ++errors_count;
+}
+
 SymbolTypes ast_binop_type_check(AST *ast) {
   BinOpAST *binop_ast = ast->value.binop;
   AST *lhs = list_peek(&ast->children, 0), *rhs = list_peek(&ast->children, 1);
@@ -219,7 +232,10 @@ SymbolTypes ast_binop_type_check(AST *ast) {
 
   switch (binop_ast->op[0]) {
     case ':':
-      break;
+      if (!can_cons_list(lhs_t, rhs_t)) {
+        handle_mismatch_cons(lhs, rhs, lhs_t, rhs_t, binop_ast->op);
+      }
+      return rhs_t > SYM_PTR ? rhs_t : SYM_PTR;
     case '<':
     case '>': {
       if (is_relop(binop_ast->op)) {

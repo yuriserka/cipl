@@ -659,7 +659,11 @@ primary_expr: id {
         symbol_free($1);
     }
     | constant
-    | '(' expression ')' { $$ = $2; }
+    | '(' expression ')' {
+        --$2->rule_pos.first_column;
+        ++$2->rule_pos.last_column;
+        $$ = $2;
+    }
     | '(' error ')' {
         show_error_range(@2, "expected expression\n");
         $$ = NULL;

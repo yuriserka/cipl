@@ -98,7 +98,14 @@ int list ll() {
   return NIL;
 }
 
-int list_arg(int list l) {
+int list_cons(int list l) {
+  float x;
+  l = 1 : 2 : l;
+  l = (NIL + 2) : l;
+  l = 1.123123 : 2 : x + 2 * 3 / 4 - 5 : l;
+  l = NIL : l;
+  l = l : x;
+  l = 1 : l + x;
   return ?l;
 }
 
@@ -114,8 +121,8 @@ int uniops() {
 
   x = ?l;
   x = ?ll();
-  x = list_arg(l);
-  x = list_arg(NIL);
+  x = list_cons(l);
+  x = list_cons(NIL);
 
   x = %ll(); // a `number` cant be the pop-tail of `int list` 
   x = !ll(); // a `number` cant be the tail of `int list`
@@ -124,7 +131,7 @@ int uniops() {
   L_ = ?ll(); // a `float list` cant be the head of `float list`
   L_ = %ll(); // a `float list` cant be the pop-tail of `int list`
   L_ = !ll(); // a `float list` cant be the tail of `int list`
-  x = list_arg(L_); // a `int list` argument cant be `float list`
+  x = list_cons(L_); // a `int list` argument cant be `float list`
 
   int list x_;
   x_ = ?NIL;
