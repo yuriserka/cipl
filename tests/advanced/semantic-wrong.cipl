@@ -5,7 +5,7 @@ int no_return(int i, int j, int k) {
 
 int not_lvalue_assign() {
   no_return() = 213;
-  no_return = 67; // a function is not a lvalue
+  no_return = 67; // a function is not a valid lvalue
   NIL = 32;
   1 = 67;
   1.0 = 123.7;
@@ -179,6 +179,34 @@ int uniops() {
   L_ = ?%!l : L_;
 
   return x;
+}
+
+int wrong_returns() {
+  return NIL;
+
+  int list il;
+  return il;
+  return ?il;
+  return !il;
+
+  int x;
+  x = ?%il;
+
+  return !%il;
+  return x;
+  
+  float list fl;
+  return fl;
+  return ?fl;
+  return ?!fl;
+  return ?!%fl;
+
+  return !fl;
+  return !%fl;
+
+  return 1.2;
+  return 0;
+  return ?NIL;
 }
 
 int no_main() {

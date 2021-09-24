@@ -333,9 +333,8 @@ SymbolTypes ast_validate_types(AST *ast) {
       return ast_funcall_type_check(ast);
     case AST_PROG: {
       SymbolTypes ret = SYM_PTR;
-      LIST_FOR_EACH(ast->children, {
-        ret = ret && ast_validate_types(__IT__->data);
-      });
+      LIST_FOR_EACH(ast->children,
+                    { ret = ret && ast_validate_types(__IT__->data); });
       return ret;
     }
     default:
@@ -344,4 +343,48 @@ SymbolTypes ast_validate_types(AST *ast) {
   }
 
   return SYM_INVALID;
+}
+
+// static AST *ast_find_node_rec(AST *root, AstTypes type, AST *ret) {
+//   if (!root) return NULL;
+
+//   if (root->type == type) {
+//     ret = root;
+//     return root;
+//   }
+
+//   LIST_FOR_EACH(root->children,
+//                 { ast_find_node_rec(__IT__->data, type, ret); });
+
+//   return ret;
+// }
+
+void ast_fake_stack_pop(ListNode *node) {}
+
+AST *ast_find_node(AST *root, AstTypes type) {
+  StackNode *l = list_node_init(root);
+  AST *v = NULL;
+  while ((v = stack_peek(&l))) {
+    stack_pop(&l, ast_fake_stack_pop);
+
+    if (v->type == type) break;
+
+    switch (v->type) {
+      case AST_BLOCK_ITEM_LIST:
+        LIST_FOR_EACH(v->value.blockitems->value,
+                      { stack_push(&l, __IT__->data); });
+
+        break;
+      case AST_PARAM_LIST:
+        LIST_FOR_EACH(v->value.params->value,
+                      { stack_push(&l, __IT__->data); });
+        break;
+      default:
+        LIST_FOR_EACH_REVERSE(v->children, { stack_push(&l, __IT__->data); });
+    }
+  }
+
+  stack_free(l, ast_fake_stack_pop);
+
+  return v;
 }

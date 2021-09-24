@@ -8,17 +8,17 @@
 void stack_push(StackNode **top, void *data) {
   StackNode *new_node = list_node_init(data);
   new_node->parent = *top;
-  (*top)->next = new_node;
+  if (*top) (*top)->next = new_node;
   *top = new_node;
 }
 
 void stack_pop(StackNode **top, list_free_fn cb) {
   StackNode *node = *top;
   *top = (*top)->parent;
-  (*top)->next = NULL;
+  if (*top) (*top)->next = NULL;
   list_node_free(node, cb);
 }
 
 void *stack_peek(StackNode **top) { return *top ? (*top)->data : NULL; }
 
-void stack_free(StackNode *top, list_free_fn cb) { list_free(top, cb); }
+void stack_free(StackNode *top, list_free_fn cb) { list_free_reverse(top, cb); }

@@ -7,7 +7,7 @@
 // fast-forward definition of AST structure to use in each ast node type header
 typedef struct cipl_ast AST;
 
-#include "data-structures/symbol-table/symbol.h"
+#include <data-structures/symbol-table/symbol.h>
 
 #include "data-structures/ast/types/assign.h"
 #include "data-structures/ast/types/bin-op.h"
@@ -66,43 +66,48 @@ void ast_print_pretty(AST *ast, int depth);
 
 SymbolTypes ast_validate_types(AST *ast);
 
-#define AST_FIND_NODE_FN(__IT__, __TYPE__, __COND__, __FOUND__) \
-  {                                                             \
-    AST *__AST__ = __IT__->data;                                \
-    if (__AST__) {                                              \
-      if (__AST__->type == __TYPE__) {                          \
-        __COND__;                                               \
-        if (__FOUND__) break;                                   \
-      }                                                         \
-      LIST_FOR_EACH(__AST__->children, {                        \
-        AST *__AST__ = __IT__->data;                            \
-        if (__AST__->type == __TYPE__) {                        \
-          __COND__;                                             \
-          if (__FOUND__) break;                                 \
-        }                                                       \
-      });                                                       \
-    }                                                           \
-  }
+AST *ast_find_node(AST *root, AstTypes type);
 
-#define AST_FIND_NODE(__ROOT__, __TYPE__, __COND__, __NOT_FOUND_ACTION__) \
-  {                                                                       \
-    int __FOUND__ = 0;                                                    \
-    if (__ROOT__) {                                                       \
-      if (__ROOT__->type == AST_BLOCK_ITEM_LIST) {                        \
-        LIST_FOR_EACH(__ROOT__->value.blockitems->value, {                \
-          AST_FIND_NODE_FN(__IT__, __TYPE__, __COND__, __FOUND__);        \
-        });                                                               \
-      } else if (__ROOT__->type == AST_PARAM_LIST) {                      \
-        LIST_FOR_EACH(__ROOT__->value.params->value, {                    \
-          AST_FIND_NODE_FN(__IT__, __TYPE__, __COND__, __FOUND__);        \
-        });                                                               \
-      } else {                                                            \
-        LIST_FOR_EACH(__ROOT__->children, {                               \
-          AST_FIND_NODE_FN(__IT__, __TYPE__, __COND__, __FOUND__);        \
-        });                                                               \
-      }                                                                   \
-      if (!__FOUND__) {                                                   \
-        __NOT_FOUND_ACTION__;                                             \
-      }                                                                   \
-    }                                                                     \
+/**
+ * used just to iterate over tree
+ * called but the AST value which is inside node is not freed
+ */
+void ast_fake_stack_pop(ListNode *node);
+
+/**
+ * should set __FOUND__ to true to stop iteration
+ * both __NOT_FOUND_ACTION__ & __FOUND_ACTION__ have access to variables
+ * __DFS_L__ which is a list of AST* nodes and __AST__ the current AST *node
+ * being processed
+ */
+#define AST_FIND_NODE(__ROOT__, __TYPE__, __FOUND_ACTION__,        \
+                      __NOT_FOUND_ACTION__)                        \
+  {                                                                \
+    bool __FOUND__ = 0;                                            \
+    ListNode *__DFS_L__ = list_node_init(__ROOT__);                \
+    AST *__AST__ = NULL;                                           \
+    while ((__AST__ = list_peek(&__DFS_L__, 0))) {                 \
+      list_pop_front(&__DFS_L__, ast_fake_stack_pop);              \
+      if (__AST__->type == __TYPE__) {                             \
+        __FOUND_ACTION__;                                          \
+      }                                                            \
+      if (__FOUND__) break;                                        \
+      switch (__AST__->type) {                                     \
+        case AST_BLOCK_ITEM_LIST:                                  \
+          LIST_FOR_EACH(__AST__->value.blockitems->value,          \
+                        { list_push(&__DFS_L__, __IT__->data); }); \
+          break;                                                   \
+        case AST_PARAM_LIST:                                       \
+          LIST_FOR_EACH(__AST__->value.params->value,              \
+                        { list_push(&__DFS_L__, __IT__->data); }); \
+          break;                                                   \
+        default:                                                   \
+          LIST_FOR_EACH(__AST__->children,                         \
+                        { list_push(&__DFS_L__, __IT__->data); }); \
+      }                                                            \
+    }                                                              \
+    list_free(__DFS_L__, ast_fake_stack_pop);                      \
+    if (!__FOUND__) {                                              \
+      __NOT_FOUND_ACTION__;                                        \
+    }                                                              \
   }
