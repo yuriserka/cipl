@@ -43,7 +43,7 @@
       ++cursor.line;                                               \
       ++curr_line_info->line;                                      \
       memset(curr_line_buffer, 0, 1024);                           \
-      memset(curr_line_info->text, 0, 100);                        \
+      memset(curr_line_info->text, 0, 1024);                       \
     }                                                              \
     else {                                                         \
       switch (yytext[0]) {                                         \
