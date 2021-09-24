@@ -1,6 +1,15 @@
 int no_return(int i, int j, int k) {
-    int m;
-    m = i * j * k + (i + j + k);
+  int m;
+  m = i * j * k + (i + j + k);
+}
+
+int not_lvalue_assign() {
+  no_return() = 213;
+  no_return = 67; // a function is not a lvalue
+  NIL = 32;
+  1 = 67;
+  1.0 = 123.7;
+  return -1;
 }
 
 int div0() {

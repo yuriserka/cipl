@@ -53,6 +53,19 @@ static bool is_relop(char *op) {
   return (*op == '<' || *op == '>') && (!is_dless && !is_dgreat);
 }
 
+static void invalid_bin_op(AST *lhs, AST *rhs, char *op, SymbolTypes lhs_t,
+                           SymbolTypes rhs_t) {
+  Cursor beg = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
+  Cursor end = {.col = beg.col + 1, .line = beg.line};
+  LineInfo *li = list_peek(&lines, beg.line - 1);
+  CIPL_PERROR_CURSOR_RANGE(
+      "invalid operands to binary " WHT "'%s'" RESET " (have " BGRN "'%s'" RESET
+      " and " BGRN "'%s'" RESET ")\n",
+      li->text, beg, end, op, symbol_canonical_type_from_enum(lhs_t),
+      symbol_canonical_type_from_enum(rhs_t));
+  ++errors_count;
+}
+
 static bool is_rel_equality(char *op) { return (*op == '!' || *op == '='); }
 
 static void handle_mismatch_comparison(AST *lhs, AST *rhs, SymbolTypes lhs_t,
@@ -77,25 +90,17 @@ static void handle_comparison_chain(AST *lhs, AST *rhs, SymbolTypes lhs_t,
     Cursor beg = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
     Cursor end = {.col = beg.col + 1, .line = beg.line};
     LineInfo *li = list_peek(&lines, beg.line - 1);
-    CIPL_PERROR_CURSOR_RANGE(
-        "comparisons like ‘X<=Y<=Z’ do not have their mathematical "
-        "meaning\n",
-        li->text, beg, end);
+    CIPL_PERROR_CURSOR_RANGE("comparisons like " WHT "'X<=Y<=Z'" RESET
+                             " do not have their mathematical "
+                             "meaning\n",
+                             li->text, beg, end);
     ++errors_count;
   }
 }
 
 static void handle_mismatch_equality(AST *lhs, AST *rhs, SymbolTypes lhs_t,
                                      SymbolTypes rhs_t, char *op) {
-  Cursor beg = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
-  Cursor end = {.col = beg.col + 1, .line = beg.line};
-  LineInfo *li = list_peek(&lines, beg.line - 1);
-  CIPL_PERROR_CURSOR_RANGE(
-      "invalid operands to binary " WHT "'%s'" RESET " (have " BGRN "'%s'" RESET
-      " and " BGRN "'%s'" RESET ")\n",
-      li->text, beg, end, op, symbol_canonical_type_from_enum(lhs_t),
-      symbol_canonical_type_from_enum(rhs_t));
-  ++errors_count;
+  invalid_bin_op(lhs, rhs, op, lhs_t, rhs_t);
 }
 
 static void handle_mismatch_arithmetic(AST *lhs, AST *rhs, SymbolTypes lhs_t,
@@ -108,12 +113,7 @@ static void handle_mismatch_arithmetic(AST *lhs, AST *rhs, SymbolTypes lhs_t,
         symbol_canonical_type_from_enum(lhs_t > SYM_REAL ? lhs_t : rhs_t));
     ++errors_count;
   } else {
-    CIPL_PERROR_CURSOR("invalid operands to binary  xx" WHT "'%s'" RESET
-                       " (have " BGRN "'%s'" RESET " and " BGRN "'%s'" RESET
-                       ")\n",
-                       li->text, c, op, symbol_canonical_type_from_enum(lhs_t),
-                       symbol_canonical_type_from_enum(rhs_t));
-    ++errors_count;
+    invalid_bin_op(lhs, rhs, op, lhs_t, rhs_t);
   }
 }
 
@@ -210,15 +210,7 @@ static void handle_mismatch_mapfil(AST *lhs, AST *rhs, SymbolTypes lhs_t,
 
 static void handle_mismatch_cons(AST *lhs, AST *rhs, SymbolTypes lhs_t,
                                  SymbolTypes rhs_t, char *op) {
-  Cursor beg = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
-  Cursor end = {.col = beg.col + 1, .line = beg.line};
-  LineInfo *li = list_peek(&lines, beg.line - 1);
-  CIPL_PERROR_CURSOR_RANGE(
-      "invalid operands to binary " WHT "'%s'" RESET " (have " BGRN "'%s'" RESET
-      " and " BGRN "'%s'" RESET ")\n",
-      li->text, beg, end, op, symbol_canonical_type_from_enum(lhs_t),
-      symbol_canonical_type_from_enum(rhs_t));
-  ++errors_count;
+  invalid_bin_op(lhs, rhs, op, lhs_t, rhs_t);
 }
 
 SymbolTypes ast_binop_type_check(AST *ast) {

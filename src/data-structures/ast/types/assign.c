@@ -44,8 +44,12 @@ void ast_assign_print_pretty(AST *ast, int depth) {
   ast_print_pretty(rhs, depth + 1);
 }
 
-static void handle_lvalue_required() {
-  CIPL_PRINTF_COLOR(BRED, "lvalue required as left operand of assignment");
+static void handle_lvalue_required(AST *lhs, AST *rhs) {
+  Cursor beg = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
+  Cursor end = {.col = beg.col + 1, .line = beg.line};
+  LineInfo *li = list_peek(&lines, beg.line - 1);
+  CIPL_PERROR_CURSOR_RANGE("lvalue required as left operand of assignment\n",
+                           li->text, beg, end);
   ++errors_count;
 }
 
@@ -65,7 +69,12 @@ SymbolTypes ast_assign_type_check(AST *ast) {
   AST *rhs = list_peek(&ast->children, 1);
 
   if (lhs->type != AST_SYM_REF) {
-    handle_lvalue_required();
+    handle_lvalue_required(lhs, rhs);
+    return SYM_INVALID;
+  }
+
+  if (lhs->value.symref->symbol->is_fn) {
+    handle_lvalue_required(lhs, rhs);
     return SYM_INVALID;
   }
 
