@@ -216,25 +216,27 @@ BUILTIN_FUNCTIONS read|write|writeln
 "/*" {
   BEGIN(SCANNING_MULTILINE_COMMENT);  
   comment_open_pos = cursor;
-  yymore();
 }
 
 <SCANNING_MULTILINE_COMMENT>{
   ([^*\n]|"*"[^/\n])* { /* noop */ }
-  "\n" {
-  }
+  "\n" { /* noop */ }
   "*/" {
     BEGIN(INITIAL);
   }
   <<EOF>> {
     ++errors_count;
-    CIPL_PERROR_CURSOR("unterminated comment\n", curr_line_buffer, comment_open_pos);
+    LineInfo *li = list_peek(&lines, comment_open_pos.line - 1);
+    CIPL_PERROR_CURSOR("unterminated comment\n", li->text, comment_open_pos);
     BEGIN(INITIAL);
   } 
 }
 
 . {
-  CIPL_PERROR_CURSOR("unexpected character: %s\n", curr_line_buffer, cursor, yytext);  
+  LineInfo *li = list_peek(&lines, cursor.line - 1);
+  CIPL_PERROR_CURSOR("unexpected character: " WHT "'%s'" RESET "\n",
+                     li->text, cursor, yytext);  
+  ++errors_count;
   return YYerror;
 }
 
@@ -242,7 +244,9 @@ BUILTIN_FUNCTIONS read|write|writeln
 
 void show_str_literal_err() {
   ++errors_count;
-  CIPL_PERROR_CURSOR("missing terminating '\"' character\n", curr_line_buffer, dquote_open_pos);
+  LineInfo *li = list_peek(&lines, dquote_open_pos.line - 1);
+  CIPL_PERROR_CURSOR("missing terminating " WHT "'\"'" RESET " character\n",
+                     li->text, dquote_open_pos);
   BEGIN(INITIAL);
 }
 

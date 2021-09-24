@@ -227,7 +227,7 @@ SymbolTypes ast_binop_type_check(AST *ast) {
       if (!can_cons_list(lhs_t, rhs_t)) {
         handle_mismatch_cons(lhs, rhs, lhs_t, rhs_t, binop_ast->op);
       }
-      return rhs_t > SYM_PTR ? rhs_t : SYM_PTR;
+      return MAX(rhs_t, SYM_PTR);
     case '<':
     case '>': {
       if (is_relop(binop_ast->op)) {
@@ -239,7 +239,7 @@ SymbolTypes ast_binop_type_check(AST *ast) {
         return SYM_INT;
       } else {
         handle_mismatch_mapfil(lhs, rhs, lhs_t, rhs_t, binop_ast->op);
-        return rhs_t > SYM_PTR ? rhs_t : SYM_PTR;
+        return (*binop_ast->op == '<' ? MAX(rhs_t, SYM_PTR) : lhs_t + SYM_PTR);
       }
     } break;
     default: {

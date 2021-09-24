@@ -1075,52 +1075,54 @@ YY_RULE_SETUP
 {
   BEGIN(SCANNING_MULTILINE_COMMENT);  
   comment_open_pos = cursor;
-  yymore();
 }
 	YY_BREAK
 
 case 18:
 YY_RULE_SETUP
-#line 223 "src/flex/lexer.l"
+#line 222 "src/flex/lexer.l"
 { /* noop */ }
 	YY_BREAK
 case 19:
 /* rule 19 can match eol */
 YY_RULE_SETUP
-#line 224 "src/flex/lexer.l"
-{
-  }
+#line 223 "src/flex/lexer.l"
+{ /* noop */ }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 226 "src/flex/lexer.l"
+#line 224 "src/flex/lexer.l"
 {
     BEGIN(INITIAL);
   }
 	YY_BREAK
 case YY_STATE_EOF(SCANNING_MULTILINE_COMMENT):
-#line 229 "src/flex/lexer.l"
+#line 227 "src/flex/lexer.l"
 {
     ++errors_count;
-    CIPL_PERROR_CURSOR("unterminated comment\n", curr_line_buffer, comment_open_pos);
+    LineInfo *li = list_peek(&lines, comment_open_pos.line - 1);
+    CIPL_PERROR_CURSOR("unterminated comment\n", li->text, comment_open_pos);
     BEGIN(INITIAL);
   } 
 	YY_BREAK
 
 case 21:
 YY_RULE_SETUP
-#line 236 "src/flex/lexer.l"
+#line 235 "src/flex/lexer.l"
 {
-  CIPL_PERROR_CURSOR("unexpected character: %s\n", curr_line_buffer, cursor, yytext);  
+  LineInfo *li = list_peek(&lines, cursor.line - 1);
+  CIPL_PERROR_CURSOR("unexpected character: " WHT "'%s'" RESET "\n",
+                     li->text, cursor, yytext);  
+  ++errors_count;
   return YYerror;
 }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 241 "src/flex/lexer.l"
+#line 243 "src/flex/lexer.l"
 ECHO;
 	YY_BREAK
-#line 1124 "src/flex/lexer.c"
+#line 1126 "src/flex/lexer.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2094,12 +2096,14 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 241 "src/flex/lexer.l"
+#line 243 "src/flex/lexer.l"
 
 
 void show_str_literal_err() {
   ++errors_count;
-  CIPL_PERROR_CURSOR("missing terminating '\"' character\n", curr_line_buffer, dquote_open_pos);
+  LineInfo *li = list_peek(&lines, dquote_open_pos.line - 1);
+  CIPL_PERROR_CURSOR("missing terminating " WHT "'\"'" RESET " character\n",
+                     li->text, dquote_open_pos);
   BEGIN(INITIAL);
 }
 

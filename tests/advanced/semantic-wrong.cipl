@@ -88,6 +88,10 @@ int invalid_filter(int list l) {
   return 0;
 }
 
+float i2f(int i) {
+  return i * 1.0;
+}
+
 int list_mapfil() {
   int list l;
   int x;
@@ -95,10 +99,23 @@ int list_mapfil() {
   l = x >> l;
   l = map >> x;
   l = map >> l;
-  l = filter >> l;
-  l = invalid_filter >> l;
-  l = invalid_filter >> x;
+  l = filter << l;
+  l = invalid_filter << l;
+  l = invalid_filter << x;
   x = filter << l;
+
+  float list fl;
+  /*
+   * despite fl be a `float list` the ith element can be converted from float
+   * to int which is the param for i2f, so the statement is valid, althought
+   * is not possible to call if the parameter is some kind of list
+   */
+  fl = i2f >> fl;
+  fl = i2f >> l;
+  // i2f cast a `int list` to a `float list` so i2f works fine for `float list` only
+  l = i2f >> fl;
+  // i2f cast a `int list` to a `float list`, but l still are a `int list` so isnt possible to assign
+  l = i2f >> l;
 
   return x;
 }
