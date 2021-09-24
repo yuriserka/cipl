@@ -267,6 +267,5 @@ bool can_mapfil_list(SymbolTypes lhs, SymbolTypes rhs) {
 
 bool can_cons_list(SymbolTypes lhs, SymbolTypes rhs) {
   if (rhs < SYM_PTR || lhs >= SYM_PTR) return false;
-  if ((rhs - SYM_PTR) != lhs) return false;
-  return true;
+  return can_assign(rhs - SYM_PTR, lhs);
 }
