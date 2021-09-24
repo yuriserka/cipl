@@ -25,6 +25,15 @@
     cursor.col += yyleng;                 \
   }
 
+  #define skip_comments {                                   \
+    case '/':                                               \
+      if (yytext[1] != '/' && yytext[1] != '*') cat_yytext; \
+      break;                                                \
+    case '*':                                               \
+      if (yytext[1] != '/') cat_yytext;                     \
+      break;                                                \
+  }
+
   #define YY_USER_ACTION                                           \
     yylloc.first_line = yylloc.last_line = yylineno;               \
     yylloc.first_column = cursor.col;                              \
@@ -38,12 +47,6 @@
     }                                                              \
     else {                                                         \
       switch (yytext[0]) {                                         \
-        case '/':                                                  \
-          if (yytext[1] != '/' && yytext[1] != '*') cat_yytext;    \
-          break;                                                   \
-        case '*':                                                  \
-          if (yytext[1] != '/') cat_yytext;                        \
-          break;                                                   \
         case '"':                                                  \
           if (yyleng > 1 && yytext[yyleng - 1] == '"') cat_yytext; \
           break;                                                   \

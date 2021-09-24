@@ -563,6 +563,15 @@ char *yytext;
     cursor.col += yyleng;                 \
   }
 
+  #define skip_comments {                                   \
+    case '/':                                               \
+      if (yytext[1] != '/' && yytext[1] != '*') cat_yytext; \
+      break;                                                \
+    case '*':                                               \
+      if (yytext[1] != '/') cat_yytext;                     \
+      break;                                                \
+  }
+
   #define YY_USER_ACTION                                           \
     yylloc.first_line = yylloc.last_line = yylineno;               \
     yylloc.first_column = cursor.col;                              \
@@ -576,12 +585,6 @@ char *yytext;
     }                                                              \
     else {                                                         \
       switch (yytext[0]) {                                         \
-        case '/':                                                  \
-          if (yytext[1] != '/' && yytext[1] != '*') cat_yytext;    \
-          break;                                                   \
-        case '*':                                                  \
-          if (yytext[1] != '/') cat_yytext;                        \
-          break;                                                   \
         case '"':                                                  \
           if (yyleng > 1 && yytext[yyleng - 1] == '"') cat_yytext; \
           break;                                                   \
@@ -591,9 +594,9 @@ char *yytext;
     }                                                              \
     yylloc.last_column = cursor.col - 1;
 
-#line 595 "src/flex/lexer.c"
+#line 598 "src/flex/lexer.c"
 
-#line 597 "src/flex/lexer.c"
+#line 600 "src/flex/lexer.c"
 
 #define INITIAL 0
 #define SCANNING_STR_LITERAL 1
@@ -810,10 +813,10 @@ YY_DECL
 		}
 
 	{
-#line 88 "src/flex/lexer.l"
+#line 91 "src/flex/lexer.l"
 
 
-#line 817 "src/flex/lexer.c"
+#line 820 "src/flex/lexer.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -888,17 +891,17 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 90 "src/flex/lexer.l"
+#line 93 "src/flex/lexer.l"
 { /* noop */ }
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 92 "src/flex/lexer.l"
+#line 95 "src/flex/lexer.l"
 {}
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
-#line 94 "src/flex/lexer.l"
+#line 97 "src/flex/lexer.l"
 {
   list_push(&lines, line_init(cursor.line, curr_line_buffer));
   return YYEOF;
@@ -906,14 +909,14 @@ case YY_STATE_EOF(INITIAL):
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 99 "src/flex/lexer.l"
+#line 102 "src/flex/lexer.l"
 {  
   return yytext[0];
 }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 103 "src/flex/lexer.l"
+#line 106 "src/flex/lexer.l"
 {  
   switch (yytext[0]) {
     case 'i': return IF;
@@ -928,7 +931,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 115 "src/flex/lexer.l"
+#line 118 "src/flex/lexer.l"
 {
   yylval.pchar = strdup(yytext);  
   switch(yytext[0]) {
@@ -940,7 +943,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 124 "src/flex/lexer.l"
+#line 127 "src/flex/lexer.l"
 {
   yylval.pchar = strdup(yytext);
   return yytext[0] == 'r' ? READ : WRITE;
@@ -948,7 +951,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 129 "src/flex/lexer.l"
+#line 132 "src/flex/lexer.l"
 {
   yylval.sym = symbol_found(yytext, cursor);  
   return NAME;
@@ -956,7 +959,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 134 "src/flex/lexer.l"
+#line 137 "src/flex/lexer.l"
 {
   long int longval;
   sscanf(yytext, "%ld", &longval);
@@ -966,7 +969,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 141 "src/flex/lexer.l"
+#line 144 "src/flex/lexer.l"
 {
   double doubleval;
   sscanf(yytext, "%lf", &doubleval);
@@ -976,7 +979,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 148 "src/flex/lexer.l"
+#line 151 "src/flex/lexer.l"
 {  
   yylval.pchar = strdup(yytext);
   switch(yytext[0]) {
@@ -990,7 +993,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 159 "src/flex/lexer.l"
+#line 162 "src/flex/lexer.l"
 {
   char *token = yytext;  
   yylval.pchar = strdup(yytext);
@@ -1019,14 +1022,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 185 "src/flex/lexer.l"
+#line 188 "src/flex/lexer.l"
 {  
   return yytext[0];
 }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 189 "src/flex/lexer.l"
+#line 192 "src/flex/lexer.l"
 {
   BEGIN(SCANNING_STR_LITERAL);  
   dquote_open_pos = cursor;
@@ -1036,14 +1039,14 @@ YY_RULE_SETUP
 
 case 14:
 YY_RULE_SETUP
-#line 196 "src/flex/lexer.l"
+#line 199 "src/flex/lexer.l"
 {    
     yymore();
   }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 199 "src/flex/lexer.l"
+#line 202 "src/flex/lexer.l"
 {    
     yylval.pchar = strdup(yytext);
     string_literal_rm_dquote(yylval.pchar);
@@ -1054,13 +1057,13 @@ YY_RULE_SETUP
 case 16:
 /* rule 16 can match eol */
 YY_RULE_SETUP
-#line 205 "src/flex/lexer.l"
+#line 208 "src/flex/lexer.l"
 {
     show_str_literal_err();
   }
 	YY_BREAK
 case YY_STATE_EOF(SCANNING_STR_LITERAL):
-#line 208 "src/flex/lexer.l"
+#line 211 "src/flex/lexer.l"
 {
     show_str_literal_err();
   }
@@ -1068,7 +1071,7 @@ case YY_STATE_EOF(SCANNING_STR_LITERAL):
 
 case 17:
 YY_RULE_SETUP
-#line 213 "src/flex/lexer.l"
+#line 216 "src/flex/lexer.l"
 {
   BEGIN(SCANNING_MULTILINE_COMMENT);  
   comment_open_pos = cursor;
@@ -1078,25 +1081,25 @@ YY_RULE_SETUP
 
 case 18:
 YY_RULE_SETUP
-#line 220 "src/flex/lexer.l"
+#line 223 "src/flex/lexer.l"
 { /* noop */ }
 	YY_BREAK
 case 19:
 /* rule 19 can match eol */
 YY_RULE_SETUP
-#line 221 "src/flex/lexer.l"
+#line 224 "src/flex/lexer.l"
 {
   }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 223 "src/flex/lexer.l"
+#line 226 "src/flex/lexer.l"
 {
     BEGIN(INITIAL);
   }
 	YY_BREAK
 case YY_STATE_EOF(SCANNING_MULTILINE_COMMENT):
-#line 226 "src/flex/lexer.l"
+#line 229 "src/flex/lexer.l"
 {
     ++errors_count;
     CIPL_PERROR_CURSOR("unterminated comment\n", curr_line_buffer, comment_open_pos);
@@ -1106,7 +1109,7 @@ case YY_STATE_EOF(SCANNING_MULTILINE_COMMENT):
 
 case 21:
 YY_RULE_SETUP
-#line 233 "src/flex/lexer.l"
+#line 236 "src/flex/lexer.l"
 {
   CIPL_PERROR_CURSOR("unexpected character: %s\n", curr_line_buffer, cursor, yytext);  
   return YYerror;
@@ -1114,10 +1117,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 238 "src/flex/lexer.l"
+#line 241 "src/flex/lexer.l"
 ECHO;
 	YY_BREAK
-#line 1121 "src/flex/lexer.c"
+#line 1124 "src/flex/lexer.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2091,7 +2094,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 238 "src/flex/lexer.l"
+#line 241 "src/flex/lexer.l"
 
 
 void show_str_literal_err() {
