@@ -10,9 +10,9 @@ AST *ast_number_init(YYLTYPE rule_pos, NumberType number_type,
   NumberAST *ast = calloc(1, sizeof(NumberAST));
   ast->num_type = number_type;
   ast->value = value;
-  ast->sym_type = number_type == K_INTEGER ? SYM_INT
-                  : (number_type == K_NIL) ? SYM_PTR
-                                           : SYM_REAL;
+  ast->sym_type = number_type == K_INTEGER
+                      ? SYM_INT
+                      : ((number_type == K_NIL) ? SYM_PTR : SYM_REAL);
   return ast_cast(AST_NUMBER, rule_pos, 0, ast);
 }
 

@@ -32,3 +32,5 @@ void ast_str_print_pretty(AST *ast, int depth) {
 
   CIPL_PRINTF_COLOR(BYEL, "'%s'\n", str_ast->value);
 }
+
+SymbolTypes ast_str_type_check(AST *ast) { return SYM_PTR; }

@@ -209,6 +209,22 @@ int wrong_returns() {
   return ?NIL;
 }
 
+float builtin() {
+  float list l;
+  int list ll;
+  int x;
+  read(l);
+  read(ll);
+  return !(?!%l) - ?!ll;
+
+  write(1);
+  writeln(l);
+  write(ll);
+  write("ola mundo");
+  write(1 : 2 : l);
+  writeln(1 + 2 + NIL);
+}
+
 int no_main() {
   return 0;
 }

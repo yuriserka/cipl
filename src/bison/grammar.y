@@ -339,7 +339,7 @@ io_stmt: READ '(' id ')' ';' {
             show_error_range(@3, BCYN "'%s'" RESET " undeclared (first use in this function)\n", $3->name);
             $$ = NULL;
         } else {
-            $$ = ast_builtinfn_init(@$, $1, ast_symref_init(@$, param));
+            $$ = ast_builtinfn_init(@$, $1, ast_symref_init(@3, param));
         }
         free($1);
         symbol_free($3);
@@ -358,7 +358,7 @@ io_stmt: READ '(' id ')' ';' {
         $$ = NULL;
     }
     | READ '(' error ')' ';' {
-        show_error_range(@4, "expected expression before " WHT "')'" RESET " token\n");
+        show_error_range(@4, "expected identifier before " WHT "')'" RESET " token\n");
         free($1);
         $$ = NULL;
     }

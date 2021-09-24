@@ -78,14 +78,9 @@ static void handle_no_return(AST *func_declarator) {
 
 SymbolTypes ast_userfunc_type_check(AST *ast) {
   AST *declarator = list_peek(&ast->children, 0);
-  LIST_FOR_EACH(contexts, {
-    Context *ctx = __IT__->data;
-    if (!strcmp(ctx->name, declarator->value.symref->symbol->name)) {
-      p_ctx_name = true;
-      current_context = ctx;
-      break;
-    }
-  });
+  p_ctx_name = true;
+  current_context = ast->value.userfunc->context;
+
   SymbolTypes name_t = ast_validate_types(declarator);
   AST *statements = list_peek(&ast->children, 2);
 

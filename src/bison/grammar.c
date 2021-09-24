@@ -4923,7 +4923,7 @@ yyreduce:
             show_error_range((yylsp[-2]), BCYN "'%s'" RESET " undeclared (first use in this function)\n", (yyvsp[-2].sym)->name);
             (yyval.ast) = NULL;
         } else {
-            (yyval.ast) = ast_builtinfn_init((yyloc), (yyvsp[-4].pchar), ast_symref_init((yyloc), param));
+            (yyval.ast) = ast_builtinfn_init((yyloc), (yyvsp[-4].pchar), ast_symref_init((yylsp[-2]), param));
         }
         free((yyvsp[-4].pchar));
         symbol_free((yyvsp[-2].sym));
@@ -4962,7 +4962,7 @@ yyreduce:
   case 47: /* io_stmt: READ '(' error ')' ';'  */
 #line 360 "src/bison/grammar.y"
                              {
-        show_error_range((yylsp[-1]), "expected expression before " WHT "')'" RESET " token\n");
+        show_error_range((yylsp[-1]), "expected identifier before " WHT "')'" RESET " token\n");
         free((yyvsp[-4].pchar));
         (yyval.ast) = NULL;
     }

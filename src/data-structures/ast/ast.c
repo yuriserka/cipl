@@ -331,6 +331,10 @@ SymbolTypes ast_validate_types(AST *ast) {
       return ast_declaration_type_check(ast);
     case AST_FUNC_CALL:
       return ast_funcall_type_check(ast);
+    case AST_BUILTIN_FUNC:
+      return ast_builtinfn_type_check(ast);
+    case AST_STR_LITERAL:
+      return ast_str_type_check(ast);
     case AST_PROG: {
       SymbolTypes ret = SYM_PTR;
       LIST_FOR_EACH(ast->children,
@@ -344,20 +348,6 @@ SymbolTypes ast_validate_types(AST *ast) {
 
   return SYM_INVALID;
 }
-
-// static AST *ast_find_node_rec(AST *root, AstTypes type, AST *ret) {
-//   if (!root) return NULL;
-
-//   if (root->type == type) {
-//     ret = root;
-//     return root;
-//   }
-
-//   LIST_FOR_EACH(root->children,
-//                 { ast_find_node_rec(__IT__->data, type, ret); });
-
-//   return ret;
-// }
 
 void ast_fake_stack_pop(ListNode *node) {}
 
