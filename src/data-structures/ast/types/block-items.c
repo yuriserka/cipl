@@ -43,9 +43,7 @@ SymbolTypes ast_blockitems_type_check(AST *ast) {
   LIST_FOR_EACH(blockitems_ast->value, { ast_validate_types(__IT__->data); });
 
   AST *possible_return = list_peek_last(&blockitems_ast->value);
-  if (possible_return->type != AST_JMP) {
-    return SYM_INVALID;
-  }
 
-  return ast_validate_types(possible_return);
+  return possible_return->type != AST_JMP ? SYM_INVALID
+                                          : ast_validate_types(possible_return);
 }

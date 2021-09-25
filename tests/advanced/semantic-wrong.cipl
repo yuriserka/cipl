@@ -178,6 +178,12 @@ int uniops() {
   l = ?L_ : l;
   L_ = ?%!l : L_;
 
+  x = +x;
+  x = -x;
+  x = x + +x - -x * ?l / ?L_ && -NIL;
+  x = +x_;
+  l = -L_;
+
   return x;
 }
 
@@ -223,6 +229,38 @@ float builtin() {
   write("ola mundo");
   write(1 : 2 : l);
   writeln(1 + 2 + NIL);
+}
+
+int ifelse(int list h) {
+  if (h = 123) {
+    int l;
+    h = l;
+    l = ?h;
+  }
+
+  if (?(123 : h) && NIL) {
+    int i;
+    i = NIL;
+    return NIL;
+  } else {
+    int list l;
+    float f;
+    f = ?(123 : l);
+    l = %(123.132 : l);
+    return NIL;
+    if (NIL) {
+      f = l;
+      return ?l;
+    } else {
+      l = f;
+      return !l;
+      {
+        int h;
+        if (h && 1 || 0) return h - 1/2 + NIL;
+      }
+    }
+  }
+  return 213;
 }
 
 int no_main() {

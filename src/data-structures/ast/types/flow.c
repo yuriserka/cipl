@@ -6,8 +6,8 @@
 #include "data-structures/context.h"
 #include "utils/io.h"
 
-AST *ast_flow_init(YYLTYPE rule_pos, Context *context, AST *cond, AST *then_branch,
-                   AST *else_branch) {
+AST *ast_flow_init(YYLTYPE rule_pos, Context *context, AST *cond,
+                   AST *then_branch, AST *else_branch) {
   FlowAST *ast = calloc(1, sizeof(FlowAST));
   ast->context = context;
   return ast_cast(AST_FLOW, rule_pos, 3, ast, cond, then_branch, else_branch);
@@ -51,4 +51,16 @@ void ast_flow_print_pretty(AST *ast, int depth) {
   for (int i = depth + 1; i > 0; --i) printf("\t");
   CIPL_PRINTF_COLOR(BMAG, "<else_branch>\n");
   ast_print_pretty(else_branch, depth + 2);
+}
+
+SymbolTypes ast_flow_type_check(AST *ast) {
+  AST *conditional = list_peek(&ast->children, 0);
+  AST *then_branch = list_peek(&ast->children, 1);
+  AST *else_branch = list_peek(&ast->children, 2);
+
+  ast_validate_types(conditional);
+  SymbolTypes then_t = ast_validate_types(then_branch);
+  SymbolTypes else_t = ast_validate_types(else_branch);
+
+  return MAX(then_t, else_t);
 }

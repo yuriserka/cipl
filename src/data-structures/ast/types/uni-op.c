@@ -42,7 +42,7 @@ void ast_uniop_print_pretty(AST *ast, int depth) {
   ast_print_pretty(rhs, depth + 1);
 }
 
-static void handle_mismatch_tailop_type(AST *rhs, SymbolTypes rhs_t, char *op) {
+static void invalid_uni_op(AST *rhs, SymbolTypes rhs_t, char *op) {
   Cursor beg = cursor_init_yylloc_begin(rhs->rule_pos);
   Cursor end = cursor_init_yylloc_end(rhs->rule_pos);
   LineInfo *li = list_peek(&lines, beg.line - 1);
@@ -51,6 +51,14 @@ static void handle_mismatch_tailop_type(AST *rhs, SymbolTypes rhs_t, char *op) {
                            li->text, beg, end, op,
                            symbol_canonical_type_from_enum(rhs_t));
   ++errors_count;
+}
+
+static void handle_mismatch_tailop_type(AST *rhs, SymbolTypes rhs_t, char *op) {
+  invalid_uni_op(rhs, rhs_t, op);
+}
+
+static void handle_mismatch_sign_change(AST *rhs, SymbolTypes rhs_t, char *op) {
+  invalid_uni_op(rhs, rhs_t, op);
 }
 
 SymbolTypes ast_uniop_type_check(AST *ast) {
@@ -68,6 +76,12 @@ SymbolTypes ast_uniop_type_check(AST *ast) {
         return SYM_INVALID;
       }
       return *uniop_ast->op == '?' ? (rhs_t - SYM_PTR) : rhs_t;
+    case '+':
+    case '-':
+      if (rhs_t >= SYM_PTR) {
+        handle_mismatch_sign_change(rhs, rhs_t, uniop_ast->op);
+        return SYM_INVALID;
+      }
   }
 
   return rhs_t;
