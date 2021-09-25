@@ -80,34 +80,40 @@ void ast_fake_stack_pop(ListNode *node);
  * __DFS_L__ which is a list of AST* nodes and __AST__ the current AST *node
  * being processed
  */
-#define AST_FIND_NODE(__ROOT__, __TYPE__, __FOUND_ACTION__,        \
-                      __NOT_FOUND_ACTION__)                        \
-  {                                                                \
-    bool __FOUND__ = 0;                                            \
-    ListNode *__DFS_L__ = list_node_init(__ROOT__);                \
-    AST *__AST__ = NULL;                                           \
-    while ((__AST__ = list_peek(&__DFS_L__, 0))) {                 \
-      list_pop_front(&__DFS_L__, ast_fake_stack_pop);              \
-      if (__AST__->type == __TYPE__) {                             \
-        __FOUND_ACTION__;                                          \
-      }                                                            \
-      if (__FOUND__) break;                                        \
-      switch (__AST__->type) {                                     \
-        case AST_BLOCK_ITEM_LIST:                                  \
-          LIST_FOR_EACH(__AST__->value.blockitems->value,          \
-                        { list_push(&__DFS_L__, __IT__->data); }); \
-          break;                                                   \
-        case AST_PARAM_LIST:                                       \
-          LIST_FOR_EACH(__AST__->value.params->value,              \
-                        { list_push(&__DFS_L__, __IT__->data); }); \
-          break;                                                   \
-        default:                                                   \
-          LIST_FOR_EACH(__AST__->children,                         \
-                        { list_push(&__DFS_L__, __IT__->data); }); \
-      }                                                            \
-    }                                                              \
-    list_free(__DFS_L__, ast_fake_stack_pop);                      \
-    if (!__FOUND__) {                                              \
-      __NOT_FOUND_ACTION__;                                        \
-    }                                                              \
+#define AST_FIND_NODE(__ROOT__, __TYPE__, __FOUND_ACTION__, \
+                      __NOT_FOUND_ACTION__)                 \
+  {                                                         \
+    bool __FOUND__ = 0;                                     \
+    ListNode *__DFS_L__ = list_node_init(__ROOT__);         \
+    AST *__AST__ = NULL;                                    \
+    while ((__AST__ = list_peek(&__DFS_L__, 0))) {          \
+      list_pop_front(&__DFS_L__, ast_fake_stack_pop);       \
+      if (__AST__->type == __TYPE__) {                      \
+        __FOUND_ACTION__;                                   \
+      }                                                     \
+      if (__FOUND__) break;                                 \
+      switch (__AST__->type) {                              \
+        case AST_BLOCK_ITEM_LIST:                           \
+          LIST_FOR_EACH(__AST__->value.blockitems->value, { \
+            AST *child = __IT__->data;                      \
+            if (child) list_push(&__DFS_L__, child);        \
+          });                                               \
+          break;                                            \
+        case AST_PARAM_LIST:                                \
+          LIST_FOR_EACH(__AST__->value.params->value, {     \
+            AST *child = __IT__->data;                      \
+            if (child) list_push(&__DFS_L__, child);        \
+          });                                               \
+          break;                                            \
+        default:                                            \
+          LIST_FOR_EACH(__AST__->children, {                \
+            AST *child = __IT__->data;                      \
+            if (child) list_push(&__DFS_L__, child);        \
+          });                                               \
+      }                                                     \
+    }                                                       \
+    list_free(__DFS_L__, ast_fake_stack_pop);               \
+    if (!__FOUND__) {                                       \
+      __NOT_FOUND_ACTION__;                                 \
+    }                                                       \
   }
