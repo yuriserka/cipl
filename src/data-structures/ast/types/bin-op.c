@@ -242,6 +242,10 @@ SymbolTypes ast_binop_type_check(AST *ast) {
         return (*binop_ast->op == '<' ? MAX(rhs_t, SYM_PTR) : lhs_t + SYM_PTR);
       }
     } break;
+    case '&':
+    case '|':
+      // anything can be part of a boolean expression and it returns a SYM_INT
+      return SYM_INT;
     default: {
       if (is_rel_equality(binop_ast->op)) {
         if (!can_compare(lhs_t, rhs_t)) {
