@@ -76,7 +76,7 @@ int err_assign() {
   return 0;
 }
 
-int map(int i, int j) {
+int invalid_map(int i, int j) {
   return i + 1;
 }
 
@@ -97,14 +97,15 @@ int list_mapfil() {
   int x;
   x = 10;
   l = x >> l;
-  l = map >> x;
-  l = map >> l;
+  l = invalid_map >> x;
+  l = invalid_map >> l;
   l = filter << l;
   l = invalid_filter << l;
   l = invalid_filter << x;
   x = filter << l;
 
   float list fl;
+  l = i2f >> (1 : 2 : 3 : ?%l : l);
   /*
    * despite fl be a `float list` the ith element can be converted from float
    * to int which is the param for i2f, so the statement is valid, althought
@@ -149,6 +150,8 @@ int uniops() {
   x = ?ll();
   x = list_cons(l);
   x = list_cons(NIL);
+  x = !?%!%!%!%l;
+  x = ?%(!%(?%!(!!NIL : !NIL : ?l : !%%%l) : l));
 
   x = %ll(); // a `number` cant be the pop-tail of `int list` 
   x = !ll(); // a `number` cant be the tail of `int list`
@@ -261,6 +264,28 @@ int ifelse(int list h) {
     }
   }
   return 213;
+}
+
+float list iter(int n) {
+  int it;
+  float list fl;
+  for (it = 0; it < n && fl != NIL; it = it + 1) {
+    fl = it + 2 : it + 1 : it : fl;
+    if (?fl >= 12) {
+      int it;
+      for (it = ?!fl + NIL; fl != 2; it = it - 1 + ?fl * NIL) n = n - 1;
+      return it;
+    } else {
+      fl = NIL;
+      for (it = it + 123.213; it < n - 2 / fl; NIL) {
+        it = it + 1;
+        if (it > 100) return !?fl;
+      }
+    }
+  }
+
+  for (NIL;;NIL) it = it + 1;
+  return ?!!%!!%!fl;
 }
 
 int no_main() {

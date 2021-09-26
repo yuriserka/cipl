@@ -176,22 +176,14 @@ static void handle_mismatch_mapfil(AST *lhs, AST *rhs, SymbolTypes lhs_t,
     handle_mapfil_mismatch_params(lhs, rhs_t);
   }
 
-  if (lhs->type != AST_SYM_REF || rhs->type != AST_SYM_REF) {
-    if (lhs->type == AST_SYM_REF && lhs->value.symref->symbol->is_fn) {
-      char *func_str = symbol_canonical_type_function(lhs);
-      sprintf(tmp, "%s", func_str);
-      free(func_str);
-    } else {
-      sprintf(tmp, "%s", symbol_canonical_type_from_enum(lhs_t));
-    }
+  if (lhs->type != AST_SYM_REF) {
     CIPL_PERROR_CURSOR_RANGE(
         "invalid operands to binary " WHT "'%s'" RESET " (have " BGRN
         "'%s'" RESET " and " BGRN "'%s'" RESET ")\n",
         li->text, beg, end, op, tmp, symbol_canonical_type_from_enum(rhs_t));
     ++errors_count;
-  } else if (lhs->type == AST_SYM_REF || rhs->type == AST_SYM_REF) {
-    if (!lhs->value.symref->symbol->is_fn ||
-        ast_validate_types(rhs) < SYM_PTR) {
+  } else {
+    if (!lhs->value.symref->symbol->is_fn || rhs_t < SYM_PTR) {
       if (lhs->value.symref->symbol->is_fn) {
         char *func_str = symbol_canonical_type_function(lhs);
         sprintf(tmp, "%s", func_str);

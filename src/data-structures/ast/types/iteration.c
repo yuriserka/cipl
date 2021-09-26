@@ -59,3 +59,16 @@ void ast_iter_print_pretty(AST *ast, int depth) {
   CIPL_PRINTF_COLOR(BMAG, "<statement>\n");
   ast_print_pretty(stmts, depth + 2);
 }
+
+SymbolTypes ast_iter_type_check(AST *ast) {
+  AST *b4_all = list_peek(&ast->children, 0);
+  AST *b4_each = list_peek(&ast->children, 1);
+  AST *after_each = list_peek(&ast->children, 2);
+  AST *stmts = list_peek(&ast->children, 3);
+
+  ast_validate_types(b4_all);
+  ast_validate_types(b4_each);
+  ast_validate_types(after_each);
+
+  return ast_validate_types(stmts);
+}

@@ -68,7 +68,7 @@ SymbolTypes ast_uniop_type_check(AST *ast) {
   SymbolTypes rhs_t = ast_validate_types(rhs);
   switch (*uniop_ast->op) {
     case '!':
-      return rhs_t < SYM_PTR ? SYM_INT : rhs_t;
+      return rhs_t <= SYM_PTR ? SYM_INT : rhs_t;
     case '?':
     case '%':
       if (rhs_t < SYM_PTR) {

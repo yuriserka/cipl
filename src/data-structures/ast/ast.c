@@ -337,6 +337,8 @@ SymbolTypes ast_validate_types(AST *ast) {
       return ast_str_type_check(ast);
     case AST_FLOW:
       return ast_flow_type_check(ast);
+    case AST_ITER:
+      return ast_iter_type_check(ast);
     case AST_PROG: {
       SymbolTypes ret = SYM_PTR;
       LIST_FOR_EACH(ast->children,
