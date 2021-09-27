@@ -365,16 +365,22 @@ AST *ast_find_node(AST *root, AstTypes type) {
 
     switch (v->type) {
       case AST_BLOCK_ITEM_LIST:
-        LIST_FOR_EACH(v->value.blockitems->value,
-                      { stack_push(&l, __IT__->data); });
-
+        LIST_FOR_EACH(v->value.blockitems->value, {
+          AST *child = __IT__->data;
+          if (child) stack_push(&l, child);
+        });
         break;
       case AST_PARAM_LIST:
-        LIST_FOR_EACH(v->value.params->value,
-                      { stack_push(&l, __IT__->data); });
+        LIST_FOR_EACH(v->value.params->value, {
+          AST *child = __IT__->data;
+          if (child) stack_push(&l, child);
+        });
         break;
       default:
-        LIST_FOR_EACH_REVERSE(v->children, { stack_push(&l, __IT__->data); });
+        LIST_FOR_EACH(v->children, {
+          AST *child = __IT__->data;
+          if (child) stack_push(&l, child);
+        });
     }
   }
 
