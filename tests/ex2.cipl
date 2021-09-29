@@ -1,8 +1,4 @@
-float compute_w(
-    int list_elem, 
-    int elem,
-    int list h
-) {
+float compute_w(int elem) {
     return (elem * 4.3) / 2;
 }
 
