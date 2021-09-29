@@ -1,6 +1,3 @@
-[submodule "tac"]
-	path = tac
-	url = https://github.com/lhsantos/tac.git
 [submodule "tac-module"]
 	path = tac-module
 	url = https://github.com/lhsantos/tac.git
