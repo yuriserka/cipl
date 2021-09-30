@@ -6,6 +6,7 @@
 
 ```shell
 ./tradutor tests/{input}.cipl (> {output}.txt)?
+./tac-module/tac tests/{input}.cipl (> {output}.txt)?
 ```
 
 Running valgrind to check for memory leaks
