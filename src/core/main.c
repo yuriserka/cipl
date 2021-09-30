@@ -62,7 +62,9 @@ static int cipl_semantic() {
         ++errors_count;
       });
 
-  if (got_errors || errors_count) {
+  got_errors = got_errors || errors_count;
+
+  if (got_errors) {
     CIPL_PRINTF_COLOR(BRED, "\n\n%d error%s" RESET " generated\n", errors_count,
                       errors_count > 1 ? "s" : "");
   }
