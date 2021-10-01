@@ -211,9 +211,6 @@ SymbolTypes ast_binop_type_check(AST *ast) {
   SymbolTypes lhs_t = ast_validate_types(lhs);
   SymbolTypes rhs_t = ast_validate_types(rhs);
 
-  // printf("BINOP_T: { LHS_T: %s, RHS_T: %s }\n", symbol_type_from_enum(lhs_t),
-  //        symbol_type_from_enum(rhs_t));
-
   switch (binop_ast->op[0]) {
     case ':':
       if (!can_cons_list(lhs_t, rhs_t)) {
@@ -252,6 +249,5 @@ SymbolTypes ast_binop_type_check(AST *ast) {
     }
   }
 
-  SymbolTypes max_t = MAX(lhs_t, rhs_t);
-  return max_t;
+  return MAX(lhs_t, rhs_t);
 }

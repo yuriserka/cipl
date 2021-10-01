@@ -4,11 +4,13 @@
 #include "data-structures/scope.h"
 #include "data-structures/stack.h"
 #include "data-structures/symbol-table/symbol.h"
+#include "utils/asm/asm.h"
 
 typedef struct cipl_context {
   StackNode *scopes;
   int current_scope;
   char *name;
+  T9nUnit *translation;
 } Context;
 
 Context *context_init(char *name);

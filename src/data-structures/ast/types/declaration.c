@@ -37,7 +37,6 @@ void ast_declaration_print_pretty(AST *ast, int depth) {
 }
 
 SymbolTypes ast_declaration_type_check(AST *ast) {
-  SymbolTypes name_t = ast_validate_types(list_peek(&ast->children, 0));
-  // printf("{ DECL_T: %s }\n", symbol_type_from_enum(name_t));
-  return name_t;
+  AST *name = list_peek(&ast->children, 0);
+  return ast_validate_types(name);
 }

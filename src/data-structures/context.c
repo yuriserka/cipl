@@ -45,6 +45,7 @@ Symbol *context_has_symbol(Context *ctx, Symbol *sym) {
 void context_free(Context *ctx) {
   LIST_FREE_REVERSE(ctx->scopes, { scope_free(__IT__->data); });
   free(ctx->name);
+  if (ctx->translation) t9n_free(ctx->translation);
   free(ctx);
 }
 
@@ -106,8 +107,9 @@ void context_print_pretty(Context *ctx) {
   if (!strcmp(ctx->name, "global")) {
     CIPL_PRINTF_COLOR(UYEL, "%s symbol table\n", ctx->name);
   } else {
-    CIPL_PRINTF_COLOR(
-        UYEL, "symbol table for function:" RESET BBLU " '%s'\n" RESET, ctx->name);
+    CIPL_PRINTF_COLOR(UYEL,
+                      "symbol table for function:" RESET BBLU " '%s'\n" RESET,
+                      ctx->name);
   }
   LIST_FOR_EACH_REVERSE(ctx->scopes, {
     Scope *scope = __IT__->data;

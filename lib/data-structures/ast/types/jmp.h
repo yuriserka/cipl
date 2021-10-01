@@ -11,5 +11,6 @@ AST *ast_jmp_init(YYLTYPE rule_pos, AST *stmt);
 SymbolValues ast_jmp_eval(AST *ast);
 void ast_jmp_print(AST *ast);
 void ast_jmp_print_pretty(AST *ast, int depth);
+void ast_jmp_gen_code(AST *ast, FILE *out);
 
 SymbolTypes ast_jmp_type_check(AST *ast);

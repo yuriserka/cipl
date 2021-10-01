@@ -94,9 +94,6 @@ SymbolTypes ast_funcall_type_check(AST *ast) {
     SymbolTypes a_t = ast_validate_types(arg);
     SymbolTypes p_t = ast_validate_types(param_decl);
 
-    // printf("FUNCALL_T: { ARG_T: %s, PARAM_T: %s }\n",
-    //        symbol_type_from_enum(a_t), symbol_type_from_enum(p_t));
-
     if (!can_assign(p_t, a_t)) {
       handle_mismatch_arg_type(arg, a_t, p_t);
     }

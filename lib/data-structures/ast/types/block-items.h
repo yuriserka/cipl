@@ -13,5 +13,6 @@ AST *ast_blockitems_init(YYLTYPE rule_pos, ListNode *blockitems);
 SymbolValues ast_blockitems_eval(AST *ast);
 void ast_blockitems_print(AST *ast);
 void ast_blockitems_print_pretty(AST *ast, int depth);
+void ast_blockitems_gen_code(AST *ast, FILE *out);
 
 SymbolTypes ast_blockitems_type_check(AST *ast);

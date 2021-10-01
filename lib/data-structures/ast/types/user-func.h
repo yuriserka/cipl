@@ -15,5 +15,6 @@ AST *ast_userfunc_init(YYLTYPE rule_pos, struct cipl_context *context,
 SymbolValues ast_userfunc_eval(AST *ast);
 void ast_userfunc_print(AST *ast);
 void ast_userfunc_print_pretty(AST *ast, int depth);
+void ast_userfunc_gen_code(AST *ast, FILE *out);
 
 SymbolTypes ast_userfunc_type_check(AST *ast);

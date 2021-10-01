@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "utils/asm/asm.h"
 #include "utils/io.h"
 
 #define AST_INIT_UNION(MEM, TGT) \
@@ -351,6 +352,41 @@ SymbolTypes ast_validate_types(AST *ast) {
   }
 
   return SYM_INVALID;
+}
+
+void ast_gen_code_init(FILE *out) {
+  asm_generate_table_header(out);
+  asm_generate_code_header(out);
+  asm_generate_builtin_funcs(out);
+}
+
+void ast_gen_code_end(FILE *out) {
+  asm_generate_code_end(out);
+}
+
+void ast_gen_code(AST *ast, FILE *out) {
+  if (!ast) return;
+
+  switch (ast->type) {
+    case AST_USER_FUNC:
+      ast_userfunc_gen_code(ast, out);
+      break;
+    case AST_BLOCK_ITEM_LIST:
+      ast_blockitems_gen_code(ast, out);
+      break;
+    case AST_JMP:
+      ast_jmp_gen_code(ast, out);
+      break;
+    case AST_NUMBER:
+      ast_number_gen_code(ast, out);
+      break;
+    case AST_PROG:
+      LIST_FOR_EACH(ast->children, { ast_gen_code(__IT__->data, out); });
+      break;
+    default:
+      printf("AST type: %d type_check not implemented yet\n", ast->type);
+      break;
+  }
 }
 
 void ast_fake_stack_pop(ListNode *node) {}

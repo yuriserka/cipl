@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdarg.h>
+#include <stdio.h>
 
 #include "bison/grammar.h"
 
@@ -65,6 +66,10 @@ void ast_print(AST *ast);
 void ast_print_pretty(AST *ast, int depth);
 
 SymbolTypes ast_validate_types(AST *ast);
+
+void ast_gen_code_init(FILE *out);
+void ast_gen_code_end(FILE *out);
+void ast_gen_code(AST *ast, FILE *out);
 
 AST *ast_find_node(AST *root, AstTypes type);
 

@@ -72,6 +72,23 @@ static int cipl_semantic() {
   return !got_errors;
 }
 
+static int cipl_intermediate_code() {
+  char *outname =
+      calloc(sizeof("tests/asm/") + sizeof(filename) + sizeof(".tac") + 10,
+             sizeof(char));
+  strcat(outname, "tests/asm/");
+  strcat(outname, filename);
+  strcat(outname, ".tac");
+  FILE *asmf = fopen(outname, "w+");
+  ast_gen_code_init(asmf);
+  ast_gen_code(root, asmf);
+  ast_gen_code_end(asmf);
+  fclose(asmf);
+  free(outname);
+
+  return 1;
+}
+
 int cipl_main(int argc, char *argv[]) {
   if (argc < 2) {
     CIPL_PRINTF_COLOR(RED, "error: ");
@@ -102,12 +119,7 @@ int cipl_main(int argc, char *argv[]) {
   current_context = list_peek(&contexts, 0);
   curr_line_info = line_init(1, "");
 
-  int succeeded = cipl_syntax();
-  if (succeeded) {
-    // main_ast_pretty();
-    // main_context_pretty();
-  }
-  succeeded = succeeded && cipl_semantic();
+  bool succeeded = cipl_syntax() && cipl_semantic() && cipl_intermediate_code();
 
   fclose(yyin);
   yylex_destroy();

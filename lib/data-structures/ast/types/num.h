@@ -29,5 +29,7 @@ void ast_number_print_pretty(AST *ast, int depth);
 
 SymbolTypes ast_number_type_check(AST *ast);
 
+void ast_number_gen_code(AST *ast, FILE *out);
+
 void ast_number_tofloat(AST *ast);
 void ast_number_tointeger(AST *ast);

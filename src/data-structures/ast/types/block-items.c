@@ -47,3 +47,19 @@ SymbolTypes ast_blockitems_type_check(AST *ast) {
   return possible_return->type != AST_JMP ? SYM_INVALID
                                           : ast_validate_types(possible_return);
 }
+
+void ast_blockitems_gen_code(AST *ast, FILE *out) {
+  BlockItemListAST *blockitems_ast = ast->value.blockitems;
+
+  LIST_FOR_EACH(blockitems_ast->value, {
+    if (!__IT_NXT__) break;
+    ast_gen_code(__IT__->data, out);
+  });
+
+  AST *ret = list_peek_last(&blockitems_ast->value);
+
+  if (!strcmp(current_context->name, "main"))
+    fprintf(out, "jump EOF\n");
+  else
+    ast_gen_code(ret, out);
+}

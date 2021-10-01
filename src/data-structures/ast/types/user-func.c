@@ -100,6 +100,15 @@ SymbolTypes ast_userfunc_type_check(AST *ast) {
     if (block_item->type != AST_JMP) ast_validate_types(block_item);
   });
 
-  // printf("FUNC_T: { FN_T: %s }\n", symbol_type_from_enum(name_t));
   return name_t;
+}
+
+void ast_userfunc_gen_code(AST *ast, FILE *out) {
+  AST *name = list_peek(&ast->children, 0);
+  AST *statements = list_peek(&ast->children, 2);
+  current_context = ast->value.userfunc->context;
+  current_context->translation = t9n_init();
+
+  fprintf(out, "\n%s:\n", name->value.symref->symbol->name);
+  ast_gen_code(statements, out);
 }
