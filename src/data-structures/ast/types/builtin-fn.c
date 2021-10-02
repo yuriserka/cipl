@@ -24,14 +24,16 @@ SymbolValues ast_builtinfn_eval(AST *ast) {
 }
 
 void ast_builtinfn_print(AST *ast) {
+  BuiltinFuncAST *builtinfn_ast = ast->value.builtinfn;
   AST *args = list_peek(&ast->children, 0);
   printf("builtin_call: { name: %s , ",
-         builtinfn_str_from_type(ast->value.builtinfn->func_type));
+         builtinfn_str_from_type(builtinfn_ast->func_type));
   ast_child_print_aux_label("args", args);
   printf("}");
 }
 
 void ast_builtinfn_print_pretty(AST *ast, int depth) {
+  BuiltinFuncAST *builtinfn_ast = ast->value.builtinfn;
   AST *args = list_peek(&ast->children, 0);
 
   for (int i = depth; i > 0; --i) printf("\t");
@@ -39,7 +41,7 @@ void ast_builtinfn_print_pretty(AST *ast, int depth) {
 
   for (int i = depth + 1; i > 0; --i) printf("\t");
   CIPL_PRINTF_COLOR(BBLU, "%s\n",
-                    builtinfn_str_from_type(ast->value.builtinfn->func_type));
+                    builtinfn_str_from_type(builtinfn_ast->func_type));
 
   ast_print_pretty(args, depth + 1);
 }
@@ -82,4 +84,47 @@ SymbolTypes ast_builtinfn_type_check(AST *ast) {
   }
 
   return SYM_INT;
+}
+
+void ast_builtinfn_gen_code(AST *ast, FILE *out) {
+  BuiltinFuncAST *builtinfn_ast = ast->value.builtinfn;
+  AST *args = list_peek(&ast->children, 0);
+
+  switch (builtinfn_ast->func_type) {
+    case BUILTIN_FN_READ:
+      fprintf(out, "param $%d\n", current_context->t9n->temp);
+      fprintf(out, "call read, 1\n");
+      break;
+    default: {
+      switch (args->type) {
+        case AST_STR_LITERAL:
+          fprintf(out, "mov $%d, &%s\n", current_context->t9n->temp,
+                  args->value.str->table_entry);
+          fprintf(out, "param $%d\n", current_context->t9n->temp);
+          fprintf(out, "param 0\n");
+          break;
+        case AST_NUMBER:
+          if (args->type == AST_NUMBER) {
+            NumberAST *num_ast = args->value.number;
+            switch (num_ast->num_type) {
+              case K_NIL:
+                fprintf(out, "mov $%d, &str_nil\n", current_context->t9n->temp);
+                fprintf(out, "param $%d\n", current_context->t9n->temp);
+                break;
+              case K_INTEGER:
+                fprintf(out, "param %ld\n", num_ast->value.integer);
+                break;
+              case K_REAL:
+                fprintf(out, "param %lf\n", num_ast->value.real);
+                break;
+            }
+            fprintf(out, "param %d\n", num_ast->num_type == K_NIL ? 0 : 1);
+          }
+        default:
+          break;
+      }
+    }
+      fprintf(out, "call %s, 2\n\n",
+              builtinfn_str_from_type(builtinfn_ast->func_type));
+  }
 }

@@ -3,5 +3,12 @@ int func() {
 }
 
 int main() {
+    writeln("hello world");
+    write("a static number: ");
+    writeln(123.214);
+    writeln(10);
+
+    write("\033[31merror\033[0m: ");
+    write("list is "); writeln(NIL);
     return 1;
 }

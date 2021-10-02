@@ -12,3 +12,5 @@ void ast_declaration_print(AST *ast);
 void ast_declaration_print_pretty(AST *ast, int depth);
 
 SymbolTypes ast_declaration_type_check(AST *ast);
+
+void ast_declaration_gen_code(AST *ast, FILE *out);

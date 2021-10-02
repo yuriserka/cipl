@@ -43,5 +43,5 @@ SymbolTypes ast_jmp_type_check(AST *ast) {
 void ast_jmp_gen_code(AST *ast, FILE *out) {
   AST *stmt = list_peek(&ast->children, 0);
   ast_gen_code(stmt, out);
-  fprintf(out, "return $%d\n", current_context->translation->temp - 1);
+  fprintf(out, "return $%d\n", current_context->t9n->temp - 1);
 }

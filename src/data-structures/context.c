@@ -45,7 +45,7 @@ Symbol *context_has_symbol(Context *ctx, Symbol *sym) {
 void context_free(Context *ctx) {
   LIST_FREE_REVERSE(ctx->scopes, { scope_free(__IT__->data); });
   free(ctx->name);
-  if (ctx->translation) t9n_free(ctx->translation);
+  if (ctx->t9n) t9n_free(ctx->t9n);
   free(ctx);
 }
 

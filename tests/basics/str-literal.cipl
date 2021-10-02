@@ -18,4 +18,8 @@ int main() {
     writeln("multi: \133x\135=\x58^\x59"); // expected: "multi: [x]=X^Y"
 
     writeln("octal pruned at 3: x\1335\135=\065;"); // expected: "octal pruned at 3: x[5]=5;"
+
+    writeln("\033[31merror:\033[0m just a joke :D");
+
+    return 0;
 }

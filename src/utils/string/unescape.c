@@ -13,47 +13,47 @@ extern int errors_count;
 char *str_unescape(char *s) {
   char *str = calloc(strlen(s) + 20, sizeof(char));
   while (*s != '\0') {
-    char *sstr = str;
+    size_t len = strlen(str);
     if (*s == '\\') {
       switch (*++s) {
         case 'a':
-          sprintf(str, "%s%c", sstr, '\a');
+          str[len++] = '\a';
           ++s;
           break;
         case 'b':
-          sprintf(str, "%s%c", sstr, '\b');
+          str[len++] = '\b';
           ++s;
           break;
         case 'f':
-          sprintf(str, "%s%c", sstr, '\f');
+          str[len++] = '\f';
           ++s;
           break;
         case 'n':
-          sprintf(str, "%s%c", sstr, '\n');
+          str[len++] = '\n';
           ++s;
           break;
         case 'r':
-          sprintf(str, "%s%c", sstr, '\r');
+          str[len++] = '\r';
           ++s;
           break;
         case 't':
-          sprintf(str, "%s%c", sstr, '\t');
+          str[len++] = '\t';
           ++s;
           break;
         case 'v':
-          sprintf(str, "%s%c", sstr, '\v');
+          str[len++] = '\v';
           ++s;
           break;
         case '\\':
-          sprintf(str, "%s%c", sstr, '\\');
+          str[len++] = '\\';
           ++s;
           break;
         case '\'':
-          sprintf(str, "%s%c", sstr, '\'');
+          str[len++] = '\'';
           ++s;
           break;
         case '\"':
-          sprintf(str, "%s%c", sstr, '\"');
+          str[len++] = '\"';
           ++s;
           break;
         case 'x':
@@ -64,7 +64,7 @@ char *str_unescape(char *s) {
             CIPL_PERROR("hex escape sequence out of range\n");
             goto end_str;
           } else {
-            sprintf(str, "%s%c", sstr, hexval);
+            str[len++] = hexval;
             if (!hexval) goto end_str;
           }
         } break;
@@ -75,7 +75,7 @@ char *str_unescape(char *s) {
               CIPL_PERROR("octal escape sequence out of range\n");
               goto end_str;
             } else {
-              sprintf(str, "%s%c", sstr, octval);
+              str[len++] = octval;
               if (!octval) goto end_str;
             }
           } else {
@@ -85,7 +85,7 @@ char *str_unescape(char *s) {
         }
       }
     } else {
-      sprintf(str, "%s%c", sstr, *s++);
+      str[len++] = *s++;
     }
   }
 

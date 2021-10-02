@@ -10,7 +10,7 @@ typedef struct cipl_context {
   StackNode *scopes;
   int current_scope;
   char *name;
-  T9nUnit *translation;
+  T9nUnit *t9n;
 } Context;
 
 Context *context_init(char *name);

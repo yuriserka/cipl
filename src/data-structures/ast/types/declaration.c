@@ -40,3 +40,24 @@ SymbolTypes ast_declaration_type_check(AST *ast) {
   AST *name = list_peek(&ast->children, 0);
   return ast_validate_types(name);
 }
+
+void ast_declaration_gen_code(AST *ast, FILE *out) {
+  AST *name = list_peek(&ast->children, 0);
+  Symbol *declared = name->value.symref->symbol;
+  fprintf(out, "// %s %s\n", symbol_canonical_type_from_enum(declared->type),
+          declared->name);
+  switch (declared->type) {
+    case SYM_INT:
+    case SYM_REAL:
+      // $temp[0] = type
+      // $temp[1] = &$var
+      fprintf(out, "mema $%d, 2\n", current_context->t9n->temp);
+      break;
+    default:
+      // $temp[0] = type
+      // $temp[1] = size
+      // $temp[1] = &list per say
+      fprintf(out, "mema $%d, 3\n", current_context->t9n->temp);
+  }
+  fprintf(out, "mov *$%d, %d\n", current_context->t9n->temp++, declared->type);
+}

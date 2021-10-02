@@ -356,13 +356,12 @@ SymbolTypes ast_validate_types(AST *ast) {
 
 void ast_gen_code_init(FILE *out) {
   asm_generate_table_header(out);
+  asm_insert_str_literal_header(out);
   asm_generate_code_header(out);
   asm_generate_builtin_funcs(out);
 }
 
-void ast_gen_code_end(FILE *out) {
-  asm_generate_code_end(out);
-}
+void ast_gen_code_end(FILE *out) { asm_generate_code_end(out); }
 
 void ast_gen_code(AST *ast, FILE *out) {
   if (!ast) return;
@@ -380,11 +379,17 @@ void ast_gen_code(AST *ast, FILE *out) {
     case AST_NUMBER:
       ast_number_gen_code(ast, out);
       break;
+    case AST_BUILTIN_FUNC:
+      ast_builtinfn_gen_code(ast, out);
+      break;
+    case AST_DECLARATION:
+      ast_declaration_gen_code(ast, out);
+      break;
     case AST_PROG:
       LIST_FOR_EACH(ast->children, { ast_gen_code(__IT__->data, out); });
       break;
     default:
-      printf("AST type: %d type_check not implemented yet\n", ast->type);
+      printf("AST type: %d gen_code not implemented yet\n", ast->type);
       break;
   }
 }

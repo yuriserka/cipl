@@ -13,3 +13,4 @@ void asm_generate_table_header(FILE *out);
 void asm_generate_code_header(FILE *out);
 void asm_generate_builtin_funcs(FILE *out);
 void asm_generate_code_end(FILE *out);
+void asm_insert_str_literal_header(FILE *out);

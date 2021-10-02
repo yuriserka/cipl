@@ -74,9 +74,9 @@ static int cipl_semantic() {
 
 static int cipl_intermediate_code() {
   char *outname =
-      calloc(sizeof("tests/asm/") + sizeof(filename) + sizeof(".tac") + 10,
+      calloc(sizeof("tests/asm/out/") + sizeof(filename) + sizeof(".tac") + 10,
              sizeof(char));
-  strcat(outname, "tests/asm/");
+  strcat(outname, "tests/asm/out/");
   strcat(outname, filename);
   strcat(outname, ".tac");
   FILE *asmf = fopen(outname, "w+");

@@ -4,6 +4,7 @@
 
 typedef struct cipl_ast_str {
   char *value;
+  char *table_entry;
 } StringLiteralAST;
 
 #include "data-structures/ast/ast.h"

@@ -9,12 +9,14 @@
 AST *ast_str_init(YYLTYPE rule_pos, char *value) {
   StringLiteralAST *ast = calloc(1, sizeof(StringLiteralAST));
   ast->value = strdup(value);
+  ast->table_entry = NULL;
   return ast_cast(AST_STR_LITERAL, rule_pos, 0, ast);
 }
 
 void ast_str_free(AST *ast) {
   StringLiteralAST *str_ast = ast->value.str;
   free(str_ast->value);
+  if (str_ast->table_entry) free(str_ast->table_entry);
   free(str_ast);
 }
 
