@@ -68,10 +68,14 @@ SymbolTypes ast_uniop_type_check(AST *ast) {
   SymbolTypes rhs_t = ast_validate_types(rhs);
   switch (*uniop_ast->op) {
     case '!':
-      return rhs_t <= SYM_PTR ? SYM_INT : rhs_t;
+      if (rhs_t == SYM_PTR) {
+        handle_mismatch_tailop_type(rhs, rhs_t, uniop_ast->op);
+        return SYM_INVALID;
+      }
+      return rhs_t < SYM_PTR ? SYM_INT : rhs_t;
     case '?':
     case '%':
-      if (rhs_t < SYM_PTR) {
+      if (rhs_t <= SYM_PTR) {
         handle_mismatch_tailop_type(rhs, rhs_t, uniop_ast->op);
         return SYM_INVALID;
       }

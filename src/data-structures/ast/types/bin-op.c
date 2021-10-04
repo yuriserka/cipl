@@ -214,6 +214,7 @@ SymbolTypes ast_binop_type_check(AST *ast) {
       if (!can_cons_list(lhs_t, rhs_t)) {
         handle_mismatch_cons(lhs, rhs, lhs_t, rhs_t, binop_ast->op);
       }
+      if (rhs_t == SYM_PTR) return lhs_t + SYM_PTR;
       return MAX(rhs_t, SYM_PTR);
     case '<':
     case '>': {

@@ -65,8 +65,8 @@ void scope_print(Scope *scope) {
 
 void scope_print_pretty(Scope *scope, int width) {
   for (int i = 0; i < width; ++i) printf("\t");
-  CIPL_PRINTF_COLOR(UMAG, "scope %d has %d entr%s\n", scope->index, scope->size,
-                    scope->size > 1 ? "ies" : "y");
+  CIPL_PRINTF_COLOR(UMAG, "scope %d has %d entr%s" RESET "\n", scope->index,
+                    scope->size, scope->size > 1 ? "ies" : "y");
 
   LIST_FOR_EACH(scope->symbol_table->symbols, {
     Symbol *sym = __IT__->data;
