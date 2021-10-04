@@ -33,7 +33,7 @@ void main_context_pretty() {
   LIST_FOR_EACH(contexts, { context_print_pretty(__IT__->data); });
 }
 
-static int cipl_syntax() {
+int cipl_syntax() {
   int got_errors = yyparse(0, 0) || errors_count;
 
   if (got_errors) {
@@ -45,7 +45,7 @@ static int cipl_syntax() {
   return !got_errors;
 }
 
-static int cipl_semantic() {
+int cipl_semantic() {
   int got_errors = ast_validate_types(root) == SYM_INVALID;
 
   AST_FIND_NODE(
@@ -72,7 +72,7 @@ static int cipl_semantic() {
   return !got_errors;
 }
 
-static int cipl_intermediate_code() {
+int cipl_intermediate_code() {
   char *outname =
       calloc(sizeof("tests/asm/out/") + sizeof(filename) + sizeof(".tac") + 10,
              sizeof(char));
@@ -119,7 +119,7 @@ int cipl_main(int argc, char *argv[]) {
   current_context = list_peek(&contexts, 0);
   curr_line_info = line_init(1, "");
 
-  bool succeeded = cipl_syntax() && cipl_semantic() && cipl_intermediate_code();
+  bool succeeded = cipl_syntax() && cipl_semantic();
 
   fclose(yyin);
   yylex_destroy();

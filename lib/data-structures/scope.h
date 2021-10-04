@@ -18,3 +18,4 @@ void scope_free(Scope *scope);
 Scope *scope_add(StackNode **scopes, Scope *curr);
 Symbol *scope_lookup(StackNode *scopes, char *sym_name);
 void scope_print(Scope *scope);
+void scope_print_pretty(Scope *scope, int width);

@@ -103,7 +103,6 @@ Scope *context_found_scope(Context *ctx, int idx) {
 }
 
 void context_print_pretty(Context *ctx) {
-  int wd = 0;
   if (!strcmp(ctx->name, "global")) {
     CIPL_PRINTF_COLOR(UYEL, "%s symbol table\n", ctx->name);
   } else {
@@ -111,23 +110,12 @@ void context_print_pretty(Context *ctx) {
                       "symbol table for function:" RESET BBLU " '%s'\n" RESET,
                       ctx->name);
   }
+  int wd = 0;
   LIST_FOR_EACH_REVERSE(ctx->scopes, {
     Scope *scope = __IT__->data;
-
     if (scope->size) {
-      for (int i = 0; i < wd; ++i) printf("\t");
-      CIPL_PRINTF_COLOR(UMAG, "scope %d has %d entr%s\n", scope->index,
-                        scope->size, scope->size > 1 ? "ies" : "y");
-
-      for (int i = 0; i < NHASH; ++i) {
-        if (scope->symbol_table[i].name) {
-          Symbol *sym = &scope->symbol_table[i];
-          for (int i = 0; i < wd; ++i) printf("\t");
-          symbol_print_pretty(sym);
-        }
-      }
+      scope_print_pretty(scope, wd);
       ++wd;
-      printf("\n");
     }
   });
   printf("\n");

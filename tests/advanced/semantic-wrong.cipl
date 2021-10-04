@@ -163,7 +163,7 @@ int uniops() {
   x = list_cons(L_); // a `int list` argument cant be `float list`
 
   L_ = %!l; // a `float list` cant be the pop-tail of tail of `int list`
-  L_ - !%l; // a `float list` cant be the tail of pop-tail of `int list`
+  L_ = !%l; // a `float list` cant be the tail of pop-tail of `int list`
   L_ = !l; // a `float list` cant be the tail of `int list`
 
   int list x_;

@@ -64,9 +64,7 @@ int flows(int list f) {
     if() {} else {}
 
     // cant cover this yet
-    // if (1) if() ?
-    // if () ? else ?
-    // if () ?
+    if (1) if() if () else if () int a;
 
     int a;
     int i;
@@ -94,6 +92,10 @@ if (1) {
 }
 
 int list x() {
+    else {
+        float x;
+        x = 2;
+    }
     int x;
 }
 

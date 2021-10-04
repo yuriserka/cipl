@@ -111,7 +111,7 @@
 
 %type<pchar> unary_ops type
 
-%type<ast> external_declaration var_declaration func_declaration block_item statement
+%type<ast> external_declaration var_declaration func_declaration block_item statement else_error
 %type<ast> expression eq_expr rel_expr add_expr primary_expr constant string_literal
 %type<ast> mult_expr unary_expr postfix_expr compound_stmt logical_and_expr logical_or_expr
 %type<ast> expr_stmt jmp_stmt cond_stmt expression.opt iter_stmt list_expr param_decl io_stmt
@@ -323,6 +323,7 @@ block_item_list: block_item_list block_item { list_push(&$1, $2); $$ = $1; }
 
 block_item: var_declaration
     | statement
+    | else_error
     ;
 
 statement: expr_stmt
@@ -395,9 +396,10 @@ cond_stmt: IF '(' expression ')' statement %prec THEN {
     | IF '(' expression ')' statement ELSE statement {
         $$ = ast_flow_init(@$, current_context, $3, $5, $7);
     }
-    | IF '(' expression ')' ELSE {
+    | IF '(' expression ')' ELSE statement {
         show_error_range(@5, "expected expression before " WHT "'else'" RESET "\n");
         ast_free($3);
+        ast_free($6);
         $$ = NULL;
     }
     | IF '(' error ')' statement %prec THEN {
@@ -417,6 +419,17 @@ cond_stmt: IF '(' expression ')' statement %prec THEN {
         $$ = NULL;
     }
     ;
+
+else_error: ELSE statement {
+        show_error_range(@1, WHT "'else' " RESET " without a previous " WHT "'if'" RESET "\n");
+        ast_free($2);
+        $$ = NULL;
+    }
+    | error ELSE statement {
+        show_error_range(@2, WHT "'else' " RESET " without a previous " WHT "'if'" RESET "\n");
+        ast_free($3);
+        $$ = NULL;
+    }
 
 jmp_stmt: RETURN expression ';' { $$ = ast_jmp_init(@$, $2); }
     | RETURN error ';' {
@@ -660,8 +673,10 @@ primary_expr: id {
     }
     | constant
     | '(' expression ')' {
-        --$2->rule_pos.first_column;
-        ++$2->rule_pos.last_column;
+        if ($2) {
+            --$2->rule_pos.first_column;
+            ++$2->rule_pos.last_column;
+        }
         $$ = $2;
     }
     | '(' error ')' {
@@ -714,9 +729,10 @@ void yyerror(int l, int c, const char *s, ...) {
     last_line_ref = curr_line_buffer;
     // enable error print when bison calls yyerror()
     /* if (s) {
-        CIPL_PRINTF_COLOR(BRED, "%s\n", s);
-        CIPL_PRINTF_COLOR(BYEL, "%d:%d: at line: %s\n", error_cursor.line, error_cursor.col, last_line_ref);
-    } */
+        CIPL_PRINTF_COLOR(BRED, "%s\n" BYEL "%s:%d:%d: at line: %s\n",
+                          s, filename, cursor.line, cursor.col, last_line_ref);
+    }  */
+    
     // prevent count up errors when bison calls yyerror()
     if (!s) {
         ++errors_count;

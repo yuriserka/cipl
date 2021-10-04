@@ -74,3 +74,18 @@ void scope_print(Scope *scope) {
   symbol_table_print(scope->symbol_table);
   printf("], }, ");
 }
+
+void scope_print_pretty(Scope *scope, int width) {
+  for (int i = 0; i < width; ++i) printf("\t");
+  CIPL_PRINTF_COLOR(UMAG, "scope %d has %d entr%s\n", scope->index, scope->size,
+                    scope->size > 1 ? "ies" : "y");
+
+  for (int i = 0; i < NHASH; ++i) {
+    if (scope->symbol_table[i].name) {
+      Symbol *sym = &scope->symbol_table[i];
+      for (int i = 0; i < width; ++i) printf("\t");
+      symbol_print_pretty(sym);
+    }
+  }
+  printf("\n");
+}
