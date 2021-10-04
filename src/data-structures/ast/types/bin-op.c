@@ -145,14 +145,12 @@ static void handle_mapfil_mismatch_params(AST *fn, SymbolTypes list_type) {
                 {});
   AST *func_decl_params = list_peek(&func_decl->children, 1);
   ParamsAST *params_l = func_decl_params->value.params;
-  if (params_l->size > 1) {
+  if (params_l->size > 1 || !params_l->size) {
     CIPL_PERROR_CURSOR_RANGE(
         "function " BBLU "'%s'" RESET " should have arity 1\n", li->text, beg,
         end, fn->value.symref->symbol->name);
     ++errors_count;
-  }
-
-  if (list_type > SYM_PTR) {
+  } else if (list_type > SYM_PTR) {
     SymbolTypes param_t = ast_validate_types(params_l->value->data);
     if (!can_assign(param_t, list_type - SYM_PTR)) {
       CIPL_PERROR_CURSOR_RANGE(

@@ -81,6 +81,10 @@ int invalid_map(int i, int j) {
   return i + 1;
 }
 
+int invalid_map2() {
+  return 1 + 2 - 3;
+}
+
 int filter(float i) {
   return i < 10;
 }
@@ -100,7 +104,9 @@ int list_mapfil() {
   l = x >> l;
   l = invalid_map >> x;
   l = invalid_map >> l;
+  l = invalid_map2 >> l;
   l = filter << l;
+  l = invalid_map2 << l;
   l = invalid_filter << l;
   l = invalid_filter << x;
   x = filter << l;
