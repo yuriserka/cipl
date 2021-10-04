@@ -4,11 +4,12 @@ int no_return(int i, int j, int k) {
 }
 
 int not_lvalue_assign() {
-  no_return() = 213;
+  no_return(1,2,3) = 213;
   no_return = 67; // a function is not a valid lvalue
   NIL = 32;
   1 = 67;
   1.0 = 123.7;
+  (1 + 2 + not_lvalue_assign()) = 1;
   return -1;
 }
 

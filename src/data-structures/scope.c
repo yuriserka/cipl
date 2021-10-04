@@ -11,6 +11,7 @@ Scope *scope_init() {
   scope->index = 0;
   scope->size = 0;
   scope->last_parent = 0;
+  scope->symbol_table = symbol_table_init();
   return scope;
 }
 
@@ -18,38 +19,25 @@ Scope *scope_init_copy(Scope *other) {
   Scope *scope = calloc(1, sizeof(Scope));
   scope->index = other->index;
   scope->last_parent = other->last_parent;
-  for (int i = 0; i < NHASH; ++i) {
-    Symbol *others_sym = &other->symbol_table[i];
-    if (others_sym->name) {
-      symbol_update(&scope->symbol_table[i], others_sym->name, others_sym->type,
-                    others_sym->is_fn, others_sym->scope,
-                    others_sym->context_name, others_sym->def_pos);
-      ++scope->size;
-    }
-  }
+  LIST_FOR_EACH(other->symbol_table->symbols, {
+    Symbol *others_sym = __IT__->data;
+    list_push(&scope->symbol_table->symbols, symbol_init_copy(others_sym));
+    ++scope->size;
+  });
   return scope;
 }
 
 void scope_fill(Scope *dest, Scope *src) {
-  for (int i = 0; i < NHASH; ++i) {
-    Symbol *others_sym = &src->symbol_table[i];
-    if (others_sym->name) {
-      symbol_update(&dest->symbol_table[i], others_sym->name, others_sym->type,
-                    others_sym->is_fn, others_sym->scope,
-                    others_sym->context_name, others_sym->def_pos);
-      ++dest->size;
-    }
-  }
+  LIST_FOR_EACH(src->symbol_table->symbols, {
+    Symbol *others_sym = __IT__->data;
+    list_push(&dest->symbol_table->symbols, symbol_init_copy(others_sym));
+    ++dest->size;
+  });
 }
 
 void scope_free(Scope *scope) {
-  for (int i = 0; i < NHASH; ++i) {
-    Symbol *sym = &scope->symbol_table[i];
-    if (sym && sym->name) {
-      free(sym->name);
-      --scope->size;
-    }
-  }
+  symbol_table_free(scope->symbol_table);
+  scope->size = 0;
   free(scope);
 }
 
@@ -80,12 +68,10 @@ void scope_print_pretty(Scope *scope, int width) {
   CIPL_PRINTF_COLOR(UMAG, "scope %d has %d entr%s\n", scope->index, scope->size,
                     scope->size > 1 ? "ies" : "y");
 
-  for (int i = 0; i < NHASH; ++i) {
-    if (scope->symbol_table[i].name) {
-      Symbol *sym = &scope->symbol_table[i];
-      for (int i = 0; i < width; ++i) printf("\t");
-      symbol_print_pretty(sym);
-    }
-  }
+  LIST_FOR_EACH(scope->symbol_table->symbols, {
+    Symbol *sym = __IT__->data;
+    for (int i = 0; i < width; ++i) printf("\t");
+    symbol_print_pretty(sym);
+  });
   printf("\n");
 }

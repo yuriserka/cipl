@@ -103,7 +103,7 @@ Scope *context_found_scope(Context *ctx, int idx) {
 }
 
 void context_print_pretty(Context *ctx) {
-  if (!strcmp(ctx->name, "global")) {
+  if (!strcmp(ctx->name, "top level")) {
     CIPL_PRINTF_COLOR(UYEL, "%s symbol table\n", ctx->name);
   } else {
     CIPL_PRINTF_COLOR(UYEL,

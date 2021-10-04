@@ -6,66 +6,43 @@
 #include "data-structures/ast/types/symbol-ref.h"
 #include "utils/io.h"
 
-static unsigned symbol_table_hash(char *sym_name) {
-  unsigned long hash = 0;
-  int c;
-  while ((c = *sym_name++)) hash = c + (hash << 6) + (hash << 16) - hash;
-  return hash;
+SymbolTable *symbol_table_init() {
+  SymbolTable *tb = calloc(1, sizeof(SymbolTable));
+  tb->symbols = NULL;
+  return tb;
 }
 
-Symbol *symbol_table_lookup(SymbolTable symbol_table, char *sym_name) {
-  Symbol *sp = &symbol_table[symbol_table_hash(sym_name) % NHASH];
-  int scount = NHASH;
-
-  while (--scount >= 0) {
-    if (sp->name && !strcmp(sp->name, sym_name)) {
-      return sp;
-    }
-    if (++sp >= symbol_table + NHASH) sp = symbol_table;
-  }
+Symbol *symbol_table_lookup(SymbolTable *tb, char *sym_name) {
+  LIST_FOR_EACH(tb->symbols, {
+    Symbol *sym = __IT__->data;
+    if (!strcmp(sym->name, sym_name)) return sym;
+  });
   return NULL;
 }
 
-Symbol *symbol_table_get_valid_entry(SymbolTable symbol_table, char *sym_name) {
-  Symbol *sp = &symbol_table[symbol_table_hash(sym_name) % NHASH];
-  int scount = NHASH;
+Symbol *symbol_table_get_valid_entry(SymbolTable *tb, char *sym_name) {
+  LIST_FOR_EACH(tb->symbols, {
+    Symbol *sym = __IT__->data;
+    if (!strcmp(sym->name, sym_name)) return NULL;
+  });
 
-  while (--scount >= 0) {
-    if (sp->name && !strcmp(sp->name, sym_name)) {
-      return NULL;
-    }
-    if (!sp->name) {
-      return sp;
-    }
-    if (++sp >= symbol_table + NHASH) sp = symbol_table;
-  }
+  Symbol *sym = calloc(1, sizeof(Symbol));
+  list_push(&tb->symbols, sym);
 
-  CIPL_PERROR("symbol_table overflow\n");
-  return NULL;
+  return sym;
 }
 
-void symbol_table_delete(SymbolTable symbol_table, char *sym_name) {
-  Symbol *sp = &symbol_table[symbol_table_hash(sym_name) % NHASH];
-  int scount = NHASH;
-
-  while (--scount >= 0) {
-    if (sp->name && !strcmp(sp->name, sym_name)) {
-      symbol_free(sp);
-      return;
-    }
-  }
-
-  CIPL_PERROR("symbol: %s not found\n", sym_name);
+void symbol_table_free(SymbolTable *tb) {
+  LIST_FREE(tb->symbols, {
+    Symbol *sym = __IT__->data;
+    symbol_free(sym);
+  });
+  free(tb);
 }
 
-void symbol_table_free(SymbolTable symbol_table) {
-  for (int i = 0; i < NHASH; ++i) {
-    if (symbol_table[i].name) symbol_free(&symbol_table[i]);
-  }
-}
-
-void symbol_table_print(SymbolTable symbol_table) {
-  for (int i = 0; i < NHASH; ++i) {
-    if (symbol_table[i].name) symbol_print(&symbol_table[i]);
-  }
+void symbol_table_print(SymbolTable *tb) {
+  LIST_FOR_EACH(tb->symbols, {
+    Symbol *sym = __IT__->data;
+    symbol_print_pretty(sym);
+  });
 }

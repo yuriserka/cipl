@@ -120,6 +120,8 @@ int cipl_main(int argc, char *argv[]) {
   curr_line_info = line_init(1, "");
 
   bool succeeded = cipl_syntax() && cipl_semantic();
+  
+  main_context_pretty();
 
   fclose(yyin);
   yylex_destroy();
