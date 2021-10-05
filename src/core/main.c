@@ -121,6 +121,7 @@ int cipl_main(int argc, char *argv[]) {
 
   bool succeeded = cipl_syntax() && cipl_semantic();
   
+  main_ast_pretty();
   main_context_pretty();
 
   fclose(yyin);

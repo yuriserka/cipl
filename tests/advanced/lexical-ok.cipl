@@ -1,0 +1,19 @@
+int main() {
+    if (1) {
+        return 1.2;
+    } else {
+        write("a");
+    }
+
+    int i;
+    read(i);
+
+    for (;;) {
+        write("rep");
+        writeln("");
+    }
+
+    int list l;
+    l = NIL;
+    return 0;
+}

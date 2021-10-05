@@ -226,16 +226,15 @@ BUILTIN_FUNCTIONS read|write|writeln
   }
   <<EOF>> {
     ++errors_count;
-    LineInfo *li = list_peek(&lines, comment_open_pos.line - 1);
-    CIPL_PERROR_CURSOR("unterminated comment\n", li->text, comment_open_pos);
+    CIPL_PERROR_CURSOR("unterminated comment\n", curr_line_buffer, comment_open_pos);
     BEGIN(INITIAL);
   } 
 }
 
 . {
-  LineInfo *li = list_peek(&lines, cursor.line - 1);
+  Cursor c = (Cursor){.line=cursor.line, .col=cursor.col - 1};
   CIPL_PERROR_CURSOR("unexpected character: " WHT "'%s'" RESET "\n",
-                     li->text, cursor, yytext);  
+                     curr_line_buffer, c, yytext);  
   ++errors_count;
   return YYerror;
 }
@@ -244,9 +243,8 @@ BUILTIN_FUNCTIONS read|write|writeln
 
 void show_str_literal_err() {
   ++errors_count;
-  LineInfo *li = list_peek(&lines, dquote_open_pos.line - 1);
   CIPL_PERROR_CURSOR("missing terminating " WHT "'\"'" RESET " character\n",
-                     li->text, dquote_open_pos);
+                     curr_line_buffer, dquote_open_pos);
   BEGIN(INITIAL);
 }
 

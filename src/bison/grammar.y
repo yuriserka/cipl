@@ -729,9 +729,9 @@ void yyerror(int l, int c, const char *s, ...) {
     last_line_ref = curr_line_buffer;
     // enable error print when bison calls yyerror()
     /* if (s) {
-        CIPL_PRINTF_COLOR(BRED, "%s\n" BYEL "%s:%d:%d: at line: %s\n",
+        CIPL_PRINTF_COLOR(BRED, "%s\n" BYEL "%s:%d:%d: at line: %s" RESET "\n",
                           s, filename, cursor.line, cursor.col, last_line_ref);
-    }  */
+    } */
     
     // prevent count up errors when bison calls yyerror()
     if (!s) {

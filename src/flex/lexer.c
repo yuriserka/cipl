@@ -1100,29 +1100,28 @@ case YY_STATE_EOF(SCANNING_MULTILINE_COMMENT):
 #line 227 "src/flex/lexer.l"
 {
     ++errors_count;
-    LineInfo *li = list_peek(&lines, comment_open_pos.line - 1);
-    CIPL_PERROR_CURSOR("unterminated comment\n", li->text, comment_open_pos);
+    CIPL_PERROR_CURSOR("unterminated comment\n", curr_line_buffer, comment_open_pos);
     BEGIN(INITIAL);
   } 
 	YY_BREAK
 
 case 21:
 YY_RULE_SETUP
-#line 235 "src/flex/lexer.l"
+#line 234 "src/flex/lexer.l"
 {
-  LineInfo *li = list_peek(&lines, cursor.line - 1);
+  Cursor c = (Cursor){.line=cursor.line, .col=cursor.col - 1};
   CIPL_PERROR_CURSOR("unexpected character: " WHT "'%s'" RESET "\n",
-                     li->text, cursor, yytext);  
+                     curr_line_buffer, c, yytext);  
   ++errors_count;
   return YYerror;
 }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 243 "src/flex/lexer.l"
+#line 242 "src/flex/lexer.l"
 ECHO;
 	YY_BREAK
-#line 1126 "src/flex/lexer.c"
+#line 1125 "src/flex/lexer.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2096,14 +2095,13 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 243 "src/flex/lexer.l"
+#line 242 "src/flex/lexer.l"
 
 
 void show_str_literal_err() {
   ++errors_count;
-  LineInfo *li = list_peek(&lines, dquote_open_pos.line - 1);
   CIPL_PERROR_CURSOR("missing terminating " WHT "'\"'" RESET " character\n",
-                     li->text, dquote_open_pos);
+                     curr_line_buffer, dquote_open_pos);
   BEGIN(INITIAL);
 }
 

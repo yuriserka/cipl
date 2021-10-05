@@ -1,0 +1,11 @@
+int main(int a) {
+    // my first lex error
+    $a = 10;
+
+    /*
+    * 
+    :P
+    ****
+    */
+    int @prop = 1 : 2 : 4;
+}
