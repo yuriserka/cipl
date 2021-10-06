@@ -8,8 +8,7 @@
 AST *ast_params_init(YYLTYPE rule_pos, ListNode *params) {
   ParamsAST *ast = calloc(1, sizeof(ParamsAST));
   ast->value = params;
-  ast->size = 0;
-  LIST_FOR_EACH(params, { ++ast->size; });
+  ast->size = list_size(params);
   return ast_cast(AST_PARAM_LIST, rule_pos, 0, ast);
 }
 

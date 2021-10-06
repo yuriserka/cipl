@@ -9,9 +9,10 @@
 #include "utils/io.h"
 
 Symbol *symbol_init(char *name, SymbolTypes type, bool is_function, int scope,
-                    char *ctx_name, Cursor pos) {
+                    char *ctx_name, int temp, Cursor pos) {
   Symbol *sym = calloc(1, sizeof(Symbol));
-  symbol_update(sym, name, type, is_function, scope, ctx_name, pos);
+  symbol_update(sym, name, type, is_function, scope, ctx_name, temp, pos);
+  symbol_init_value(sym);
   return sym;
 }
 
@@ -19,11 +20,11 @@ void symbol_update_type(Symbol *sym, SymbolTypes type) { sym->type = type; }
 
 Symbol *symbol_init_copy(Symbol *other) {
   return symbol_init(other->name, other->type, other->is_fn, other->scope,
-                     other->context_name, other->def_pos);
+                     other->context_name, other->temp, other->def_pos);
 }
 
 Symbol *symbol_found(char *name, Cursor pos) {
-  return symbol_init(name, SYM_INVALID, false, 0, NULL, pos);
+  return symbol_init(name, SYM_INVALID, false, 0, NULL, -1, pos);
 }
 
 void symbol_update_context(Symbol *sym, Context *ctx) {
@@ -31,14 +32,17 @@ void symbol_update_context(Symbol *sym, Context *ctx) {
   sym->scope = ctx->current_scope;
 }
 
+void symbol_update_temp(Symbol *sym, int temp_num) { sym->temp = temp_num; }
+
 void symbol_update(Symbol *sym, char *name, SymbolTypes type, bool is_function,
-                   int scope, char *ctx_name, Cursor pos) {
+                   int scope, char *ctx_name, int temp, Cursor pos) {
   sym->name = name ? strdup(name) : NULL;
   sym->context_name = ctx_name;
   sym->scope = scope;
   sym->def_pos = pos;
   sym->type = type;
   sym->is_fn = is_function;
+  sym->temp = temp;
 }
 
 void symbol_free(Symbol *sym) {
@@ -200,7 +204,7 @@ void symbol_init_value(Symbol *sym) {
       sym->value = (SymbolValues){.list = NULL};
       break;
     default:
-      CIPL_PRINTF_COLOR(BRED, "invalid symbol type");
+      break;
   }
 }
 
@@ -227,7 +231,7 @@ void symbol_update_value(Symbol *sym, int mArgs, ...) {
       list_push(&sym->value.list, elemp);
     } break;
     default:
-      CIPL_PRINTF_COLOR(BRED, "invalid symbol type");
+      break;
   }
 
   va_end(ptr);

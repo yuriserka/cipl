@@ -169,6 +169,7 @@ var_declaration: type id ';' {
         }
         else {
             symbol_update_type($2, decl_type);
+            symbol_update_temp($2, current_context->t9n->temp++);
             $$ = ast_declaration_init(@$, 
                 ast_symref_init(@2, context_declare_variable(current_context, $2))
             );
@@ -275,6 +276,7 @@ param_decl: type id {
             $$ = NULL;
         } else {
             symbol_update_type($2, symbol_type_from_str($1));
+            symbol_update_temp($2, -(current_context->t9n->temp++));
             $$ = ast_symref_init(@$, context_declare_variable(current_context, $2));
         }
         symbol_free($2);

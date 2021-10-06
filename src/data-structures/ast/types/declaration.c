@@ -48,16 +48,22 @@ void ast_declaration_gen_code(AST *ast, FILE *out) {
           declared->name);
   switch (declared->type) {
     case SYM_INT:
+      // $temp[0] = type
+      // $temp[1] = &$var
+      fprintf(out, "mema $%d, 2\n", declared->temp);
+      fprintf(out, "mov $%d[1], %d\n", declared->temp, declared->value.integer);
+      break;
     case SYM_REAL:
       // $temp[0] = type
       // $temp[1] = &$var
-      fprintf(out, "mema $%d, 2\n", current_context->t9n->temp);
+      fprintf(out, "mema $%d, 2\n", declared->temp);
+      fprintf(out, "mov $%d[1], %lf\n", declared->temp, declared->value.real);
       break;
     default:
       // $temp[0] = type
       // $temp[1] = size
       // $temp[1] = &list per say
-      fprintf(out, "mema $%d, 3\n", current_context->t9n->temp);
+      fprintf(out, "mema $%d, 3\n", declared->temp);
   }
-  fprintf(out, "mov *$%d, %d\n", current_context->t9n->temp++, declared->type);
+  fprintf(out, "mov *$%d, %d\n\n", declared->temp, declared->type);
 }

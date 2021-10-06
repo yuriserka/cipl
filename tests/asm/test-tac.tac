@@ -1,16 +1,43 @@
 .table
 
-char str_1[] = "hello world"
+char str_1[] = "vc digitou:"
 char snil[] = "nil"
 
 .code
+get_var_val:
+    mov $0, *#0
+    seq $0, $0, 2
+    brz get_var_val_INT, $0
+    mov $0, #0[1]
+    jump get_var_val_END
+get_var_val_INT:
+    mov $0, #0[1]
+get_var_val_END:
+    return $0
+
 read:
-    println 3
+    mov $0, *#0
+    seq $0, $0, 2
+    brz read_INT, $0
+    scanf $1
+    jump read_END
+read_INT:
+    scani $1
+read_END:
+    mov #0[1], $1
     return 0
 
 write:
     brz write_STR, #1
+    seq $0, #1, 1
+    brz write_VAR, $0
     print #0
+    jump write_END
+write_VAR:
+    param #0
+    call get_var_val, 1
+    pop $0
+    print $0
     jump write_END
 write_STR:
     mov $2, 0
@@ -32,25 +59,15 @@ writeln:
     println
     return 0
 
-func:
-    mov $0, 0
-    return $0
-
 main:
-    mov $0, &str_1
-    param $0
-    param 0
-    call writeln, 2
+    // var decl
+    mema $0, 2
+    mov *$0, 1
+    mov $0[1], 0
 
-    param 123.1544
-    param 1
-    call writeln, 2
-
-    mov $0, &snil
     param $0
-    param 0
+    param 2
     call writeln, 2
-    jump EOF
 
 EOF:
     nop

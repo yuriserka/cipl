@@ -13,6 +13,7 @@ Context *context_init(char *name) {
   ctx->current_scope = 0;
   ctx->scopes = list_node_init(scope_init());
   ctx->name = strdup(name);
+  ctx->t9n = t9n_init();
   return ctx;
 }
 
@@ -45,7 +46,7 @@ Symbol *context_has_symbol(Context *ctx, Symbol *sym) {
 void context_free(Context *ctx) {
   LIST_FREE_REVERSE(ctx->scopes, { scope_free(__IT__->data); });
   free(ctx->name);
-  if (ctx->t9n) t9n_free(ctx->t9n);
+  t9n_free(ctx->t9n);
   free(ctx);
 }
 
@@ -68,7 +69,7 @@ Symbol *context_declare_variable(Context *ctx, Symbol *sym) {
       symbol_table_get_valid_entry(current_scope->symbol_table, sym->name);
   if (entry) {
     symbol_update(entry, sym->name, sym->type, false, current_scope->index,
-                  ctx->name, sym->def_pos);
+                  ctx->name, sym->temp, sym->def_pos);
     symbol_init_value(entry);
     ++current_scope->size;
   }
@@ -81,7 +82,7 @@ Symbol *context_declare_function(Context *ctx, Symbol *sym) {
       symbol_table_get_valid_entry(current_scope->symbol_table, sym->name);
   if (entry) {
     symbol_update(entry, sym->name, sym->type, true, current_scope->index,
-                  ctx->name, sym->def_pos);
+                  ctx->name, sym->temp, sym->def_pos);
     ++current_scope->size;
     symbol_init_value(entry);
   }

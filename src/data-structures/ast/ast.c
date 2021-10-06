@@ -356,9 +356,7 @@ SymbolTypes ast_validate_types(AST *ast) {
 
 void ast_gen_code_init(FILE *out) {
   asm_generate_table_header(out);
-  asm_insert_str_literal_header(out);
   asm_generate_code_header(out);
-  asm_generate_builtin_funcs(out);
 }
 
 void ast_gen_code_end(FILE *out) { asm_generate_code_end(out); }

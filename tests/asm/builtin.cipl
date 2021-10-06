@@ -1,0 +1,26 @@
+int main() {
+    int a;
+    write("whats your age: ");
+    read(a);
+
+    write("i also have ");
+    write(a);
+    writeln(" years, thats amazing!");
+
+    float b;
+    write("b -> not initialized by read = ");
+    writeln(b);
+
+    write("later ref of a: ");
+    write(a);
+    write("+");
+    writeln(a);
+
+    write("a static number: ");
+    writeln(123.214);
+
+    write("\033[31merror\033[0m: ");
+    write("list is "); writeln(NIL);
+
+    return 0;
+}

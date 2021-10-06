@@ -13,9 +13,7 @@ T9nUnit *t9n_init() {
 
 void t9n_free(T9nUnit *t9n) { free(t9n); }
 
-void asm_generate_table_header(FILE *out) { fprintf(out, ".table\n"); }
-
-void asm_insert_str_literal_header(FILE *out) {
+static void asm_insert_str_literal_header(FILE *out) {
   int i = 0;
   fprintf(out, "\nchar str_nil[] = \"nil\"\n");
   AST_FIND_NODE(root, AST_STR_LITERAL,
@@ -30,18 +28,52 @@ void asm_insert_str_literal_header(FILE *out) {
   fprintf(out, "\n");
 }
 
-void asm_generate_code_header(FILE *out) { fprintf(out, ".code\n"); }
+void asm_generate_table_header(FILE *out) {
+  fprintf(out, ".table\n");
+  asm_insert_str_literal_header(out);
+}
+
+static void asm_get_var_val(FILE *out) {
+  fprintf(out, "get_var_val:\n");
+  fprintf(out, "mov $0, *#0\n");
+  fprintf(out, "seq $0, $0, 2\n");
+  fprintf(out, "brz get_var_val_INT, $0\n");
+  fprintf(out, "mov $0, #0[1]\n");
+  fprintf(out, "jump get_var_val_END\n");
+  fprintf(out, "get_var_val_INT:\n");
+  fprintf(out, "mov $0, #0[1]\n");
+  fprintf(out, "get_var_val_END:\n");
+  fprintf(out, "return $0\n\n");
+}
+
+static void asm_generate_utils(FILE *out) { asm_get_var_val(out); }
 
 static void asm_read(FILE *out) {
-  fprintf(out, "\nread:\n");
-  fprintf(out, "println 3\n");
-  fprintf(out, "return 0\n");
+  fprintf(out, "read:\n");
+  fprintf(out, "mov $0, *#0\n");
+  fprintf(out, "seq $0, $0, 2\n");
+  fprintf(out, "brz read_INT, $0\n");
+  fprintf(out, "scanf $1\n");
+  fprintf(out, "jump read_END\n");
+  fprintf(out, "read_INT:\n");
+  fprintf(out, "scani $1\n");
+  fprintf(out, "read_END:\n");
+  fprintf(out, "mov #0[1], $1\n");
+  fprintf(out, "return 0\n\n");
 }
 
 static void asm_write(FILE *out) {
   fprintf(out, "\nwrite:\n");
   fprintf(out, "brz write_STR, #1\n");
+  fprintf(out, "seq $0, #1, 1\n");
+  fprintf(out, "brz write_VAR, $0\n");
   fprintf(out, "print #0\n");
+  fprintf(out, "jump write_END\n");
+  fprintf(out, "write_VAR:\n");
+  fprintf(out, "param #0\n");
+  fprintf(out, "call get_var_val, 1\n");
+  fprintf(out, "pop $0\n");
+  fprintf(out, "print $0\n");
   fprintf(out, "jump write_END\n");
   fprintf(out, "write_STR:\n");
   fprintf(out, "mov $2, 0\n");
@@ -65,10 +97,16 @@ static void asm_writeln(FILE *out) {
   fprintf(out, "return 0\n");
 }
 
-void asm_generate_builtin_funcs(FILE *out) {
+static void asm_generate_builtin_funcs(FILE *out) {
   asm_read(out);
   asm_write(out);
   asm_writeln(out);
+}
+
+void asm_generate_code_header(FILE *out) {
+  fprintf(out, ".code\n");
+  asm_generate_utils(out);
+  asm_generate_builtin_funcs(out);
 }
 
 void asm_generate_code_end(FILE *out) {
