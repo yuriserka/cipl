@@ -52,6 +52,8 @@ float builtin() {
     write();
     writeln();
     read(undefined_var);
+    write;
+    read;
     write("a")
 }
 

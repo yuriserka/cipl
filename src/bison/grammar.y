@@ -383,6 +383,16 @@ io_stmt: READ '(' id ')' ';' {
         ast_free($3);
         $$ = NULL;
     }
+    | WRITE error {
+        show_error_range(@2, "expected " WHT "'('" RESET " token\n");
+        free($1);
+        $$ = NULL;
+    }
+    | READ error {
+        show_error_range(@2, "expected " WHT "'('" RESET " token\n");
+        free($1);
+        $$ = NULL;
+    }
     ;
 
 expr_stmt: expression ';' { $$ = $1; }
