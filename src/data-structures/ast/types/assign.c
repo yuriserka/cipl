@@ -73,7 +73,7 @@ SymbolTypes ast_assign_type_check(AST *ast) {
     return SYM_INVALID;
   }
 
-  if (lhs->value.symref->symbol->is_fn) {
+  if (lhs->value.symref->symbol->kind == FUNC) {
     handle_lvalue_required(lhs, rhs);
     return SYM_INVALID;
   }
@@ -88,4 +88,27 @@ SymbolTypes ast_assign_type_check(AST *ast) {
   }
 
   return MAX(lhs_t, rhs_t);
+}
+
+void ast_assign_gen_code(AST *ast, FILE *out) {
+  AST *lhs = list_peek(&ast->children, 0);
+  AST *rhs = list_peek(&ast->children, 1);
+  ast_gen_code(rhs, out);
+  fprintf(out, "param %c%d\n", t9n_prefix(lhs->value.symref->symbol),
+          lhs->value.symref->symbol->temp);
+  switch (rhs->type) {
+    case AST_SYM_REF:
+      fprintf(out, "param %c%d\n", t9n_prefix(rhs->value.symref->symbol),
+              rhs->value.symref->symbol->temp);
+      fprintf(out, "param 1\n");
+      break;
+    case AST_FUNC_CALL:
+      fprintf(out, "param $%d\n", current_context->t9n->temp);
+      fprintf(out, "param 1\n");
+      break;
+    default:
+      fprintf(out, "param $%d\n", current_context->t9n->temp);
+      fprintf(out, "param 0\n");
+  }
+  fprintf(out, "call set_var_val, 3\n\n");
 }

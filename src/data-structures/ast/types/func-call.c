@@ -101,3 +101,17 @@ SymbolTypes ast_funcall_type_check(AST *ast) {
 
   return ast_validate_types(declarator);
 }
+
+void ast_funcall_gen_code(AST *ast, FILE *out) {
+  AST *declarator = list_peek(&ast->children, 0);
+  AST *args = list_peek(&ast->children, 1);
+
+  Symbol *sym = declarator->value.symref->symbol;
+  LIST_FOR_EACH(args->value.params->value, {
+    AST *arg = __IT__->data;
+    fprintf(out, "param %c%d\n", t9n_prefix(arg->value.symref->symbol),
+            arg->value.symref->symbol->temp);
+  })
+  fprintf(out, "call func_%s, %d\n", sym->name, args->value.params->size);
+  fprintf(out, "pop $%d\n\n", current_context->t9n->temp);
+}

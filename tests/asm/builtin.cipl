@@ -1,26 +1,34 @@
+int fn(int a) {
+    float b;
+    read(a);
+    read(b);
+    write("a in fn: ");
+    writeln(a);
+    write("b in fn: ");
+    writeln(b);
+    return b;
+}
+
+float fn2() {
+    return 3.14159;
+}
+
 int main() {
     int a;
-    write("whats your age: ");
-    read(a);
-
-    write("i also have ");
-    write(a);
-    writeln(" years, thats amazing!");
-
     float b;
-    write("b -> not initialized by read = ");
+    b = fn(a); // cast itof
+    write("a in main: ");
+    writeln(a);
+    write("b in main: ");
     writeln(b);
 
-    write("later ref of a: ");
-    write(a);
-    write("+");
+    a = b; // cast ftoi
+
+    write("a in main after: ");
     writeln(a);
 
-    write("a static number: ");
-    writeln(123.214);
-
-    write("\033[31merror\033[0m: ");
-    write("list is "); writeln(NIL);
+    write("a func call inside -> ");
+    writeln(fn2());
 
     return 0;
 }

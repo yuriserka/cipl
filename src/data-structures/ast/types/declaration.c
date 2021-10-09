@@ -44,8 +44,8 @@ SymbolTypes ast_declaration_type_check(AST *ast) {
 void ast_declaration_gen_code(AST *ast, FILE *out) {
   AST *name = list_peek(&ast->children, 0);
   Symbol *declared = name->value.symref->symbol;
-  fprintf(out, "// %s %s\n", symbol_canonical_type_from_enum(declared->type),
-          declared->name);
+  fprintf(out, "// var %s %s\n",
+          symbol_canonical_type_from_enum(declared->type), declared->name);
   switch (declared->type) {
     case SYM_INT:
       // $temp[0] = type

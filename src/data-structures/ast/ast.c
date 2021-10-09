@@ -368,6 +368,9 @@ void ast_gen_code(AST *ast, FILE *out) {
     case AST_USER_FUNC:
       ast_userfunc_gen_code(ast, out);
       break;
+    case AST_FUNC_CALL:
+      ast_funcall_gen_code(ast, out);
+      break;
     case AST_BLOCK_ITEM_LIST:
       ast_blockitems_gen_code(ast, out);
       break;
@@ -382,6 +385,12 @@ void ast_gen_code(AST *ast, FILE *out) {
       break;
     case AST_DECLARATION:
       ast_declaration_gen_code(ast, out);
+      break;
+    case AST_ASSIGN_OP:
+      ast_assign_gen_code(ast, out);
+      break;
+    case AST_SYM_REF:
+      ast_symref_gen_code(ast, out);
       break;
     case AST_PROG:
       LIST_FOR_EACH(ast->children, { ast_gen_code(__IT__->data, out); });

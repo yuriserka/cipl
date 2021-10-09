@@ -170,7 +170,7 @@ static void handle_mismatch_mapfil(AST *lhs, AST *rhs, SymbolTypes lhs_t,
   LineInfo *li = list_peek(&lines, beg.line - 1);
   char tmp[1024] = "";
 
-  if (lhs->type == AST_SYM_REF && lhs->value.symref->symbol->is_fn) {
+  if (lhs->type == AST_SYM_REF && lhs->value.symref->symbol->kind == FUNC) {
     handle_mapfil_mismatch_params(lhs, rhs_t);
   }
 
@@ -181,8 +181,8 @@ static void handle_mismatch_mapfil(AST *lhs, AST *rhs, SymbolTypes lhs_t,
         li->text, beg, end, op, tmp, symbol_canonical_type_from_enum(rhs_t));
     ++errors_count;
   } else {
-    if (!lhs->value.symref->symbol->is_fn || rhs_t < SYM_PTR) {
-      if (lhs->value.symref->symbol->is_fn) {
+    if (!lhs->value.symref->symbol->kind == FUNC || rhs_t < SYM_PTR) {
+      if (lhs->value.symref->symbol->kind == FUNC) {
         char *func_str = symbol_canonical_type_function(lhs);
         sprintf(tmp, "%s", func_str);
         free(func_str);

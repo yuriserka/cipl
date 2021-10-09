@@ -8,10 +8,13 @@
 T9nUnit *t9n_init() {
   T9nUnit *t9n = calloc(1, sizeof(T9nUnit));
   t9n->temp = 0;
+  t9n->param = 0;
   return t9n;
 }
 
 void t9n_free(T9nUnit *t9n) { free(t9n); }
+
+char t9n_prefix(Symbol *symbol) { return symbol->kind == PARAM ? '#' : '$'; }
 
 static void asm_insert_str_literal_header(FILE *out) {
   int i = 0;
@@ -33,6 +36,36 @@ void asm_generate_table_header(FILE *out) {
   asm_insert_str_literal_header(out);
 }
 
+static void asm_set_var_val(FILE *out) {
+  fprintf(out, "set_var_val:\n");
+  fprintf(out, "seq $0, #2, 0\n");
+  fprintf(out, "brz set_var_val_FROM_VAR, $0\n");
+  fprintf(out, "mov $0, *#0\n");
+  fprintf(out, "mov $3, #1\n");
+  fprintf(out, "jump set_var_val_END\n");
+  fprintf(out, "set_var_val_FROM_VAR:\n");
+  fprintf(out, "mov $0, *#0\n");
+  fprintf(out, "mov $1, *#1\n");
+  fprintf(out, "mov $2, #1[1]\n");
+  fprintf(out, "set_var_val_START:\n");
+  fprintf(out, "seq $3, $0, $1\n");
+  fprintf(out, "brnz set_var_val_EQUAL, $3\n");
+  fprintf(out, "slt $3, $0, $1\n");
+  fprintf(out, "brnz set_var_val_F2I, $3\n");
+  fprintf(out, "mov $3, $2\n");
+  fprintf(out, "inttofl $3, $3\n");
+  fprintf(out, "jump set_var_val_END\n");
+  fprintf(out, "set_var_val_F2I:\n");
+  fprintf(out, "mov $3, $2\n");
+  fprintf(out, "fltoint $3, $3\n");
+  fprintf(out, "jump set_var_val_END\n");
+  fprintf(out, "set_var_val_EQUAL:\n");
+  fprintf(out, "mov $3, $2\n");
+  fprintf(out, "set_var_val_END:\n");
+  fprintf(out, "mov #0[1], $3\n");
+  fprintf(out, "return 0\n\n");
+}
+
 static void asm_get_var_val(FILE *out) {
   fprintf(out, "get_var_val:\n");
   fprintf(out, "mov $0, *#0\n");
@@ -46,7 +79,10 @@ static void asm_get_var_val(FILE *out) {
   fprintf(out, "return $0\n\n");
 }
 
-static void asm_generate_utils(FILE *out) { asm_get_var_val(out); }
+static void asm_generate_utils(FILE *out) {
+  asm_set_var_val(out);
+  asm_get_var_val(out);
+}
 
 static void asm_read(FILE *out) {
   fprintf(out, "read:\n");

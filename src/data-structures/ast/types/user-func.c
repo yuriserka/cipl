@@ -105,9 +105,49 @@ SymbolTypes ast_userfunc_type_check(AST *ast) {
 
 void ast_userfunc_gen_code(AST *ast, FILE *out) {
   AST *name = list_peek(&ast->children, 0);
+  AST *params = list_peek(&ast->children, 1);
   AST *statements = list_peek(&ast->children, 2);
   current_context = ast->value.userfunc->context;
 
-  fprintf(out, "\n%s:\n", name->value.symref->symbol->name);
+  Symbol *func_sym = name->value.symref->symbol;
+
+  fprintf(out, "\n%s%s:\n", strcmp(func_sym->name, "main") ? "func_" : "",
+          func_sym->name);
+
+  ListNode *old_params_ref = NULL;
+
+  LIST_FOR_EACH_REVERSE(params->value.params->value, {
+    AST *param = __IT__->data;
+    Symbol *par_sym = param->value.symref->symbol;
+    // int/float are passed by value so have to copy them to a temp
+    if (par_sym->type < SYM_PTR) {
+      int curr_tmp = current_context->t9n->temp;
+      fprintf(out, "// param %s %s\n",
+              symbol_canonical_type_from_enum(par_sym->type), par_sym->name);
+      fprintf(out, "mema $%d, 2\n", curr_tmp);
+      fprintf(out, "mov $%d, #%d[1]\n", curr_tmp + 1, par_sym->temp);
+      fprintf(out, "mov $%d[1], $%d\n", curr_tmp, curr_tmp + 1);
+      fprintf(out, "mov *$%d, %d\n\n", curr_tmp, par_sym->type);
+
+      list_push(&old_params_ref, symbol_init_copy(par_sym));
+
+      par_sym->temp = current_context->t9n->temp++;
+      par_sym->kind = VAR;
+    }
+  });
+
   ast_gen_code(statements, out);
+
+  // recover #param number
+  LIST_FOR_EACH_REVERSE(params->value.params->value, {
+    AST *param = __IT__->data;
+    Symbol *par_sym = param->value.symref->symbol;
+    if (par_sym->type < SYM_PTR) {
+      Symbol *old_par_sym = list_peek(&old_params_ref, __K__);
+      par_sym->temp = old_par_sym->temp;
+      par_sym->kind = PARAM;
+    }
+  });
+
+  LIST_FREE(old_params_ref, { symbol_free(__IT__->data); });
 }

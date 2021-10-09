@@ -92,7 +92,8 @@ void ast_builtinfn_gen_code(AST *ast, FILE *out) {
 
   switch (builtinfn_ast->func_type) {
     case BUILTIN_FN_READ:
-      fprintf(out, "param $%d\n", args->value.symref->symbol->temp);
+      fprintf(out, "param %c%d\n", t9n_prefix(args->value.symref->symbol),
+              args->value.symref->symbol->temp);
       fprintf(out, "call read, 1\n\n");
       break;
     default: {
@@ -122,8 +123,14 @@ void ast_builtinfn_gen_code(AST *ast, FILE *out) {
           }
           break;
         case AST_SYM_REF:
-          fprintf(out, "param $%d\n", args->value.symref->symbol->temp);
+          fprintf(out, "param %c%d\n", t9n_prefix(args->value.symref->symbol),
+                  args->value.symref->symbol->temp);
           fprintf(out, "param 2\n");
+          break;
+        case AST_FUNC_CALL:
+          ast_gen_code(args, out);
+          fprintf(out, "param $%d\n", current_context->t9n->temp);
+          fprintf(out, "param 1\n");
           break;
         default:
           break;

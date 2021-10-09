@@ -56,6 +56,16 @@ void ast_blockitems_gen_code(AST *ast, FILE *out) {
     ast_gen_code(__IT__->data, out);
   });
 
+  // try to free memory allocated for variables b4 return
+  // LIST_FOR_EACH_REVERSE(current_context->scopes, {
+  //   if (!__IT_PRNT__) break;
+  //   Scope *scope = __IT__->data;
+  //   LIST_FOR_EACH(scope->symbol_table->symbols, {
+  //     Symbol *sym = __IT__->data;
+  //     if (sym->kind == VAR) fprintf(out, "memf $%d\n", sym->temp);
+  //   });
+  // });
+
   AST *ret = list_peek_last(&blockitems_ast->value);
 
   if (!strcmp(current_context->name, "main"))
