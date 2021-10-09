@@ -65,7 +65,6 @@ int flows(int list f) {
     if () {}
     if() {} else {}
 
-    // cant cover this yet
     if (1) if() if () else if () int a;
 
     int a;
@@ -79,6 +78,24 @@ int flows(int list f) {
     }
     for(a = a a; a = 10 < 2 ; int list i=0) {
         a = a + %f;
+    }
+
+    for (a,b,c) {
+        if (a) {
+            if (1) 1;
+            else 2;
+        } else {
+            else {
+                int a;
+            }
+        } else {
+            int b;
+            if (b) b = 1;
+        }
+
+        if (4,params_err) {
+            return 1;
+        }
     }
 }
 

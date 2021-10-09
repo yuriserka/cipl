@@ -418,19 +418,23 @@ cond_stmt: IF '(' expression ')' statement %prec THEN {
         $$ = NULL;
     }
     | IF '(' error ')' statement %prec THEN {
-        show_error(@3, "expected expression before " WHT "')'" RESET " token\n");
+        show_error_range(@3, "expected expression before " WHT "')'" RESET " token\n");
         ast_free($5);
         $$ = NULL;
     }
     | IF '(' error ')' statement ELSE statement {
-        show_error(@3, "expected expression before " WHT "')'" RESET " token\n");
+        show_error_range(@3, "expected expression before " WHT "')'" RESET " token\n");
         ast_free($5);
         ast_free($7);
         $$ = NULL;
     }
     | IF '(' error ')' ELSE statement {
-        show_error(@3, "expected expression before " WHT "')'" RESET " token\n");
+        show_error_range(@3, "expected expression before " WHT "')'" RESET " token\n");
         ast_free($6);
+        $$ = NULL;
+    }
+    | IF error {
+        show_error(@2, "expected " WHT "'('" RESET " token\n");
         $$ = NULL;
     }
     ;
@@ -475,6 +479,14 @@ iter_stmt: FOR '(' expression.opt ';' expression.opt ';' expression.opt ')' stat
         ast_free($3);
         ast_free($5);
         ast_free($9);
+        $$ = NULL;
+    }
+    | FOR '(' error ')' {
+        show_error(@4, "expected " WHT "';'" RESET " before " WHT "')'" RESET " token\n");
+        $$ = NULL;
+    }
+    | FOR error {
+        show_error(@2, "expected " WHT "'('" RESET " token\n");
         $$ = NULL;
     }
     ;

@@ -44,8 +44,9 @@ SymbolTypes ast_blockitems_type_check(AST *ast) {
 
   AST *possible_return = list_peek_last(&blockitems_ast->value);
 
-  return possible_return->type != AST_JMP ? SYM_INVALID
-                                          : ast_validate_types(possible_return);
+  return possible_return && possible_return->type != AST_JMP
+             ? SYM_INVALID
+             : ast_validate_types(possible_return);
 }
 
 void ast_blockitems_gen_code(AST *ast, FILE *out) {
