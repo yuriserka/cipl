@@ -8,10 +8,10 @@
 #include "data-structures/context.h"
 #include "utils/io.h"
 
-Symbol *symbol_init(char *name, SymbolTypes type, bool is_function, int scope,
+Symbol *symbol_init(char *name, SymbolTypes type, SymbolKinds kind, int scope,
                     char *ctx_name, int temp, Cursor pos) {
   Symbol *sym = calloc(1, sizeof(Symbol));
-  symbol_update(sym, name, type, is_function, scope, ctx_name, temp, pos);
+  symbol_update(sym, name, type, kind, scope, ctx_name, temp, pos);
   symbol_init_value(sym);
   return sym;
 }
@@ -19,7 +19,7 @@ Symbol *symbol_init(char *name, SymbolTypes type, bool is_function, int scope,
 void symbol_update_type(Symbol *sym, SymbolTypes type) { sym->type = type; }
 
 Symbol *symbol_init_copy(Symbol *other) {
-  return symbol_init(other->name, other->type, other->is_fn, other->scope,
+  return symbol_init(other->name, other->type, other->kind, other->scope,
                      other->context_name, other->temp, other->def_pos);
 }
 
@@ -34,14 +34,14 @@ void symbol_update_context(Symbol *sym, Context *ctx) {
 
 void symbol_update_temp(Symbol *sym, int temp_num) { sym->temp = temp_num; }
 
-void symbol_update(Symbol *sym, char *name, SymbolTypes type, bool is_function,
+void symbol_update(Symbol *sym, char *name, SymbolTypes type, SymbolKinds kind,
                    int scope, char *ctx_name, int temp, Cursor pos) {
   sym->name = name ? strdup(name) : NULL;
   sym->context_name = ctx_name;
   sym->scope = scope;
   sym->def_pos = pos;
   sym->type = type;
-  sym->is_fn = is_function;
+  sym->kind = kind;
   sym->temp = temp;
 }
 
@@ -65,18 +65,18 @@ void symbol_print(Symbol *sym) {
   printf(
       "{ name: '%s', type: %s%s, declared_at: '%s:%d:%d', ctx: '%s', scope: "
       "%d}, ",
-      sym->name, sym->is_fn ? "SYM_FUNC " : "",
+      sym->name, sym->kind == FUNC ? "SYM_FUNC " : "",
       symbol_type_from_enum(sym->type), filename, sym->def_pos.line,
       sym->def_pos.col, sym->context_name, sym->scope);
 }
 
 void symbol_print_pretty(Symbol *sym) {
-  const char *color = sym->is_fn ? BBLU : BCYN;
+  const char *color = sym->kind == FUNC ? BBLU : BCYN;
   CIPL_PRINTF_COLOR(BGRN,
                     "%s%s "
                     "%s"
                     "%s " BHWHT "@%d:%d\n",
-                    sym->is_fn ? "SYM_FUNC " : "",
+                    sym->kind == FUNC ? "SYM_FUNC " : "",
                     symbol_type_from_enum(sym->type), color, sym->name,
                     sym->def_pos.line, sym->def_pos.col);
   // disable value print

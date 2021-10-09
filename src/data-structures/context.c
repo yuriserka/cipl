@@ -28,9 +28,9 @@ Symbol *context_search_symbol_scopes(Context *ctx, Symbol *sym) {
 
   LIST_FOR_EACH_REVERSE(curr_scope_stacknode_ref, {
     Scope *scope = __IT__->data;
-    while (__IT_NXT__ &&
-           (scope->last_parent != ((Scope *)__IT_NXT__->data)->index)) {
-      __IT_NXT__ = __IT_NXT__->parent;
+    while (__IT_PRNT__ &&
+           (scope->last_parent != ((Scope *)__IT_PRNT__->data)->index)) {
+      __IT_PRNT__ = __IT_PRNT__->parent;
     }
     Symbol *sym_entry = symbol_table_lookup(scope->symbol_table, sym->name);
     if (sym_entry) return sym_entry;
@@ -68,23 +68,10 @@ Symbol *context_declare_variable(Context *ctx, Symbol *sym) {
   Symbol *entry =
       symbol_table_get_valid_entry(current_scope->symbol_table, sym->name);
   if (entry) {
-    symbol_update(entry, sym->name, sym->type, false, current_scope->index,
+    symbol_update(entry, sym->name, sym->type, sym->kind, current_scope->index,
                   ctx->name, sym->temp, sym->def_pos);
     symbol_init_value(entry);
     ++current_scope->size;
-  }
-  return entry;
-}
-
-Symbol *context_declare_function(Context *ctx, Symbol *sym) {
-  Scope *current_scope = context_found_scope(ctx, ctx->current_scope);
-  Symbol *entry =
-      symbol_table_get_valid_entry(current_scope->symbol_table, sym->name);
-  if (entry) {
-    symbol_update(entry, sym->name, sym->type, true, current_scope->index,
-                  ctx->name, sym->temp, sym->def_pos);
-    ++current_scope->size;
-    symbol_init_value(entry);
   }
   return entry;
 }

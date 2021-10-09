@@ -22,6 +22,5 @@ Scope *context_pop_scope(Context *ctx);
 Symbol *context_has_symbol(Context *ctx, Symbol *sym);
 Symbol *context_search_symbol_scopes(Context *ctx, Symbol *sym);
 Symbol *context_declare_variable(Context *ctx, Symbol *sym);
-Symbol *context_declare_function(Context *ctx, Symbol *sym);
 Scope *context_found_scope(Context *ctx, int idx);
 void context_print_pretty(Context *ctx);

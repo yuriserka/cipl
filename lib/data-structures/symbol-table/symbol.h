@@ -24,12 +24,18 @@ union cipl_symbol_values {
   ListNode *list;
 };
 
+typedef enum cipl_symbol_kind {
+  FUNC,
+  PARAM,
+  VAR,
+} SymbolKinds;
+
 struct cipl_symbol {
   char *name;
   char *context_name;
   SymbolValues value;
   int scope;
-  bool is_fn;
+  SymbolKinds kind;
   int temp;
   Cursor def_pos;
   SymbolTypes type;
@@ -37,7 +43,7 @@ struct cipl_symbol {
 
 struct cipl_context;
 
-Symbol *symbol_init(char *name, SymbolTypes type, bool is_function, int scope,
+Symbol *symbol_init(char *name, SymbolTypes type, SymbolKinds kind, int scope,
                     char *ctx_name, int temp, Cursor pos);
 Symbol *symbol_init_copy(Symbol *other);
 Symbol *symbol_found(char *name, Cursor pos);
@@ -45,7 +51,7 @@ void symbol_update_type(Symbol *sym, SymbolTypes type);
 void symbol_update_temp(Symbol *sym, int temp_num);
 void symbol_update_context(Symbol *sym, struct cipl_context *ctx);
 
-void symbol_update(Symbol *sym, char *name, SymbolTypes type, bool is_function,
+void symbol_update(Symbol *sym, char *name, SymbolTypes type, SymbolKinds kind,
                    int scope, char *ctx_name, int temp, Cursor pos);
 void symbol_free(Symbol *sym);
 void symbol_print(Symbol *sym);

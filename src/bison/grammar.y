@@ -160,7 +160,7 @@ var_declaration: type id ';' {
         if (sym) {
             if (sym->scope) {
                 show_error_range(@2, "redeclaration of " BCYN "'%s'\n" RESET, $2->name);
-            } else if (sym->is_fn) {
+            } else if (sym->kind == FUNC) {
                 show_error_range(@2, BBLU "'%s'" RESET " redeclared as different kind of symbol\n", $2->name);
             } else if (sym->type != decl_type) {
                 show_error_range(@1, "conflicting types for " BCYN "'%s'\n" RESET, $2->name);
@@ -170,6 +170,7 @@ var_declaration: type id ';' {
         else {
             symbol_update_type($2, decl_type);
             symbol_update_temp($2, current_context->t9n->temp++);
+            $2->kind = VAR;
             $$ = ast_declaration_init(@$, 
                 ast_symref_init(@2, context_declare_variable(current_context, $2))
             );
@@ -213,7 +214,7 @@ func_declaration: type id '(' <ast>{
         current_context = list_peek_last(&contexts);
 
         if (sym) {
-            if (!sym->is_fn) {
+            if (!sym->kind == FUNC) {
                 show_error(@2, BCYN "'%s'" RESET " redeclared as different kind of symbol\n", $2->name);
             } else if (sym->type != decl_type) {
                 show_error(@1, "conflicting types for " BBLU "'%s'\n" RESET, $2->name);
@@ -223,7 +224,8 @@ func_declaration: type id '(' <ast>{
             $$ = NULL;
         } else {
             symbol_update_type($2, decl_type);
-            Symbol *declared = context_declare_function(previous_context, $2);
+            $2->kind = FUNC;
+            Symbol *declared = context_declare_variable(previous_context, $2);
             if (!declared) {
                 show_error(@2, BCYN "'%s'" RESET " redeclared as different kind of symbol\n", $2->name);
                 $$ = NULL;
@@ -276,7 +278,8 @@ param_decl: type id {
             $$ = NULL;
         } else {
             symbol_update_type($2, symbol_type_from_str($1));
-            symbol_update_temp($2, -(current_context->t9n->temp++));
+            symbol_update_temp($2, current_context->t9n->param++);
+            $2->kind = PARAM;
             $$ = ast_symref_init(@$, context_declare_variable(current_context, $2));
         }
         symbol_free($2);
@@ -649,7 +652,7 @@ postfix_expr: primary_expr
             $$ = NULL;
             ast_free(params);
         } else {
-            if (!sym->is_fn) {
+            if (!sym->kind == FUNC) {
                 show_error_range(@1, "called object " BCYN "'%s'" RESET " is not a function\n", sym->name);
                 $$ = NULL;
                 ast_free(params);
