@@ -449,6 +449,7 @@ else_error: ELSE statement {
         ast_free($3);
         $$ = NULL;
     }
+    ;
 
 jmp_stmt: RETURN expression ';' { $$ = ast_jmp_init(@$, $2); }
     | RETURN error ';' {
