@@ -361,6 +361,7 @@ void ast_gen_code_init(FILE *out) {
 
 void ast_gen_code_end(FILE *out) { asm_generate_code_end(out); }
 
+// after code generation the t9n->temp should be equal to b4
 void ast_gen_code(AST *ast, FILE *out) {
   if (!ast) return;
 
@@ -391,6 +392,12 @@ void ast_gen_code(AST *ast, FILE *out) {
       break;
     case AST_SYM_REF:
       ast_symref_gen_code(ast, out);
+      break;
+    case AST_BIN_OP:
+      ast_binop_gen_code(ast, out);
+      break;
+    case AST_STR_LITERAL:
+      ast_str_gen_code(ast, out);
       break;
     case AST_PROG:
       LIST_FOR_EACH(ast->children, { ast_gen_code(__IT__->data, out); });

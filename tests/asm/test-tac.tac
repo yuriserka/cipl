@@ -60,22 +60,20 @@ read_END:
     return 0
 
 write:
-    brz write_STR, #1
-    seq $0, #1, 1
-    brz write_VAR, $0
-    print #0
-    jump write_END
-write_VAR:
+    mov $0, #0[0]
+    seq $0, $0, 3
+    brnz write_STR, $0
     param #0
     call get_var_val, 1
     pop $0
     print $0
     jump write_END
 write_STR:
+    mov $0, #0[1]
     mov $2, 0
 write_STR_LOOP:
     mov $1, '\0'
-    mov $3, #0[$2]
+    mov $3, $0[$2]
     seq $1, $1, $3
     brnz write_END, $1 
     print $3
@@ -146,8 +144,54 @@ var_decl:
 
     return 0
 
+func_add:
+    // var int a
+    mema $0, 2
+    mov $0[1], 8
+    mov *$0, 1
+
+    // var int b
+    mema $1, 2
+    mov $1[1], 7
+    mov *$1, 1
+
+    // push a onto stack
+    push $0
+
+    // push b onto stack
+    push $1
+
+    // retrieve a/b from stack
+    pop $3
+    pop $2
+
+    param $2
+    call get_var_val, 1
+    pop $4
+
+    param $3
+    call get_var_val, 1
+    pop $5
+
+    add $5, $4, $5
+
+    // fake return from binary op
+    mema $4, 2
+    mov *$4, 1
+    mov $4[1], $5
+    push $4
+
+    return $4
+
 main:
     call var_decl, 0
+    
+    call func_add, 0
+    pop $0
+
+    param $0
+    param 2
+    call writeln, 2
 
 EOF:
     nop

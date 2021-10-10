@@ -45,7 +45,6 @@ SymbolTypes ast_symref_type_check(AST *ast) {
 }
 
 void ast_symref_gen_code(AST *ast, FILE *out) {
-  SymbolRefAST *symref = ast->value.symref;
-  fprintf(out, "mov $%d, %c%d\n", current_context->t9n->temp - 1,
-          t9n_prefix(symref->symbol), symref->symbol->temp);
+  Symbol *sym = ast->value.symref->symbol;
+  fprintf(out, "push %c%d\n\n", t9n_prefix(sym), sym->temp);
 }

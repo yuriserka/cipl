@@ -250,3 +250,53 @@ SymbolTypes ast_binop_type_check(AST *ast) {
 
   return MAX(lhs_t, rhs_t);
 }
+
+void ast_binop_gen_code(AST *ast, FILE *out) {
+  BinOpAST *binop_ast = ast->value.binop;
+  AST *lhs = list_peek(&ast->children, 0), *rhs = list_peek(&ast->children, 1);
+  SymbolTypes lhs_t = ast_validate_types(lhs);
+  SymbolTypes rhs_t = ast_validate_types(rhs);
+
+  ast_gen_code(lhs, out);
+  ast_gen_code(rhs, out);
+
+  int temp = current_context->t9n->temp;
+
+  fprintf(out, "pop $%d\n\n", temp + 1);
+  fprintf(out, "pop $%d\n\n", temp);
+
+  fprintf(out, "param $%d\n", temp);
+  fprintf(out, "call get_var_val, 1\n");
+  fprintf(out, "pop $%d\n\n", temp + 2);
+  fprintf(out, "param $%d\n", temp + 1);
+  fprintf(out, "call get_var_val, 1\n");
+  fprintf(out, "pop $%d\n\n", temp + 3);
+
+  if (lhs_t < rhs_t) fprintf(out, "inttofl $%d, $%d\n\n", temp + 2, temp + 2);
+  if (rhs_t < lhs_t) fprintf(out, "inttofl $%d, $%d\n\n", temp + 3, temp + 3);
+
+  switch (binop_ast->op[0]) {
+    case '+':
+      fprintf(out, "add");
+      break;
+    case '-':
+      fprintf(out, "sub");
+      break;
+    case '*':
+      fprintf(out, "mul");
+      break;
+    case '/':
+      fprintf(out, "div");
+      break;
+    case '&':
+      fprintf(out, "and");
+      break;
+    case '|':
+      fprintf(out, "or");
+      break;
+  }
+
+  fprintf(out, " $%d, $%d, $%d\n\n", temp + 3, temp + 2, temp + 3);
+  t9n_alloc_from_other(temp + 2, MAX(lhs_t, rhs_t), temp + 3, out);
+  fprintf(out, "push $%d\n\n", temp + 2);
+}

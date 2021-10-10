@@ -70,18 +70,10 @@ SymbolTypes ast_number_type_check(AST *ast) {
 }
 
 void ast_number_gen_code(AST *ast, FILE *out) {
-  NumberAST *num_ast = ast->value.number;
-  switch (num_ast->num_type) {
-    case K_REAL:
-      fprintf(out, "mov $%d, %lf\n", current_context->t9n->temp++,
-              num_ast->value.real);
-      break;
-    case K_INTEGER:
-    case K_NIL:
-      fprintf(out, "mov $%d, %ld\n", current_context->t9n->temp++,
-              num_ast->value.integer);
-      break;
-  }
+  t9n_alloc_from_constant(current_context->t9n->temp,
+                          ast->value.number->sym_type, ast->value.number->value,
+                          out);
+  fprintf(out, "push $%d\n\n", current_context->t9n->temp);
 }
 
 void ast_number_tofloat(AST *ast) {

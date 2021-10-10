@@ -16,6 +16,56 @@ void t9n_free(T9nUnit *t9n) { free(t9n); }
 
 char t9n_prefix(Symbol *symbol) { return symbol->kind == PARAM ? '#' : '$'; }
 
+void t9n_alloc_from_other(int to, SymbolTypes type, int from, FILE *out) {
+  switch (type) {
+    case SYM_INT:
+    case SYM_REAL:
+      fprintf(out, "mema $%d, 2\n", to);
+      fprintf(out, "mov $%d[0], %d\n", to, type);
+      fprintf(out, "mov $%d[1], $%d\n", to, from);
+      break;
+    default:
+      fprintf(out, "mema $%d, 3\n", to);
+      fprintf(out, "mov $%d[0], %d\n", to, type);
+      fprintf(out, "mov $%d[1], $%d\n", to, 0);
+      fprintf(out, "mov $%d[2], $%d\n", to, from);
+  }
+}
+
+void t9n_alloc_from_literal(int to, char *tb_ref, FILE *out) {
+  fprintf(out, "mema $%d, 2\n", to);
+  fprintf(out, "mov $%d[0], %d\n", to, SYM_PTR);
+  fprintf(out, "mov $%d[1], &%s\n", to, tb_ref);
+}
+
+void t9n_alloc_from_constant(int to, SymbolTypes type, NumberValue value,
+                             FILE *out) {
+  switch (type) {
+    case SYM_INT:
+      // $temp[0] = type
+      // $temp[1] = &$var
+      fprintf(out, "mema $%d, 2\n", to);
+      fprintf(out, "mov $%d[0], %d\n", to, type);
+      fprintf(out, "mov $%d[1], %ld\n", to, value.integer);
+      break;
+    case SYM_REAL:
+      // $temp[0] = type
+      // $temp[1] = &$var
+      fprintf(out, "mema $%d, 2\n", to);
+      fprintf(out, "mov $%d[0], %d\n", to, type);
+      fprintf(out, "mov $%d[1], %lf\n", to, value.real);
+      break;
+    default:
+      // $temp[0] = type
+      // $temp[1] = size
+      // $temp[1] = &list per say
+      fprintf(out, "mema $%d, 3\n", to);
+      fprintf(out, "mov $%d[0], %d\n", to, type);
+      fprintf(out, "mov $%d[1], $%d\n", to, 0);
+      // fprintf(out, "mov $%d[2], \n", to, from);
+  }
+}
+
 static void asm_insert_str_literal_header(FILE *out) {
   int i = 0;
   fprintf(out, "\nchar str_nil[] = \"nil\"\n");
@@ -98,24 +148,23 @@ static void asm_read(FILE *out) {
   fprintf(out, "return 0\n\n");
 }
 
+// receive 1 param of of t9n_alloc
 static void asm_write(FILE *out) {
-  fprintf(out, "\nwrite:\n");
-  fprintf(out, "brz write_STR, #1\n");
-  fprintf(out, "seq $0, #1, 1\n");
-  fprintf(out, "brz write_VAR, $0\n");
-  fprintf(out, "print #0\n");
-  fprintf(out, "jump write_END\n");
-  fprintf(out, "write_VAR:\n");
+  fprintf(out, "write:\n");
+  fprintf(out, "mov $0, #0[0]\n");
+  fprintf(out, "seq $0, $0, 3\n");
+  fprintf(out, "brnz write_STR, $0\n");
   fprintf(out, "param #0\n");
   fprintf(out, "call get_var_val, 1\n");
   fprintf(out, "pop $0\n");
   fprintf(out, "print $0\n");
   fprintf(out, "jump write_END\n");
   fprintf(out, "write_STR:\n");
+  fprintf(out, "mov $0, #0[1]\n");
   fprintf(out, "mov $2, 0\n");
   fprintf(out, "write_STR_LOOP:\n");
   fprintf(out, "mov $1, '\\0'\n");
-  fprintf(out, "mov $3, #0[$2]\n");
+  fprintf(out, "mov $3, $0[$2]\n");
   fprintf(out, "seq $1, $1, $3\n");
   fprintf(out, "brnz write_END, $1 \n");
   fprintf(out, "print $3\n");

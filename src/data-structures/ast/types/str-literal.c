@@ -36,3 +36,9 @@ void ast_str_print_pretty(AST *ast, int depth) {
 }
 
 SymbolTypes ast_str_type_check(AST *ast) { return SYM_PTR; }
+
+void ast_str_gen_code(AST *ast, FILE *out) {
+  t9n_alloc_from_literal(current_context->t9n->temp,
+                         ast->value.str->table_entry, out);
+  fprintf(out, "push $%d\n\n", current_context->t9n->temp);
+}

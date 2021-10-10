@@ -1,34 +1,4 @@
-int fn(int a) {
-    float b;
-    read(a);
-    read(b);
-    write("a in fn: ");
-    writeln(a);
-    write("b in fn: ");
-    writeln(b);
-    return b;
-}
-
-float fn2() {
-    return 3.14159;
-}
-
 int main() {
-    int a;
-    float b;
-    b = fn(a); // cast itof
-    write("a in main: ");
-    writeln(a);
-    write("b in main: ");
-    writeln(b);
-
-    a = b; // cast ftoi
-
-    write("a in main after: ");
-    writeln(a);
-
-    write("a func call inside -> ");
-    writeln(fn2());
-
+    writeln(1+2-3*4.0/5);
     return 0;
 }
