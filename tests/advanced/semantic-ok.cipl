@@ -1,21 +1,9 @@
-float m(int i) {
-    i = i * 1.98;
-    return i;
-}
-
-int f(float i) {
-    return i > 5.0 || i <= 10.0;
+int x(float j) {
+    return x(1.0 + x(8)) / 9.8;
 }
 
 int main() {
-    int list l;
-    l = NIL;
-
-    int i;
-    float j;
-
-    i = m(j);
-    j = f(i);
-
-    return 0;
+    int a;
+    a = x(8.0);
+    return a * 0.5;
 }

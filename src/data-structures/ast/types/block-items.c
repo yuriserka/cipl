@@ -31,9 +31,8 @@ void ast_blockitems_print(AST *ast) {
 void ast_blockitems_print_pretty(AST *ast, int depth) {
   BlockItemListAST *blockitems_ast = ast->value.blockitems;
 
-  for (int i = depth; i > 0; --i) printf("\t");
+  printf("%*.s" BMAG "<code-block>" RESET "\n", depth * 4, "");
 
-  CIPL_PRINTF_COLOR(BMAG, "<code-block>\n");
   LIST_FOR_EACH(blockitems_ast->value,
                 { ast_print_pretty(__IT__->data, depth + 1); });
 }
@@ -44,9 +43,11 @@ SymbolTypes ast_blockitems_type_check(AST *ast) {
 
   AST *possible_return = list_peek_last(&blockitems_ast->value);
 
+  ast_validate_types(possible_return);
+
   return possible_return && possible_return->type != AST_JMP
              ? SYM_INVALID
-             : ast_validate_types(possible_return);
+             : possible_return->value_type;
 }
 
 void ast_blockitems_gen_code(AST *ast, FILE *out) {

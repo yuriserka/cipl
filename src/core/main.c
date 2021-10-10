@@ -46,30 +46,13 @@ int cipl_syntax() {
 }
 
 int cipl_semantic() {
-  int got_errors = ast_validate_types(root) == SYM_INVALID;
+  ast_validate_types(root);
 
-  AST_FIND_NODE(
-      root, AST_USER_FUNC,
-      {
-        AST *declarator = list_peek(&__AST__->children, 0);
-        if (!strcmp(declarator->value.symref->symbol->name, "main")) {
-          __FOUND__ = 1;
-        }
-      },
-      {
-        CIPL_PRINTF(BRED "error:" RESET " undefined reference to function " BBLU
-                         "'main'" RESET "\n");
-        ++errors_count;
-      });
-
-  got_errors = got_errors || errors_count;
-
-  if (got_errors) {
+  if (errors_count)
     CIPL_PRINTF_COLOR(BRED, "\n\n%d error%s" RESET " generated\n", errors_count,
                       errors_count > 1 ? "s" : "");
-  }
 
-  return !got_errors;
+  return !errors_count;
 }
 
 int cipl_intermediate_code() {
@@ -120,9 +103,9 @@ int cipl_main(int argc, char *argv[]) {
   curr_line_info = line_init(1, "");
 
   bool succeeded = cipl_syntax() && cipl_semantic() && cipl_intermediate_code();
-  
-  main_ast_pretty();
-  main_context_pretty();
+
+  // main_ast_pretty();
+  // main_context_pretty();
 
   fclose(yyin);
   yylex_destroy();

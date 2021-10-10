@@ -13,6 +13,7 @@ AST *ast_cast(AstTypes type, YYLTYPE rule_pos, int n_children, ...) {
   AST *ast = calloc(1, sizeof(AST));
   ast->type = type;
   ast->rule_pos = rule_pos;
+  ast->value_type = SYM_INVALID;
 
   ++n_children;
 
@@ -298,7 +299,7 @@ void ast_print_pretty(AST *ast, int depth) {
       ast_str_print_pretty(ast, depth);
       break;
     case AST_PROG:
-      CIPL_PRINTF_COLOR(BMAG, "<root>\n");
+      printf(BMAG "<root>" RESET "\n");
       LIST_FOR_EACH(ast->children,
                     { ast_print_pretty(__IT__->data, depth + 1); });
       break;
@@ -308,50 +309,105 @@ void ast_print_pretty(AST *ast, int depth) {
   }
 }
 
-SymbolTypes ast_validate_types(AST *ast) {
-  if (!ast) return SYM_INVALID;
+static void handle_main_constraints(AST *userfunc) {
+  AST *fn_declarator = list_peek(&userfunc->children, 0);
+  AST *args = list_peek(&userfunc->children, 1);
+
+  Cursor beg = cursor_init_yylloc_begin(fn_declarator->rule_pos);
+  Cursor end = cursor_init_yylloc_end(fn_declarator->rule_pos);
+  LineInfo *li = list_peek(&lines, beg.line - 1);
+
+  if (args->value.params->size) {
+    CIPL_PERROR_CURSOR_RANGE(BBLU "'%s'" RESET " takes only zero arguments\n",
+                             li->text, beg, end,
+                             fn_declarator->value.symref->symbol->name);
+    ++errors_count;
+  }
+
+  if (fn_declarator->value.symref->symbol->type != SYM_INT) {
+    CIPL_PERROR_CURSOR_RANGE(
+        "return type of " BBLU "'%s'" RESET " is not " BGRN "'int'" RESET "\n",
+        li->text, beg, end, fn_declarator->value.symref->symbol->name);
+    ++errors_count;
+  }
+}
+
+void ast_validate_types(AST *ast) {
+  if (!ast) return;
 
   switch (ast->type) {
     case AST_NUMBER:
-      return ast_number_type_check(ast);
+      ast->value_type = ast_number_type_check(ast);
+      break;
     case AST_BIN_OP:
-      return ast_binop_type_check(ast);
+      ast->value_type = ast_binop_type_check(ast);
+      break;
     case AST_UNI_OP:
-      return ast_uniop_type_check(ast);
+      ast->value_type = ast_uniop_type_check(ast);
+      break;
     case AST_SYM_REF:
-      return ast_symref_type_check(ast);
+      ast->value_type = ast_symref_type_check(ast);
+      break;
     case AST_ASSIGN_OP:
-      return ast_assign_type_check(ast);
+      ast->value_type = ast_assign_type_check(ast);
+      break;
     case AST_USER_FUNC:
-      return ast_userfunc_type_check(ast);
+      ast->value_type = ast_userfunc_type_check(ast);
+      break;
     case AST_JMP:
-      return ast_jmp_type_check(ast);
+      ast->value_type = ast_jmp_type_check(ast);
+      break;
     case AST_BLOCK_ITEM_LIST:
-      return ast_blockitems_type_check(ast);
+      ast->value_type = ast_blockitems_type_check(ast);
+      break;
     case AST_DECLARATION:
-      return ast_declaration_type_check(ast);
+      ast->value_type = ast_declaration_type_check(ast);
+      break;
     case AST_FUNC_CALL:
-      return ast_funcall_type_check(ast);
+      ast->value_type = ast_funcall_type_check(ast);
+      break;
     case AST_BUILTIN_FUNC:
-      return ast_builtinfn_type_check(ast);
+      ast->value_type = ast_builtinfn_type_check(ast);
+      break;
     case AST_STR_LITERAL:
-      return ast_str_type_check(ast);
+      ast->value_type = ast_str_type_check(ast);
+      break;
     case AST_FLOW:
-      return ast_flow_type_check(ast);
+      ast->value_type = ast_flow_type_check(ast);
+      break;
     case AST_ITER:
-      return ast_iter_type_check(ast);
+      ast->value_type = ast_iter_type_check(ast);
+      break;
+    case AST_PARAM_LIST:
+      ast->value_type = ast_params_type_check(ast);
+      break;
     case AST_PROG: {
-      SymbolTypes ret = SYM_PTR;
-      LIST_FOR_EACH(ast->children,
-                    { ret = ret && ast_validate_types(__IT__->data); });
-      return ret;
-    }
+      LIST_FOR_EACH(ast->children, {
+        AST *child = __IT__->data;
+        ast_validate_types(child);
+        ast->value_type = child->value_type && ast->value_type;
+      });
+
+      AST_FIND_NODE(
+          root, AST_USER_FUNC,
+          {
+            AST *declarator = list_peek(&__AST__->children, 0);
+            if (!strcmp(declarator->value.symref->symbol->name, "main")) {
+              handle_main_constraints(__AST__);
+              __FOUND__ = 1;
+            }
+          },
+          {
+            CIPL_PRINTF(BRED "error:" RESET
+                             " undefined reference to function " BBLU
+                             "'main'" RESET "\n");
+            ++errors_count;
+          });
+    } break;
     default:
       printf("AST type: %d type_check not implemented yet\n", ast->type);
       break;
   }
-
-  return SYM_INVALID;
 }
 
 void ast_gen_code_init(FILE *out) {

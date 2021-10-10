@@ -37,14 +37,20 @@ void ast_binop_print_pretty(AST *ast, int depth) {
   AST *rhs = list_peek(&ast->children, 1);
   BinOpAST *binop_ast = ast->value.binop;
 
-  for (int i = depth; i > 0; --i) printf("\t");
-  CIPL_PRINTF_COLOR(BMAG, "<binary-op>\n");
+  printf("%*.s" BMAG "<binary-op>" RESET "\n", depth * 4, "");
+  printf("%*.s" WHT "%s" RESET "\n", (depth + 1) * 4, "", binop_ast->op);
 
-  for (int i = depth + 1; i > 0; --i) printf("\t");
-  CIPL_PRINTF_COLOR(BBLU, "%s\n", binop_ast->op);
+  bool lcast = can_cast(lhs->value_type, rhs->value_type) &&
+               lhs->value_type < rhs->value_type;
 
-  ast_print_pretty(lhs, depth + 1);
-  ast_print_pretty(rhs, depth + 1);
+  if (lcast) printf("%*.s" BMAG "<inttofl>" RESET "\n", (depth + 1) * 4, "");
+  ast_print_pretty(lhs, depth + 1 + lcast);
+
+  bool rcast = can_cast(lhs->value_type, rhs->value_type) &&
+               rhs->value_type < lhs->value_type;
+
+  if (rcast) printf("%*.s" BMAG "<inttofl>" RESET "\n", (depth + 1) * 4, "");
+  ast_print_pretty(rhs, depth + 1 + rcast);
 }
 
 static bool is_relop(char *op) {
@@ -53,37 +59,34 @@ static bool is_relop(char *op) {
   return (*op == '<' || *op == '>') && (!is_dless && !is_dgreat);
 }
 
-static void invalid_bin_op(AST *lhs, AST *rhs, char *op, SymbolTypes lhs_t,
-                           SymbolTypes rhs_t) {
+static void invalid_bin_op(AST *lhs, AST *rhs, char *op) {
   Cursor beg = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
   Cursor end = {.col = beg.col + 1, .line = beg.line};
   LineInfo *li = list_peek(&lines, beg.line - 1);
   CIPL_PERROR_CURSOR_RANGE(
       "invalid operands to binary " WHT "'%s'" RESET " (have " BGRN "'%s'" RESET
       " and " BGRN "'%s'" RESET ")\n",
-      li->text, beg, end, op, symbol_canonical_type_from_enum(lhs_t),
-      symbol_canonical_type_from_enum(rhs_t));
+      li->text, beg, end, op, symbol_canonical_type_from_enum(lhs->value_type),
+      symbol_canonical_type_from_enum(rhs->value_type));
   ++errors_count;
 }
 
 static bool is_rel_equality(char *op) { return (*op == '!' || *op == '='); }
 
-static void handle_mismatch_comparison(AST *lhs, AST *rhs, SymbolTypes lhs_t,
-                                       SymbolTypes rhs_t) {
+static void handle_mismatch_comparison(AST *lhs, AST *rhs) {
   Cursor beg = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
   Cursor end = {.col = beg.col + 1, .line = beg.line};
   LineInfo *li = list_peek(&lines, beg.line - 1);
-  if (!can_compare(lhs_t, rhs_t)) {
+  if (!can_compare(lhs->value_type, rhs->value_type)) {
     CIPL_PERROR_CURSOR_RANGE(
         "comparison between " BGRN "'%s'" RESET " and " BGRN "'%s'" RESET "\n",
-        li->text, beg, end, symbol_canonical_type_from_enum(lhs_t),
-        symbol_canonical_type_from_enum(rhs_t));
+        li->text, beg, end, symbol_canonical_type_from_enum(lhs->value_type),
+        symbol_canonical_type_from_enum(rhs->value_type));
     ++errors_count;
   }
 }
 
-static void handle_comparison_chain(AST *lhs, AST *rhs, SymbolTypes lhs_t,
-                                    SymbolTypes rhs_t) {
+static void handle_comparison_chain(AST *lhs, AST *rhs) {
   int show_error = lhs->type == AST_BIN_OP ? is_relop(lhs->value.binop->op)
                                            : is_relop(rhs->value.binop->op);
   if (show_error) {
@@ -98,27 +101,25 @@ static void handle_comparison_chain(AST *lhs, AST *rhs, SymbolTypes lhs_t,
   }
 }
 
-static void handle_mismatch_equality(AST *lhs, AST *rhs, SymbolTypes lhs_t,
-                                     SymbolTypes rhs_t, char *op) {
-  invalid_bin_op(lhs, rhs, op, lhs_t, rhs_t);
+static void handle_mismatch_equality(AST *lhs, AST *rhs, char *op) {
+  invalid_bin_op(lhs, rhs, op);
 }
 
-static void handle_mismatch_arithmetic(AST *lhs, AST *rhs, SymbolTypes lhs_t,
-                                       SymbolTypes rhs_t, char *op) {
+static void handle_mismatch_arithmetic(AST *lhs, AST *rhs, char *op) {
   Cursor c = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
   LineInfo *li = list_peek(&lines, c.line - 1);
-  if (lhs_t < SYM_PTR || rhs_t < SYM_PTR) {
+  if (lhs->value_type < SYM_PTR || rhs->value_type < SYM_PTR) {
     CIPL_PERROR_CURSOR(
         BGRN "'%s'" RESET " used in arithmetic\n", li->text, c,
-        symbol_canonical_type_from_enum(lhs_t > SYM_REAL ? lhs_t : rhs_t));
+        symbol_canonical_type_from_enum(
+            lhs->value_type > SYM_REAL ? lhs->value_type : rhs->value_type));
     ++errors_count;
   } else {
-    invalid_bin_op(lhs, rhs, op, lhs_t, rhs_t);
+    invalid_bin_op(lhs, rhs, op);
   }
 }
 
-static void handle_div_by_zero(AST *lhs, AST *rhs, SymbolTypes lhs_t,
-                               SymbolTypes rhs_t) {
+static void handle_div_by_zero(AST *lhs, AST *rhs) {
   NumberAST *rhs_num_val = rhs->value.number;
   if (rhs_num_val->sym_type == SYM_INT && !rhs_num_val->value.integer) {
     Cursor c = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
@@ -151,83 +152,86 @@ static void handle_mapfil_mismatch_params(AST *fn, SymbolTypes list_type) {
         end, fn->value.symref->symbol->name);
     ++errors_count;
   } else if (list_type > SYM_PTR) {
-    SymbolTypes param_t = ast_validate_types(params_l->value->data);
-    if (!can_assign(param_t, list_type - SYM_PTR)) {
+    AST *param = params_l->value->data;
+    ast_validate_types(param);
+    if (!can_assign(param->value_type, list_type - SYM_PTR)) {
       CIPL_PERROR_CURSOR_RANGE(
           "expected " BGRN "'%s'" RESET " as argument but list is of type " BGRN
           "'%s'" RESET "\n",
-          li->text, beg, end, symbol_canonical_type_from_enum(param_t),
+          li->text, beg, end,
+          symbol_canonical_type_from_enum(param->value_type),
           symbol_canonical_type_from_enum(list_type - SYM_PTR));
       ++errors_count;
     }
   }
 }
 
-static void handle_mismatch_mapfil(AST *lhs, AST *rhs, SymbolTypes lhs_t,
-                                   SymbolTypes rhs_t, char *op) {
+static void handle_mismatch_mapfil(AST *lhs, AST *rhs, char *op) {
   Cursor beg = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
   Cursor end = {.col = beg.col + 1, .line = beg.line};
   LineInfo *li = list_peek(&lines, beg.line - 1);
   char tmp[1024] = "";
 
   if (lhs->type == AST_SYM_REF && lhs->value.symref->symbol->kind == FUNC) {
-    handle_mapfil_mismatch_params(lhs, rhs_t);
+    handle_mapfil_mismatch_params(lhs, rhs->value_type);
   }
 
   if (lhs->type != AST_SYM_REF) {
-    CIPL_PERROR_CURSOR_RANGE(
-        "invalid operands to binary " WHT "'%s'" RESET " (have " BGRN
-        "'%s'" RESET " and " BGRN "'%s'" RESET ")\n",
-        li->text, beg, end, op, tmp, symbol_canonical_type_from_enum(rhs_t));
+    CIPL_PERROR_CURSOR_RANGE("invalid operands to binary " WHT "'%s'" RESET
+                             " (have " BGRN "'%s'" RESET " and " BGRN
+                             "'%s'" RESET ")\n",
+                             li->text, beg, end, op, tmp,
+                             symbol_canonical_type_from_enum(rhs->value_type));
     ++errors_count;
   } else {
-    if (!lhs->value.symref->symbol->kind == FUNC || rhs_t < SYM_PTR) {
+    if (!lhs->value.symref->symbol->kind == FUNC || rhs->value_type < SYM_PTR) {
       if (lhs->value.symref->symbol->kind == FUNC) {
         char *func_str = symbol_canonical_type_function(lhs);
         sprintf(tmp, "%s", func_str);
         free(func_str);
       } else {
-        sprintf(tmp, "%s", symbol_canonical_type_from_enum(lhs_t));
+        sprintf(tmp, "%s", symbol_canonical_type_from_enum(lhs->value_type));
       }
       CIPL_PERROR_CURSOR_RANGE(
           "invalid operands to binary " WHT "'%s'" RESET " (have " BGRN
           "'%s'" RESET " and " BGRN "'%s'" RESET ")\n",
-          li->text, beg, end, op, tmp, symbol_canonical_type_from_enum(rhs_t));
+          li->text, beg, end, op, tmp,
+          symbol_canonical_type_from_enum(rhs->value_type));
       ++errors_count;
     }
   }
 }
 
-static void handle_mismatch_cons(AST *lhs, AST *rhs, SymbolTypes lhs_t,
-                                 SymbolTypes rhs_t, char *op) {
-  invalid_bin_op(lhs, rhs, op, lhs_t, rhs_t);
+static void handle_mismatch_cons(AST *lhs, AST *rhs, char *op) {
+  invalid_bin_op(lhs, rhs, op);
 }
 
 SymbolTypes ast_binop_type_check(AST *ast) {
   BinOpAST *binop_ast = ast->value.binop;
   AST *lhs = list_peek(&ast->children, 0), *rhs = list_peek(&ast->children, 1);
-  SymbolTypes lhs_t = ast_validate_types(lhs);
-  SymbolTypes rhs_t = ast_validate_types(rhs);
+  ast_validate_types(lhs);
+  ast_validate_types(rhs);
 
   switch (binop_ast->op[0]) {
     case ':':
-      if (!can_cons_list(lhs_t, rhs_t)) {
-        handle_mismatch_cons(lhs, rhs, lhs_t, rhs_t, binop_ast->op);
+      if (!can_cons_list(lhs->value_type, rhs->value_type)) {
+        handle_mismatch_cons(lhs, rhs, binop_ast->op);
       }
-      if (rhs_t == SYM_PTR) return lhs_t + SYM_PTR;
-      return MAX(rhs_t, SYM_PTR);
+      if (rhs->value_type == SYM_PTR) return lhs->value_type + SYM_PTR;
+      return MAX(rhs->value_type, SYM_PTR);
     case '<':
     case '>': {
       if (is_relop(binop_ast->op)) {
-        if (!can_compare(lhs_t, rhs_t)) {
-          handle_mismatch_comparison(lhs, rhs, lhs_t, rhs_t);
+        if (!can_compare(lhs->value_type, rhs->value_type)) {
+          handle_mismatch_comparison(lhs, rhs);
         } else if (lhs->type == AST_BIN_OP || rhs->type == AST_BIN_OP) {
-          handle_comparison_chain(lhs, rhs, lhs_t, rhs_t);
+          handle_comparison_chain(lhs, rhs);
         }
         return SYM_INT;
       } else {
-        handle_mismatch_mapfil(lhs, rhs, lhs_t, rhs_t, binop_ast->op);
-        return (*binop_ast->op == '<' ? MAX(rhs_t, SYM_PTR) : lhs_t + SYM_PTR);
+        handle_mismatch_mapfil(lhs, rhs, binop_ast->op);
+        return (*binop_ast->op == '<' ? MAX(rhs->value_type, SYM_PTR)
+                                      : lhs->value_type + SYM_PTR);
       }
     } break;
     case '&':
@@ -236,30 +240,22 @@ SymbolTypes ast_binop_type_check(AST *ast) {
       return SYM_INT;
     default: {
       if (is_rel_equality(binop_ast->op)) {
-        if (!can_compare(lhs_t, rhs_t)) {
-          handle_mismatch_equality(lhs, rhs, lhs_t, rhs_t, binop_ast->op);
+        if (!can_compare(lhs->value_type, rhs->value_type)) {
+          handle_mismatch_equality(lhs, rhs, binop_ast->op);
         }
         return SYM_INT;
-      } else if (!can_arith(lhs_t, rhs_t)) {
-        handle_mismatch_arithmetic(lhs, rhs, lhs_t, rhs_t, binop_ast->op);
+      } else if (!can_arith(lhs->value_type, rhs->value_type)) {
+        handle_mismatch_arithmetic(lhs, rhs, binop_ast->op);
       } else if (*binop_ast->op == '/' && rhs->type == AST_NUMBER) {
-        handle_div_by_zero(lhs, rhs, lhs_t, rhs_t);
+        handle_div_by_zero(lhs, rhs);
       }
     }
   }
 
-  return MAX(lhs_t, rhs_t);
+  return MAX(lhs->value_type, rhs->value_type);
 }
 
-void ast_binop_gen_code(AST *ast, FILE *out) {
-  BinOpAST *binop_ast = ast->value.binop;
-  AST *lhs = list_peek(&ast->children, 0), *rhs = list_peek(&ast->children, 1);
-  SymbolTypes lhs_t = ast_validate_types(lhs);
-  SymbolTypes rhs_t = ast_validate_types(rhs);
-
-  ast_gen_code(lhs, out);
-  ast_gen_code(rhs, out);
-
+static void arith_gen_code(AST *lhs, AST *rhs, char *op, FILE *out) {
   int temp = current_context->t9n->temp;
 
   fprintf(out, "pop $%d\n\n", temp + 1);
@@ -272,10 +268,12 @@ void ast_binop_gen_code(AST *ast, FILE *out) {
   fprintf(out, "call get_var_val, 1\n");
   fprintf(out, "pop $%d\n\n", temp + 3);
 
-  if (lhs_t < rhs_t) fprintf(out, "inttofl $%d, $%d\n\n", temp + 2, temp + 2);
-  if (rhs_t < lhs_t) fprintf(out, "inttofl $%d, $%d\n\n", temp + 3, temp + 3);
+  if (lhs->value_type < rhs->value_type)
+    fprintf(out, "inttofl $%d, $%d\n\n", temp + 2, temp + 2);
+  if (rhs->value_type < lhs->value_type)
+    fprintf(out, "inttofl $%d, $%d\n\n", temp + 3, temp + 3);
 
-  switch (binop_ast->op[0]) {
+  switch (op[0]) {
     case '+':
       fprintf(out, "add");
       break;
@@ -288,15 +286,41 @@ void ast_binop_gen_code(AST *ast, FILE *out) {
     case '/':
       fprintf(out, "div");
       break;
-    case '&':
-      fprintf(out, "and");
-      break;
-    case '|':
-      fprintf(out, "or");
-      break;
   }
 
   fprintf(out, " $%d, $%d, $%d\n\n", temp + 3, temp + 2, temp + 3);
-  t9n_alloc_from_other(temp + 2, MAX(lhs_t, rhs_t), temp + 3, out);
-  fprintf(out, "push $%d\n\n", temp + 2);
+  t9n_alloc_from_other(temp + 2, MAX(lhs->value_type, rhs->value_type),
+                       temp + 3, out);
+}
+
+void ast_binop_gen_code(AST *ast, FILE *out) {
+  BinOpAST *binop_ast = ast->value.binop;
+  AST *lhs = list_peek(&ast->children, 0), *rhs = list_peek(&ast->children, 1);
+
+  ast_gen_code(lhs, out);
+  ast_gen_code(rhs, out);
+
+  switch (binop_ast->op[0]) {
+    case ':':
+      fprintf(out, "// list ctr\n");
+      break;
+    case '<':
+    case '>':
+      fprintf(out, "// can be slt/sleq or map/filter\n");
+      break;
+    case '&':
+    case '|':
+      fprintf(out, "// boolean op\n");
+      break;
+    case '=':
+      fprintf(out, "// seq then next instruction\n");
+      break;
+    case '!':
+      fprintf(out, "// seq then next label\n");
+      break;
+    default:
+      arith_gen_code(lhs, rhs, binop_ast->op, out);
+  }
+
+  fprintf(out, "push $%d\n\n", current_context->t9n->temp + 2);
 }

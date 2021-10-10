@@ -30,11 +30,14 @@ void ast_params_print(AST *ast) {
 void ast_params_print_pretty(AST *ast, int depth) {
   ParamsAST *params_ast = ast->value.params;
 
-  for (int i = depth; i > 0; --i) printf("\t");
+  printf("%*.s" BMAG "<params>" RESET "\n", depth * 4, "");
 
-  CIPL_PRINTF_COLOR(BMAG, "<params>\n");
   LIST_FOR_EACH(params_ast->value,
                 { ast_print_pretty(__IT__->data, depth + 1); });
 }
 
-SymbolTypes ast_params_type_check(AST *ast) { return SYM_INVALID; }
+SymbolTypes ast_params_type_check(AST *ast) {
+  LIST_FOR_EACH(ast->value.params->value,
+                { ast_validate_types(__IT__->data); });
+  return SYM_INVALID;
+}

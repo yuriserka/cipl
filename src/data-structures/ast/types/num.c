@@ -49,8 +49,8 @@ void ast_number_print(AST *ast) {
 void ast_number_print_pretty(AST *ast, int depth) {
   NumberAST *num_ast = ast->value.number;
 
-  for (int i = depth; i > 0; --i) printf("\t");
-
+  printf("%*.s", depth * 4, "");
+                  
   switch (num_ast->num_type) {
     case K_REAL:
       CIPL_PRINTF_COLOR(BYEL, "%lf\n", num_ast->value.real);

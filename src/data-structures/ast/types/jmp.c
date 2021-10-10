@@ -28,16 +28,14 @@ void ast_jmp_print(AST *ast) {
 
 void ast_jmp_print_pretty(AST *ast, int depth) {
   AST *stmt = list_peek(&ast->children, 0);
-
-  for (int i = depth; i > 0; --i) printf("\t");
-  CIPL_PRINTF_COLOR(BMAG, "<return-statement>\n");
-
+  printf("%*.s" BMAG "<return-statement>" RESET "\n", depth * 4, "");
   ast_print_pretty(stmt, depth + 1);
 }
 
 SymbolTypes ast_jmp_type_check(AST *ast) {
   AST *stmt = list_peek(&ast->children, 0);
-  return ast_validate_types(stmt);
+  ast_validate_types(stmt);
+  return stmt->value_type;
 }
 
 void ast_jmp_gen_code(AST *ast, FILE *out) {

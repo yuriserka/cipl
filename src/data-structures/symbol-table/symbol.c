@@ -161,13 +161,12 @@ char *symbol_canonical_type_function(AST *func_declarator) {
                 {});
   AST *func_decl_params = list_peek(&func_decl->children, 1);
   ParamsAST *params_l = func_decl_params->value.params;
-  SymbolTypes fun_t = ast_validate_types(func_declarator);
   char *tmp = calloc(1024, sizeof(char));
-  sprintf(tmp, "%s (", symbol_canonical_type_from_enum(fun_t));
+  sprintf(tmp, "%s (",
+          symbol_canonical_type_from_enum(func_declarator->value_type));
   LIST_FOR_EACH(params_l->value, {
     AST *param = __IT__->data;
-    SymbolTypes p_t = ast_validate_types(param);
-    strcat(tmp, symbol_canonical_type_from_enum(p_t));
+    strcat(tmp, symbol_canonical_type_from_enum(param->value_type));
     strcat(tmp, __IT_NXT__ ? ", " : "");
   });
   strcat(tmp, ")");
@@ -272,4 +271,8 @@ bool can_mapfil_list(SymbolTypes lhs, SymbolTypes rhs) {
 bool can_cons_list(SymbolTypes lhs, SymbolTypes rhs) {
   if (rhs < SYM_PTR || lhs >= SYM_PTR) return false;
   return can_assign(rhs - SYM_PTR, lhs);
+}
+
+bool can_cast(SymbolTypes type1, SymbolTypes type2) {
+  return type1 < SYM_PTR && type2 < SYM_PTR && type1 != type2;
 }

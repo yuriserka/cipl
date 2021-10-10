@@ -37,19 +37,15 @@ void ast_flow_print_pretty(AST *ast, int depth) {
   AST *then_branch = list_peek(&ast->children, 1);
   AST *else_branch = list_peek(&ast->children, 2);
 
-  for (int i = depth; i > 0; --i) printf("\t");
-  CIPL_PRINTF_COLOR(BMAG, "<if_else-statement>\n");
+  printf("%*.s" BMAG "<if-else-statement>" RESET "\n", depth * 4, "");
 
-  for (int i = depth + 1; i > 0; --i) printf("\t");
-  CIPL_PRINTF_COLOR(BMAG, "<condition>\n");
+  printf("%*.s" BMAG "<condition>" RESET "\n", (depth + 1) * 4, "");
   ast_print_pretty(conditional, depth + 2);
 
-  for (int i = depth + 1; i > 0; --i) printf("\t");
-  CIPL_PRINTF_COLOR(BMAG, "<then_branch>\n");
+  printf("%*.s" BMAG "<then-branch>" RESET "\n", (depth + 1) * 4, "");
   ast_print_pretty(then_branch, depth + 2);
 
-  for (int i = depth + 1; i > 0; --i) printf("\t");
-  CIPL_PRINTF_COLOR(BMAG, "<else_branch>\n");
+  printf("%*.s" BMAG "<else-branch>" RESET "\n", (depth + 1) * 4, "");
   ast_print_pretty(else_branch, depth + 2);
 }
 
@@ -59,8 +55,9 @@ SymbolTypes ast_flow_type_check(AST *ast) {
   AST *else_branch = list_peek(&ast->children, 2);
 
   ast_validate_types(conditional);
-  SymbolTypes then_t = ast_validate_types(then_branch);
-  SymbolTypes else_t = ast_validate_types(else_branch);
+  ast_validate_types(then_branch);
+  ast_validate_types(else_branch);
 
-  return MAX(then_t, else_t);
+  return MAX(then_branch->value_type,
+             else_branch ? else_branch->value_type : SYM_INVALID);
 }

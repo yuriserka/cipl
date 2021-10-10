@@ -30,9 +30,7 @@ void ast_str_print(AST *ast) {
 void ast_str_print_pretty(AST *ast, int depth) {
   StringLiteralAST *str_ast = ast->value.str;
 
-  for (int i = depth; i > 0; --i) printf("\t");
-
-  CIPL_PRINTF_COLOR(BYEL, "'%s'\n", str_ast->value);
+  printf("%*.s" BYEL "'%s'" RESET "\n", depth * 4, "", str_ast->value);
 }
 
 SymbolTypes ast_str_type_check(AST *ast) { return SYM_PTR; }

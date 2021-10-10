@@ -8,6 +8,29 @@ char snil[] = "nil"
 
 .code
 
+cast_num:
+    mov $0, *#0
+    mov $1, *#1
+    seq $2, $0, $1
+    brnz cast_num_EQ
+    slt $2, $1, $0
+    slt $2, $0, $1
+    brnz set_var_val_F2I, $2
+    mov $2, $2
+    inttofl $2, $2
+    jump cast_num_END
+set_var_val_F2I:
+    mov $2, $2
+    fltoint $2, $2
+    jump cast_num_END
+cast_num_EQ:
+    mov $2, #1[1]
+cast_num_END:
+    mema $3, 2
+    mov $3[1], $2
+    mov *$3, 1
+    return $3
+
 get_var_val:
     mov $0, *#0
     seq $0, $0, 2
@@ -89,11 +112,12 @@ writeln:
     println
     return 0
 
-var_decl:
+func_var_decl:
     // int a
     mema $0, 2
     mov *$0, 1
     mov $0[1], 0
+
     param $0
     call read, 1
 
@@ -101,6 +125,7 @@ var_decl:
     mema $1, 2
     mov *$1, 2
     mov $1[1], 0
+
     param $1
     call read, 1
 
@@ -108,6 +133,7 @@ var_decl:
     param $2
     param 0
     call write, 2
+
     param $0
     param 2
     call writeln, 2
@@ -116,6 +142,7 @@ var_decl:
     param $2
     param 0
     call write, 2
+
     param $1
     param 2
     call writeln, 2
@@ -184,7 +211,7 @@ func_add:
     return $4
 
 main:
-    call var_decl, 0
+    call func_var_decl, 0
     
     call func_add, 0
     pop $0

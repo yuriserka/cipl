@@ -40,23 +40,18 @@ void ast_iter_print_pretty(AST *ast, int depth) {
   AST *after_each = list_peek(&ast->children, 2);
   AST *stmts = list_peek(&ast->children, 3);
 
-  for (int i = depth; i > 0; --i) printf("\t");
-  CIPL_PRINTF_COLOR(BMAG, "<iteration-statement>\n");
+  printf("%*.s" BMAG "<iteration-statement>" RESET "\n", depth * 4, "");
 
-  for (int i = depth + 1; i > 0; --i) printf("\t");
-  CIPL_PRINTF_COLOR(BMAG, "<before_all>\n");
+  printf("%*.s" BMAG "<before-all>" RESET "\n", (depth + 1) * 4, "");
   ast_print_pretty(b4_all, depth + 2);
 
-  for (int i = depth + 1; i > 0; --i) printf("\t");
-  CIPL_PRINTF_COLOR(BMAG, "<before_each>\n");
+  printf("%*.s" BMAG "<before-each>" RESET "\n", (depth + 1) * 4, "");
   ast_print_pretty(b4_each, depth + 2);
 
-  for (int i = depth + 1; i > 0; --i) printf("\t");
-  CIPL_PRINTF_COLOR(BMAG, "<after_each>\n");
+  printf("%*.s" BMAG "<after-all>" RESET "\n", (depth + 1) * 4, "");
   ast_print_pretty(after_each, depth + 2);
 
-  for (int i = depth + 1; i > 0; --i) printf("\t");
-  CIPL_PRINTF_COLOR(BMAG, "<statement>\n");
+  printf("%*.s" BMAG "<statements>" RESET "\n", (depth + 1) * 4, "");
   ast_print_pretty(stmts, depth + 2);
 }
 
@@ -69,6 +64,7 @@ SymbolTypes ast_iter_type_check(AST *ast) {
   ast_validate_types(b4_all);
   ast_validate_types(b4_each);
   ast_validate_types(after_each);
+  ast_validate_types(stmts);
 
-  return ast_validate_types(stmts);
+  return stmts->value_type;
 }

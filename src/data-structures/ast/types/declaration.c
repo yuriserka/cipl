@@ -30,15 +30,14 @@ void ast_declaration_print(AST *ast) {
 void ast_declaration_print_pretty(AST *ast, int depth) {
   AST *name = list_peek(&ast->children, 0);
 
-  for (int i = depth; i > 0; --i) printf("\t");
-
-  CIPL_PRINTF_COLOR(BMAG, "<declaration>\n");
+  printf("%*.s" BMAG "<declaration>" RESET "\n", depth * 4, "");
   ast_print_pretty(name, depth + 1);
 }
 
 SymbolTypes ast_declaration_type_check(AST *ast) {
   AST *name = list_peek(&ast->children, 0);
-  return ast_validate_types(name);
+  ast_validate_types(name);
+  return name->value_type;
 }
 
 void ast_declaration_gen_code(AST *ast, FILE *out) {

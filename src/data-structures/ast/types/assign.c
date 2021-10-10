@@ -33,15 +33,18 @@ void ast_assign_print_pretty(AST *ast, int depth) {
   AST *lhs = list_peek(&ast->children, 0);
   AST *rhs = list_peek(&ast->children, 1);
 
-  for (int i = depth; i > 0; --i) printf("\t");
-
-  CIPL_PRINTF_COLOR(BMAG, "<assign>\n");
+  printf("%*.s" BMAG "<assign>" RESET "\n", depth * 4, "");
   ast_print_pretty(lhs, depth + 1);
 
-  for (int i = depth + 1; i > 0; --i) printf("\t");
-  CIPL_PRINTF_COLOR(BBLU, "=\n");
+  printf("%*.s" WHT "=" RESET "\n", (depth + 1) * 4, "");
 
-  ast_print_pretty(rhs, depth + 1);
+  bool valid_cast = lhs && rhs && can_cast(lhs->value_type, rhs->value_type);
+
+  if (valid_cast)
+    printf("%*.s" BMAG "<%s>" RESET "\n", (depth + 1) * 4, "",
+           lhs->value_type < rhs->value_type ? "fltoint" : "inttofl");
+
+  ast_print_pretty(rhs, depth + 1 + valid_cast);
 }
 
 static void handle_lvalue_required(AST *lhs, AST *rhs) {
@@ -53,14 +56,14 @@ static void handle_lvalue_required(AST *lhs, AST *rhs) {
   ++errors_count;
 }
 
-static void handle_mismatch_assign(AST *lhs, AST *rhs, SymbolTypes lhs_t,
-                                   SymbolTypes rhs_t) {
+static void handle_mismatch_assign(AST *lhs, AST *rhs) {
   Cursor c = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
   LineInfo *li = list_peek(&lines, c.line - 1);
   CIPL_PERROR_CURSOR("incompatible types when assigning to type " BGRN
                      "'%s'" RESET " from type " BGRN "'%s'" RESET "\n",
-                     li->text, c, symbol_canonical_type_from_enum(lhs_t),
-                     symbol_canonical_type_from_enum(rhs_t));
+                     li->text, c,
+                     symbol_canonical_type_from_enum(lhs->value_type),
+                     symbol_canonical_type_from_enum(rhs->value_type));
   ++errors_count;
 }
 
@@ -78,37 +81,23 @@ SymbolTypes ast_assign_type_check(AST *ast) {
     return SYM_INVALID;
   }
 
-  SymbolTypes lhs_t = ast_validate_types(lhs);
-  SymbolTypes rhs_t = ast_validate_types(rhs);
+  ast_validate_types(lhs);
+  ast_validate_types(rhs);
 
-  if (!lhs_t || !rhs_t) return SYM_INVALID;
+  if (!lhs->value_type || !rhs->value_type) return SYM_INVALID;
 
-  if (!can_assign(lhs_t, rhs_t)) {
-    handle_mismatch_assign(lhs, rhs, lhs_t, rhs_t);
+  if (!can_assign(lhs->value_type, rhs->value_type)) {
+    handle_mismatch_assign(lhs, rhs);
   }
 
-  return MAX(lhs_t, rhs_t);
+  return MAX(lhs->value_type, rhs->value_type);
 }
 
 void ast_assign_gen_code(AST *ast, FILE *out) {
-  AST *lhs = list_peek(&ast->children, 0);
-  AST *rhs = list_peek(&ast->children, 1);
-  ast_gen_code(rhs, out);
-  fprintf(out, "param %c%d\n", t9n_prefix(lhs->value.symref->symbol),
-          lhs->value.symref->symbol->temp);
-  switch (rhs->type) {
-    case AST_SYM_REF:
-      fprintf(out, "param %c%d\n", t9n_prefix(rhs->value.symref->symbol),
-              rhs->value.symref->symbol->temp);
-      fprintf(out, "param 1\n");
-      break;
-    case AST_FUNC_CALL:
-      fprintf(out, "param $%d\n", current_context->t9n->temp);
-      fprintf(out, "param 1\n");
-      break;
-    default:
-      fprintf(out, "param $%d\n", current_context->t9n->temp);
-      fprintf(out, "param 0\n");
-  }
-  fprintf(out, "call set_var_val, 3\n\n");
+  // AST *lhs = list_peek(&ast->children, 0);
+  // AST *rhs = list_peek(&ast->children, 1);
+
+  // ast_gen_code(rhs, out);
+
+  // fprintf(out, "pop $%d\n", current_context->t9n->temp);
 }

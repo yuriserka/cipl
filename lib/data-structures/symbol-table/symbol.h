@@ -69,6 +69,7 @@ bool can_compare(SymbolTypes lhs, SymbolTypes rhs);
 bool can_assign(SymbolTypes lhs, SymbolTypes rhs);
 bool can_mapfil_list(SymbolTypes lhs, SymbolTypes rhs);
 bool can_cons_list(SymbolTypes lhs, SymbolTypes rhs);
+bool can_cast(SymbolTypes type1, SymbolTypes type2);
 
 struct cipl_ast;
 char *symbol_canonical_type_function(struct cipl_ast *func_declarator);

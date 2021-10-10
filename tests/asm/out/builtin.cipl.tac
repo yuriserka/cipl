@@ -1,6 +1,12 @@
 .table
 
 char str_nil[] = "nil"
+char str_0[] = "digite o valor de \033[33m'a'\033[0m: "
+char str_1[] = "'a + 2 - 3 * 4 / 5 + 1.0 - 2.0 * 10' = "
+char str_2[] = "static int: "
+char str_3[] = "static float: "
+char str_4[] = "static '"
+char str_5[] = " + 1 + 65 - 7.89 * 5.2 / 0.45' = "
 
 .code
 set_var_val:
@@ -85,115 +91,399 @@ println
 return 0
 
 main:
+// var int a
 mema $0, 2
-mov $0[0], 1
-mov $0[1], 1
-push $0
+mov $0[1], 0
+mov *$0, 1
 
-mema $0, 2
-mov $0[0], 1
-mov $0[1], 2
+mema $1, 2
+mov $1[0], 3
+mov $1[1], &str_0
+push $1
+
+pop $1
+param $1
+call write, 1
+
 push $0
 
 pop $1
+param $1
+call read, 1
 
-pop $0
+mema $1, 2
+mov $1[0], 3
+mov $1[1], &str_1
+push $1
 
-param $0
-call get_var_val, 1
+pop $1
+param $1
+call write, 1
+
+push $0
+
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 2
+push $1
+
 pop $2
+
+pop $1
 
 param $1
 call get_var_val, 1
 pop $3
 
-add $3, $2, $3
+param $2
+call get_var_val, 1
+pop $4
 
-mema $2, 2
-mov $2[0], 1
-mov $2[1], $3
-push $2
+add $4, $3, $4
 
-mema $0, 2
-mov $0[0], 1
-mov $0[1], 3
-push $0
+mema $3, 2
+mov $3[0], 1
+mov $3[1], $4
+push $3
 
-mema $0, 2
-mov $0[0], 2
-mov $0[1], 4.000000
-push $0
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 3
+push $1
+
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 4
+push $1
+
+pop $2
 
 pop $1
-
-pop $0
-
-param $0
-call get_var_val, 1
-pop $2
 
 param $1
 call get_var_val, 1
 pop $3
 
-inttofl $2, $2
+param $2
+call get_var_val, 1
+pop $4
 
-mul $3, $2, $3
+mul $4, $3, $4
 
-mema $2, 2
-mov $2[0], 2
-mov $2[1], $3
-push $2
+mema $3, 2
+mov $3[0], 1
+mov $3[1], $4
+push $3
 
-mema $0, 2
-mov $0[0], 1
-mov $0[1], 5
-push $0
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 5
+push $1
+
+pop $2
 
 pop $1
-
-pop $0
-
-param $0
-call get_var_val, 1
-pop $2
 
 param $1
 call get_var_val, 1
 pop $3
+
+param $2
+call get_var_val, 1
+pop $4
+
+div $4, $3, $4
+
+mema $3, 2
+mov $3[0], 1
+mov $3[1], $4
+push $3
+
+pop $2
+
+pop $1
+
+param $1
+call get_var_val, 1
+pop $3
+
+param $2
+call get_var_val, 1
+pop $4
+
+sub $4, $3, $4
+
+mema $3, 2
+mov $3[0], 1
+mov $3[1], $4
+push $3
+
+mema $1, 2
+mov $1[0], 2
+mov $1[1], 1.000000
+push $1
+
+pop $2
+
+pop $1
+
+param $1
+call get_var_val, 1
+pop $3
+
+param $2
+call get_var_val, 1
+pop $4
 
 inttofl $3, $3
 
-div $3, $2, $3
+add $4, $3, $4
 
-mema $2, 2
-mov $2[0], 2
-mov $2[1], $3
-push $2
+mema $3, 2
+mov $3[0], 2
+mov $3[1], $4
+push $3
+
+mema $1, 2
+mov $1[0], 2
+mov $1[1], 2.000000
+push $1
+
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 10
+push $1
+
+pop $2
 
 pop $1
-
-pop $0
-
-param $0
-call get_var_val, 1
-pop $2
 
 param $1
 call get_var_val, 1
 pop $3
 
-inttofl $2, $2
+param $2
+call get_var_val, 1
+pop $4
 
-sub $3, $2, $3
+inttofl $4, $4
 
-mema $2, 2
-mov $2[0], 2
-mov $2[1], $3
-push $2
+mul $4, $3, $4
 
-pop $0
-param $0
+mema $3, 2
+mov $3[0], 2
+mov $3[1], $4
+push $3
+
+pop $2
+
+pop $1
+
+param $1
+call get_var_val, 1
+pop $3
+
+param $2
+call get_var_val, 1
+pop $4
+
+sub $4, $3, $4
+
+mema $3, 2
+mov $3[0], 2
+mov $3[1], $4
+push $3
+
+pop $1
+param $1
+call writeln, 1
+
+mema $1, 2
+mov $1[0], 3
+mov $1[1], &str_2
+push $1
+
+pop $1
+param $1
+call write, 1
+
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 78
+push $1
+
+pop $1
+param $1
+call writeln, 1
+
+mema $1, 2
+mov $1[0], 3
+mov $1[1], &str_3
+push $1
+
+pop $1
+param $1
+call write, 1
+
+mema $1, 2
+mov $1[0], 2
+mov $1[1], 3.141590
+push $1
+
+pop $1
+param $1
+call writeln, 1
+
+mema $1, 2
+mov $1[0], 3
+mov $1[1], &str_4
+push $1
+
+pop $1
+param $1
+call write, 1
+
+push $0
+
+pop $1
+param $1
+call write, 1
+
+mema $1, 2
+mov $1[0], 3
+mov $1[1], &str_5
+push $1
+
+pop $1
+param $1
+call write, 1
+
+push $0
+
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 1
+push $1
+
+pop $2
+
+pop $1
+
+param $1
+call get_var_val, 1
+pop $3
+
+param $2
+call get_var_val, 1
+pop $4
+
+add $4, $3, $4
+
+mema $3, 2
+mov $3[0], 1
+mov $3[1], $4
+push $3
+
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 65
+push $1
+
+pop $2
+
+pop $1
+
+param $1
+call get_var_val, 1
+pop $3
+
+param $2
+call get_var_val, 1
+pop $4
+
+add $4, $3, $4
+
+mema $3, 2
+mov $3[0], 1
+mov $3[1], $4
+push $3
+
+mema $1, 2
+mov $1[0], 2
+mov $1[1], 7.890000
+push $1
+
+mema $1, 2
+mov $1[0], 2
+mov $1[1], 5.200000
+push $1
+
+pop $2
+
+pop $1
+
+param $1
+call get_var_val, 1
+pop $3
+
+param $2
+call get_var_val, 1
+pop $4
+
+mul $4, $3, $4
+
+mema $3, 2
+mov $3[0], 2
+mov $3[1], $4
+push $3
+
+mema $1, 2
+mov $1[0], 2
+mov $1[1], 0.450000
+push $1
+
+pop $2
+
+pop $1
+
+param $1
+call get_var_val, 1
+pop $3
+
+param $2
+call get_var_val, 1
+pop $4
+
+div $4, $3, $4
+
+mema $3, 2
+mov $3[0], 2
+mov $3[1], $4
+push $3
+
+pop $2
+
+pop $1
+
+param $1
+call get_var_val, 1
+pop $3
+
+param $2
+call get_var_val, 1
+pop $4
+
+inttofl $3, $3
+
+sub $4, $3, $4
+
+mema $3, 2
+mov $3[0], 2
+mov $3[1], $4
+push $3
+
+pop $1
+param $1
 call writeln, 1
 
 jump EOF

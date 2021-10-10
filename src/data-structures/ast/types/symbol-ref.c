@@ -35,7 +35,7 @@ void ast_symref_print(AST *ast) {
 void ast_symref_print_pretty(AST *ast, int depth) {
   SymbolRefAST *symref = ast->value.symref;
 
-  for (int i = depth; i > 0; --i) printf("\t");
+  printf("%*.s", depth * 4, "");
   symbol_print_pretty(symref->symbol);
 }
 

@@ -36,12 +36,9 @@ void ast_builtinfn_print_pretty(AST *ast, int depth) {
   BuiltinFuncAST *builtinfn_ast = ast->value.builtinfn;
   AST *args = list_peek(&ast->children, 0);
 
-  for (int i = depth; i > 0; --i) printf("\t");
-  CIPL_PRINTF_COLOR(BMAG, "<builtin-call>\n");
-
-  for (int i = depth + 1; i > 0; --i) printf("\t");
-  CIPL_PRINTF_COLOR(BBLU, "%s\n",
-                    builtinfn_str_from_type(builtinfn_ast->func_type));
+  printf("%*.s" BMAG "<builtin-call>" RESET "\n", depth * 4, "");
+  printf("%*.s" BHBLU "%s" RESET "\n", (depth + 1) * 4, "",
+         builtinfn_str_from_type(builtinfn_ast->func_type));
 
   ast_print_pretty(args, depth + 1);
 }
@@ -62,7 +59,7 @@ const char *builtinfn_str_from_type(BuiltInFuncTypes type) {
   }
 }
 
-static void handle_list_as_arg(AST *arg, SymbolTypes type) {
+static void handle_list_as_arg(AST *arg) {
   Cursor beg = cursor_init_yylloc_begin(arg->rule_pos);
   Cursor end = cursor_init_yylloc_end(arg->rule_pos);
   LineInfo *li = list_peek(&lines, beg.line - 1);
@@ -71,16 +68,16 @@ static void handle_list_as_arg(AST *arg, SymbolTypes type) {
       " but argument is of type " BGRN "'%s'" RESET "\n",
       li->text, beg, end, symbol_canonical_type_from_enum(SYM_INT),
       symbol_canonical_type_from_enum(SYM_REAL),
-      symbol_canonical_type_from_enum(type));
+      symbol_canonical_type_from_enum(arg->value_type));
   ++errors_count;
 }
 
 SymbolTypes ast_builtinfn_type_check(AST *ast) {
   AST *args = list_peek(&ast->children, 0);
-  SymbolTypes args_t = ast_validate_types(args);
+  ast_validate_types(args);
 
-  if (args_t > SYM_PTR) {
-    handle_list_as_arg(args, args_t);
+  if (args->value_type > SYM_PTR) {
+    handle_list_as_arg(args);
   }
 
   return SYM_INT;

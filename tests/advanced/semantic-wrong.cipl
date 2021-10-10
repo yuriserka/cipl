@@ -48,6 +48,7 @@ int list_in_arith_op(int list l) {
 int many_or_few_args_fn_call(int i) {
   return many_or_few_args_fn_call(i);
   return many_or_few_args_fn_call(i, i);
+  return many_or_few_args_fn_call(NIL);
   return many_or_few_args_fn_call();
 }
 
@@ -297,4 +298,8 @@ float list iter(int n) {
 
 int no_main() {
   return 0;
+}
+
+int list main(float x) {
+  return x : NIL;
 }

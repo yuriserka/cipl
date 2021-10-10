@@ -48,6 +48,7 @@ typedef union cipl_ast_node_value {
 
 struct cipl_ast {
   YYLTYPE rule_pos;
+  SymbolTypes value_type;
   AstTypes type;
   ListNode *children;
   AstNodeValue value;
@@ -65,7 +66,7 @@ SymbolValues ast_eval(AST *ast);
 void ast_print(AST *ast);
 void ast_print_pretty(AST *ast, int depth);
 
-SymbolTypes ast_validate_types(AST *ast);
+void ast_validate_types(AST *ast);
 
 void ast_gen_code_init(FILE *out);
 void ast_gen_code_end(FILE *out);
