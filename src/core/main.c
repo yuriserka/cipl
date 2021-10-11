@@ -33,24 +33,10 @@ void main_context_pretty() {
   LIST_FOR_EACH(contexts, { context_print_pretty(__IT__->data); });
 }
 
-int cipl_syntax() {
-  int got_errors = yyparse(0, 0) || errors_count;
-
-  if (got_errors) {
-    CIPL_PRINTF_COLOR(BRED, "\n\n%d error%s", errors_count,
-                      errors_count > 1 ? "s" : "");
-    CIPL_PRINTF(" generated.\n\tIs not possible to print the AST.\n");
-  }
-
-  return !got_errors;
-}
+int cipl_syntax() { return !yyparse(0, 0) && !errors_count; }
 
 int cipl_semantic() {
   ast_validate_types(root);
-
-  if (errors_count)
-    CIPL_PRINTF_COLOR(BRED, "\n\n%d error%s" RESET " generated\n", errors_count,
-                      errors_count > 1 ? "s" : "");
 
   return !errors_count;
 }
@@ -104,8 +90,13 @@ int cipl_main(int argc, char *argv[]) {
 
   bool succeeded = cipl_syntax() && cipl_semantic() && cipl_intermediate_code();
 
-  // main_ast_pretty();
-  // main_context_pretty();
+  main_ast_pretty();
+  main_context_pretty();
+
+  if (!succeeded) {
+    printf(BRED "%d error%s" RESET " generated\n", errors_count,
+           errors_count > 1 ? "s" : "");
+  }
 
   fclose(yyin);
   yylex_destroy();

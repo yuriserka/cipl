@@ -32,7 +32,7 @@
     void free_scope_cb(StackNode *node) { scope_free(node->data); }
 
     StackNode *context_get_current_stacknode_ref() {
-        LIST_FOR_EACH_REVERSE(current_context->scopes, {
+        STACK_FOR_EACH(current_context->scopes, {
             if (((Scope *)__IT__->data)->index == current_context->current_scope) {
                 return __IT__;
             }

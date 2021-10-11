@@ -130,8 +130,9 @@ void ast_funcall_gen_code(AST *ast, FILE *out) {
   Symbol *fn_name = declarator->value.symref->symbol;
   LIST_FOR_EACH(args->value.params->value, {
     AST *arg = __IT__->data;
-    fprintf(out, "param %c%d\n", t9n_prefix(arg->value.symref->symbol),
-            arg->value.symref->symbol->temp);
+    ast_gen_code(arg, out);
+    fprintf(out, "pop $%d\n", current_context->t9n->temp + __K__ + 1);
+    fprintf(out, "param $%d\n", current_context->t9n->temp + __K__ + 1);
   })
   fprintf(out, "call func_%s, %d\n", fn_name->name, args->value.params->size);
 }

@@ -39,18 +39,6 @@ void *list_peek_last(ListNode **head);
     }                                       \
   }
 
-#define LIST_FOR_EACH_REVERSE(__FE_ARG__, __CODE__) \
-  {                                                 \
-    ListNode *__IT__ = __FE_ARG__;                  \
-    unsigned int __K__ = 0;                         \
-    while (__IT__) {                                \
-      ListNode *__IT_PRNT__ = __IT__->parent;       \
-      __CODE__;                                     \
-      __IT__ = __IT_PRNT__;                         \
-      ++__K__;                                      \
-    }                                               \
-  }
-
 #define LIST_FREE(__F_ARG__, __CODE__)     \
   {                                        \
     ListNode *__IT__ = __F_ARG__;          \
@@ -62,17 +50,4 @@ void *list_peek_last(ListNode **head);
       ++__K__;                             \
       __IT__ = __IT_NXT__;                 \
     }                                      \
-  }
-
-#define LIST_FREE_REVERSE(__F_ARG__, __CODE__) \
-  {                                            \
-    ListNode *__IT__ = __F_ARG__;              \
-    unsigned int __K__ = 0;                    \
-    while (__IT__) {                           \
-      ListNode *__IT_PRNT__ = __IT__->parent;  \
-      __CODE__;                                \
-      free(__IT__);                            \
-      ++__K__;                                 \
-      __IT__ = __IT_PRNT__;                    \
-    }                                          \
   }

@@ -135,6 +135,7 @@ void ast_free(AST *ast) {
       break;
     default:
       printf("AST type: %d free not implemented yet\n", ast->type);
+      ++errors_count;
       break;
   }
   free(ast);
@@ -178,6 +179,7 @@ SymbolValues ast_eval(AST *ast) {
       return ast_eval(ast->children->data);
     default:
       printf("AST type: %d eval not implemented yet\n", ast->type);
+      ++errors_count;
       break;
   }
 
@@ -244,6 +246,7 @@ void ast_print(AST *ast) {
       return;
     default:
       printf("AST type: %d print not implemented yet\n", ast->type);
+      ++errors_count;
       break;
   }
   printf(", ");
@@ -305,6 +308,7 @@ void ast_print_pretty(AST *ast, int depth) {
       break;
     default:
       printf("AST type: %d print not implemented yet\n", ast->type);
+      ++errors_count;
       break;
   }
 }
@@ -406,6 +410,7 @@ void ast_validate_types(AST *ast) {
     } break;
     default:
       printf("AST type: %d type_check not implemented yet\n", ast->type);
+      ++errors_count;
       break;
   }
 }
@@ -460,6 +465,7 @@ void ast_gen_code(AST *ast, FILE *out) {
       break;
     default:
       printf("AST type: %d gen_code not implemented yet\n", ast->type);
+      ++errors_count;
       break;
   }
 }
@@ -495,7 +501,7 @@ AST *ast_find_node(AST *root, AstTypes type) {
     }
   }
 
-  stack_free(l, ast_fake_stack_pop);
+  STACK_FREE(l, {});
 
   return v;
 }

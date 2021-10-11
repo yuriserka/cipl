@@ -49,7 +49,7 @@ Scope *scope_add(StackNode **scopes, Scope *curr) {
 }
 
 Symbol *scope_lookup(StackNode *scopes, char *sym_name) {
-  LIST_FOR_EACH_REVERSE(scopes, {
+  STACK_FOR_EACH(scopes, {
     Scope *scope = __IT__->data;
     Symbol *sym_entry = symbol_table_lookup(scope->symbol_table, sym_name);
     if (sym_entry) return sym_entry;
@@ -64,13 +64,14 @@ void scope_print(Scope *scope) {
 }
 
 void scope_print_pretty(Scope *scope, int width) {
-  for (int i = 0; i < width; ++i) printf("\t");
+  printf("%*.s", width * 4, "");
+
   CIPL_PRINTF_COLOR(UMAG, "scope %d has %d entr%s" RESET "\n", scope->index,
                     scope->size, scope->size > 1 ? "ies" : "y");
 
   LIST_FOR_EACH(scope->symbol_table->symbols, {
     Symbol *sym = __IT__->data;
-    for (int i = 0; i < width; ++i) printf("\t");
+    printf("%*.s", (width + 1) * 4, "");
     symbol_print_pretty(sym);
   });
   printf("\n");

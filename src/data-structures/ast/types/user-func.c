@@ -47,38 +47,7 @@ void ast_userfunc_print_pretty(AST *ast, int depth) {
 
   ast_print_pretty(name, depth + 1);
   ast_print_pretty(params, depth + 1);
-
-  printf("%*.s" BMAG "<code-block>" RESET "\n", depth * 4, "");
-  LIST_FOR_EACH(statements->value.blockitems->value, {
-    AST *block_item = __IT__->data;
-
-    if (block_item) {
-      if (block_item->type != AST_JMP) {
-        ast_print_pretty(block_item, depth + 1);
-      } else {
-        bool valid_cast = can_cast(name->value_type, block_item->value_type);
-        if (valid_cast)
-          printf("%*.s" BMAG "<%s>" RESET "\n", (depth + 1) * 4, "",
-                 name->value_type < block_item->value_type ? "fltoint"
-                                                           : "inttofl");
-        ast_print_pretty(block_item, depth + 1 + valid_cast);
-      }
-    }
-  });
-}
-
-static void handle_mismatch_return_type(AST *fname, AST *block_item) {
-  AST *invalid_expr = list_peek(&block_item->children, 0);
-  Cursor beg = cursor_init_yylloc_begin(invalid_expr->rule_pos);
-  Cursor end = cursor_init_yylloc_end(invalid_expr->rule_pos);
-  LineInfo *li = list_peek(&lines, beg.line - 1);
-  CIPL_PERROR_CURSOR_RANGE(
-      "incompatible types when returning type " BGRN "'%s'" RESET " but " BGRN
-      "'%s'" RESET " was expected\n",
-      li->text, beg, end,
-      symbol_canonical_type_from_enum(block_item->value_type),
-      symbol_canonical_type_from_enum(fname->value_type));
-  ++errors_count;
+  ast_print_pretty(statements, depth + 1);
 }
 
 static void handle_no_return(AST *func_declarator) {
@@ -98,24 +67,15 @@ SymbolTypes ast_userfunc_type_check(AST *ast) {
   ast_validate_types(declarator);
   AST *statements = list_peek(&ast->children, 2);
 
-  int qtd_ret = 0;
-  AST_FIND_NODE(
-      statements, AST_JMP,
-      {
-        ast_validate_types(__AST__);
-        if (!can_assign(declarator->value_type, __AST__->value_type)) {
-          handle_mismatch_return_type(declarator, __AST__);
-        }
-        ++qtd_ret;
-      },
-      {
-        if (!qtd_ret) handle_no_return(declarator);
-      });
+  ast_validate_types(statements);
 
+  int qtd_ret = 0;
   LIST_FOR_EACH(statements->value.blockitems->value, {
     AST *block_item = __IT__->data;
-    if (block_item->type != AST_JMP) ast_validate_types(block_item);
+    if (block_item->type == AST_JMP) ++qtd_ret;
   });
+
+  if (!qtd_ret) handle_no_return(declarator);
 
   return declarator->value_type;
 }
@@ -133,7 +93,7 @@ void ast_userfunc_gen_code(AST *ast, FILE *out) {
 
   ListNode *old_params_ref = NULL;
 
-  LIST_FOR_EACH_REVERSE(params->value.params->value, {
+  STACK_FOR_EACH(params->value.params->value, {
     AST *param = __IT__->data;
     Symbol *par_sym = param->value.symref->symbol;
     // int/float are passed by value so have to copy them to a temp
@@ -156,7 +116,7 @@ void ast_userfunc_gen_code(AST *ast, FILE *out) {
   ast_gen_code(statements, out);
 
   // recover #param number
-  LIST_FOR_EACH_REVERSE(params->value.params->value, {
+  STACK_FOR_EACH(params->value.params->value, {
     AST *param = __IT__->data;
     Symbol *par_sym = param->value.symref->symbol;
     if (par_sym->type < SYM_PTR) {

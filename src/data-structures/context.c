@@ -19,14 +19,14 @@ Context *context_init(char *name) {
 
 Symbol *context_search_symbol_scopes(Context *ctx, Symbol *sym) {
   StackNode *curr_scope_stacknode_ref;
-  LIST_FOR_EACH_REVERSE(ctx->scopes, {
+  STACK_FOR_EACH(ctx->scopes, {
     if (((Scope *)__IT__->data)->index == ctx->current_scope) {
       curr_scope_stacknode_ref = __IT__;
       break;
     }
   });
 
-  LIST_FOR_EACH_REVERSE(curr_scope_stacknode_ref, {
+  STACK_FOR_EACH(curr_scope_stacknode_ref, {
     Scope *scope = __IT__->data;
     while (__IT_PRNT__ &&
            (scope->last_parent != ((Scope *)__IT_PRNT__->data)->index)) {
@@ -44,7 +44,7 @@ Symbol *context_has_symbol(Context *ctx, Symbol *sym) {
 }
 
 void context_free(Context *ctx) {
-  LIST_FREE_REVERSE(ctx->scopes, { scope_free(__IT__->data); });
+  STACK_FREE(ctx->scopes, { scope_free(__IT__->data); });
   free(ctx->name);
   t9n_free(ctx->t9n);
   free(ctx);
@@ -78,12 +78,12 @@ Symbol *context_declare_variable(Context *ctx, Symbol *sym) {
 
 void context_print(Context *ctx) {
   printf("{ name: %s, scopes: [ ", ctx->name);
-  LIST_FOR_EACH_REVERSE(ctx->scopes, { scope_print(__IT__->data); });
+  STACK_FOR_EACH(ctx->scopes, { scope_print(__IT__->data); });
   printf("], }, ");
 }
 
 Scope *context_found_scope(Context *ctx, int idx) {
-  LIST_FOR_EACH_REVERSE(ctx->scopes, {
+  STACK_FOR_EACH(ctx->scopes, {
     Scope *scope = __IT__->data;
     if (scope->index == idx) return scope;
   });
@@ -99,7 +99,7 @@ void context_print_pretty(Context *ctx) {
                       ctx->name);
   }
   int wd = 0;
-  LIST_FOR_EACH_REVERSE(ctx->scopes, {
+  STACK_FOR_EACH(ctx->scopes, {
     Scope *scope = __IT__->data;
     if (scope->size) {
       scope_print_pretty(scope, wd);

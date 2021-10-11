@@ -118,7 +118,7 @@ void ast_fake_stack_pop(ListNode *node);
           });                                               \
       }                                                     \
     }                                                       \
-    list_free(__DFS_L__, ast_fake_stack_pop);               \
+    LIST_FREE(__DFS_L__, {});                               \
     if (!__FOUND__) {                                       \
       __NOT_FOUND_ACTION__;                                 \
     }                                                       \

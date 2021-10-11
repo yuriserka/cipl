@@ -43,8 +43,6 @@ SymbolTypes ast_blockitems_type_check(AST *ast) {
 
   AST *possible_return = list_peek_last(&blockitems_ast->value);
 
-  ast_validate_types(possible_return);
-
   return possible_return && possible_return->type != AST_JMP
              ? SYM_INVALID
              : possible_return->value_type;
@@ -59,7 +57,7 @@ void ast_blockitems_gen_code(AST *ast, FILE *out) {
   });
 
   // try to free memory allocated for variables b4 return
-  // LIST_FOR_EACH_REVERSE(current_context->scopes, {
+  // STACK_FOR_EACH(current_context->scopes, {
   //   if (!__IT_PRNT__) break;
   //   Scope *scope = __IT__->data;
   //   LIST_FOR_EACH(scope->symbol_table->symbols, {
