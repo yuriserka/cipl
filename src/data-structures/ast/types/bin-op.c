@@ -40,13 +40,13 @@ void ast_binop_print_pretty(AST *ast, int depth) {
   printf("%*.s" BMAG "<binary-op>" RESET "\n", depth * 4, "");
   printf("%*.s" WHT "%s" RESET "\n", (depth + 1) * 4, "", binop_ast->op);
 
-  bool lcast = can_cast(lhs->value_type, rhs->value_type) &&
+  bool lcast = lhs && rhs && can_cast(lhs->value_type, rhs->value_type) &&
                lhs->value_type < rhs->value_type;
 
   if (lcast) printf("%*.s" BMAG "<inttofl>" RESET "\n", (depth + 1) * 4, "");
   ast_print_pretty(lhs, depth + 1 + lcast);
 
-  bool rcast = can_cast(lhs->value_type, rhs->value_type) &&
+  bool rcast = lhs && rhs && can_cast(lhs->value_type, rhs->value_type) &&
                rhs->value_type < lhs->value_type;
 
   if (rcast) printf("%*.s" BMAG "<inttofl>" RESET "\n", (depth + 1) * 4, "");
@@ -152,8 +152,7 @@ static void handle_mapfil_mismatch_params(AST *fn, SymbolTypes list_type) {
         end, fn->value.symref->symbol->name);
     ++errors_count;
   } else if (list_type > SYM_PTR) {
-    AST *param = params_l->value->data;
-    ast_validate_types(param);
+    AST *param = list_peek(&params_l->value, 0);
     if (!can_assign(param->value_type, list_type - SYM_PTR)) {
       CIPL_PERROR_CURSOR_RANGE(
           "expected " BGRN "'%s'" RESET " as argument but list is of type " BGRN
@@ -176,16 +175,23 @@ static void handle_mismatch_mapfil(AST *lhs, AST *rhs, char *op) {
     handle_mapfil_mismatch_params(lhs, rhs->value_type);
   }
 
-  if (lhs->type != AST_SYM_REF) {
-    CIPL_PERROR_CURSOR_RANGE("invalid operands to binary " WHT "'%s'" RESET
-                             " (have " BGRN "'%s'" RESET " and " BGRN
-                             "'%s'" RESET ")\n",
-                             li->text, beg, end, op, tmp,
-                             symbol_canonical_type_from_enum(rhs->value_type));
+  if (lhs->value_type > SYM_PTR) {
+    CIPL_PERROR_CURSOR_RANGE("return type of " BBLU "'%s'" RESET " is not " BGRN
+                             "'%s'" RESET " or " BGRN "'%s'" RESET "\n",
+                             li->text, beg, end,
+                             lhs->value.symref->symbol->name,
+                             symbol_canonical_type_from_enum(SYM_INT),
+                             symbol_canonical_type_from_enum(SYM_REAL));
     ++errors_count;
+    return;
+  }
+
+  if (lhs->type != AST_SYM_REF) {
+    invalid_bin_op(lhs, rhs, op);
   } else {
-    if (!lhs->value.symref->symbol->kind == FUNC || rhs->value_type < SYM_PTR) {
-      if (lhs->value.symref->symbol->kind == FUNC) {
+    Symbol *lhs_sym = lhs->value.symref->symbol;
+    if (!lhs_sym->kind == FUNC || rhs->value_type < SYM_PTR) {
+      if (lhs_sym->kind == FUNC) {
         char *func_str = symbol_canonical_type_function(lhs);
         sprintf(tmp, "%s", func_str);
         free(func_str);
@@ -230,8 +236,8 @@ SymbolTypes ast_binop_type_check(AST *ast) {
         return SYM_INT;
       } else {
         handle_mismatch_mapfil(lhs, rhs, binop_ast->op);
-        return (*binop_ast->op == '<' ? MAX(rhs->value_type, SYM_PTR)
-                                      : lhs->value_type + SYM_PTR);
+        if (*binop_ast->op == '<') return MAX(rhs->value_type, SYM_PTR);
+        return MAX((MIN(lhs->value_type, SYM_PTR) + SYM_PTR) % 6, SYM_PTR);
       }
     } break;
     case '&':

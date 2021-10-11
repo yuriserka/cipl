@@ -102,6 +102,10 @@ float i2f(int i) {
   return i * 1.0;
 }
 
+int list cant_return_intlist(int j, float h) {
+  return 1 : j + h : NIL;
+}
+
 int list_mapfil() {
   int list l;
   int x;
@@ -111,6 +115,8 @@ int list_mapfil() {
   l = invalid_map >> l;
   l = invalid_map2 >> l;
   l = invalid_map3 >> l;
+  l = cant_return_intlist >> l;
+  l = cant_return_intlist << l;
   l = filter << l;
   l = invalid_map2 << l;
   l = invalid_filter << l;

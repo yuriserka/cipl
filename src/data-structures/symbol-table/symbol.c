@@ -160,11 +160,10 @@ char *symbol_canonical_type_function(AST *func_declarator) {
                 },
                 {});
   AST *func_decl_params = list_peek(&func_decl->children, 1);
-  ParamsAST *params_l = func_decl_params->value.params;
   char *tmp = calloc(1024, sizeof(char));
   sprintf(tmp, "%s (",
           symbol_canonical_type_from_enum(func_declarator->value_type));
-  LIST_FOR_EACH(params_l->value, {
+  LIST_FOR_EACH(func_decl_params->value.params->value, {
     AST *param = __IT__->data;
     strcat(tmp, symbol_canonical_type_from_enum(param->value_type));
     strcat(tmp, __IT_NXT__ ? ", " : "");

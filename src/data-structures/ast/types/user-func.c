@@ -64,6 +64,9 @@ SymbolTypes ast_userfunc_type_check(AST *ast) {
   p_ctx_name = true;
   current_context = ast->value.userfunc->context;
 
+  AST *params = list_peek(&ast->children, 1);
+  ast_validate_types(params);
+
   ast_validate_types(declarator);
   AST *statements = list_peek(&ast->children, 2);
 
