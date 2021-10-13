@@ -1,11 +1,18 @@
+##
+@;
+
 int main(int a) {
     // my first lex error
     $a = 10;
 
+    int a;
+    a = 9;
     /*
     * 
     :P
     ****
     */
     int @prop = 1 : 2 : 4;
+    int $ #;
+    int a%$;
 }

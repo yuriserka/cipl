@@ -2114,3 +2114,4 @@ void string_literal_rm_dquote(char *s) {
   str_rm_char_at(s, 0); --len;
   str_rm_char_at(s, len - 1); --len;
 }
+

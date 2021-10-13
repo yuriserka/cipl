@@ -201,6 +201,16 @@ var_declaration: type id ';' {
         symbol_free($2);
         $$ = NULL;
     }
+    | type error {
+        show_error_range(@1, "expected identifier after " BGRN "'%s'" RESET "\n", $1);
+        free($1);
+        $$ = NULL;
+    }
+    | type error ';' {
+        show_error_range(@1, "expected expression before " WHT "';'" RESET "\n");
+        free($1);
+        $$ = NULL;
+    }
     ;
 
 func_declaration: type id '(' <ast>{
@@ -239,6 +249,8 @@ func_declaration: type id '(' <ast>{
 
         symbol_free($2);
         free($1);
+        $1 = NULL;
+        $2 = NULL;
     } param_list.opt { is_fn_blck = true; } ')' compound_stmt {
         $$ = ast_userfunc_init(@$, current_context, $4, ast_params_init(@5, $5), $8);
         current_context = previous_context;
@@ -401,6 +413,22 @@ io_stmt: READ '(' id ')' ';' {
 expr_stmt: expression ';' { $$ = $1; }
     | error ';' {
         show_error_range(@1, "expected expression before " WHT "';'" RESET "\n");
+        $$ = NULL;
+    }
+    | error '}' {
+        show_error_range(@1, "expected expression before " WHT "'}'" RESET "\n");
+        $$ = NULL;
+    }
+    | error FOR {
+        show_error_range(@1, "expected expression before " WHT "'for'" RESET "\n");
+        $$ = NULL;
+    }
+    | error IF {
+        show_error_range(@1, "expected expression before " WHT "'if'" RESET "\n");
+        $$ = NULL;
+    }
+    | error RETURN {
+        show_error_range(@1, "expected expression before " WHT "'return'" RESET "\n");
         $$ = NULL;
     }
     ;
