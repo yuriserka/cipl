@@ -272,6 +272,11 @@ bool can_cons_list(SymbolTypes lhs, SymbolTypes rhs) {
   return can_assign(rhs - SYM_PTR, lhs);
 }
 
-bool can_cast(SymbolTypes type1, SymbolTypes type2) {
-  return type1 < SYM_PTR && type2 < SYM_PTR && type1 != type2;
+bool should_cast(SymbolTypes type1, SymbolTypes type2) {
+  if (type1 < SYM_PTR && type2 < SYM_PTR) return type1 != type2;
+  if (type2 > SYM_PTR)
+    return should_cast(type1, type2 - SYM_PTR);
+  else if (type1 > SYM_PTR)
+    return should_cast(type1 - SYM_PTR, type2);
+  return false;
 }

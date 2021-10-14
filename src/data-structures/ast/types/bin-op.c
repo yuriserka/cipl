@@ -32,25 +32,36 @@ void ast_binop_print(AST *ast) {
   printf("}");
 }
 
+// only god knows how this works
+static bool print_cast(SymbolTypes t1, SymbolTypes t2, bool cmp, int depth) {
+  if (!should_cast(t1, t2)) return false;
+
+  if (cmp) {
+    if (t2 > SYM_PTR) {
+      printf("%*.s" BMAG "<%s>" RESET "\n", (depth + 1) * 4, "",
+             t1 < (t2 - SYM_PTR) ? "inttofl" : "fltoint");
+    } else {
+      printf("%*.s" BMAG "<%s>" RESET "\n", (depth + 1) * 4, "",
+             t1 < t2 ? "inttofl" : "fltoint");
+    }
+  }
+  return true;
+}
+
 void ast_binop_print_pretty(AST *ast, int depth) {
   AST *lhs = list_peek(&ast->children, 0);
   AST *rhs = list_peek(&ast->children, 1);
+
   BinOpAST *binop_ast = ast->value.binop;
 
   printf("%*.s" BMAG "<binary-op>" RESET "\n", depth * 4, "");
   printf("%*.s" WHT "%s" RESET "\n", (depth + 1) * 4, "", binop_ast->op);
 
-  bool lcast = lhs && rhs && can_cast(lhs->value_type, rhs->value_type) &&
-               lhs->value_type < rhs->value_type;
-
-  if (lcast) printf("%*.s" BMAG "<inttofl>" RESET "\n", (depth + 1) * 4, "");
+  bool lcast = print_cast(lhs->value_type, rhs->value_type, true, depth);
   ast_print_pretty(lhs, depth + 1 + lcast);
 
-  bool rcast = lhs && rhs && can_cast(lhs->value_type, rhs->value_type) &&
-               rhs->value_type < lhs->value_type;
-
-  if (rcast) printf("%*.s" BMAG "<inttofl>" RESET "\n", (depth + 1) * 4, "");
-  ast_print_pretty(rhs, depth + 1 + rcast);
+  print_cast(rhs->value_type, lhs->value_type, false, depth);
+  ast_print_pretty(rhs, depth + 1);
 }
 
 static bool is_relop(char *op) {

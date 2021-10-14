@@ -2,6 +2,10 @@ int x(float j) {
     return x(1.0 + x(8)) / 9.8;
 }
 
+int list caster() {
+    return %(x >> (1 : 4 : 6.7 : x(9) : 1.0 : NIL));
+}
+
 int main() {
     int a;
     a = x(8.0);

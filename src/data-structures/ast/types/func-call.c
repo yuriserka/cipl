@@ -59,8 +59,8 @@ void ast_funcall_print_pretty(AST *ast, int depth) {
     AST *arg = __IT__->data;
     AST *param_decl = list_peek(&func_decl_params->value.params->value, __K__);
 
-    bool valid_cast =
-        arg && param_decl && can_cast(arg->value_type, param_decl->value_type);
+    bool valid_cast = arg && param_decl &&
+                      should_cast(arg->value_type, param_decl->value_type);
 
     if (valid_cast) {
       printf("%*.s" BMAG "<%s>" RESET "\n", (depth + 2) * 4, "",
