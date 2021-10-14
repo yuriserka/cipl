@@ -6,6 +6,15 @@ int list caster() {
     return %(x >> (1 : 4 : 6.7 : x(9) : 1.0 : NIL));
 }
 
+float caster2(int list l) {
+    return
+        ?%!%(x >> x << !x(1) : x(2) : 32 : NIL)
+        * ?(1.1 + 1.1/2 - 3.3 : x(?l) : 2.2 : NIL)
+        + ?(x >> %%(9.8: l))
+        / caster2(1.0 - -2 : 1 + 2 : NIL)
+        - !?!caster();
+}
+
 int main() {
     int a;
     a = x(8.0);

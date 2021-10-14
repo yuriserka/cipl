@@ -39,6 +39,8 @@ void ast_userfunc_print(AST *ast) {
 }
 
 void ast_userfunc_print_pretty(AST *ast, int depth) {
+  current_context = ast->value.userfunc->context;
+
   AST *name = list_peek(&ast->children, 0);
   AST *params = list_peek(&ast->children, 1);
   AST *statements = list_peek(&ast->children, 2);
@@ -60,16 +62,15 @@ static void handle_no_return(AST *func_declarator) {
 }
 
 SymbolTypes ast_userfunc_type_check(AST *ast) {
-  AST *declarator = list_peek(&ast->children, 0);
   p_ctx_name = true;
   current_context = ast->value.userfunc->context;
 
+  AST *declarator = list_peek(&ast->children, 0);
   AST *params = list_peek(&ast->children, 1);
-  ast_validate_types(params);
-
-  ast_validate_types(declarator);
   AST *statements = list_peek(&ast->children, 2);
 
+  ast_validate_types(declarator);
+  ast_validate_types(params);
   ast_validate_types(statements);
 
   int qtd_ret = 0;

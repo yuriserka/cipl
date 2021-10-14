@@ -50,8 +50,10 @@ void ast_jmp_print_pretty(AST *ast, int depth) {
 
   AST *curr_func = get_curr_func_value_type();
 
-  bool valid_cast =
-      curr_func && should_cast(curr_func->value_type, stmt->value_type);
+  bool valid_cast = curr_func && stmt && curr_func->value_type < SYM_PTR &&
+                    stmt->value_type < SYM_PTR &&
+                    should_cast(curr_func->value_type, stmt->value_type);
+
   if (valid_cast)
     printf("%*.s" BMAG "<%s>" RESET "\n", (depth + 1) * 4, "",
            curr_func->value_type < stmt->value_type ? "fltoint" : "inttofl");

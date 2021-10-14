@@ -111,7 +111,6 @@ SymbolTypes ast_funcall_type_check(AST *ast) {
       AST *param_decl = list_peek(&params_l->value, __K__);
 
       ast_validate_types(arg);
-      ast_validate_types(param_decl);
 
       if (!can_assign(param_decl->value_type, arg->value_type)) {
         handle_mismatch_arg_type(arg, param_decl);

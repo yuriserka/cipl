@@ -38,7 +38,9 @@ void ast_assign_print_pretty(AST *ast, int depth) {
 
   printf("%*.s" WHT "=" RESET "\n", (depth + 1) * 4, "");
 
-  bool valid_cast = lhs && rhs && should_cast(lhs->value_type, rhs->value_type);
+  bool valid_cast = lhs && rhs && lhs->value_type < SYM_PTR &&
+                    rhs->value_type < SYM_PTR &&
+                    should_cast(lhs->value_type, rhs->value_type);
 
   if (valid_cast)
     printf("%*.s" BMAG "<%s>" RESET "\n", (depth + 1) * 4, "",
