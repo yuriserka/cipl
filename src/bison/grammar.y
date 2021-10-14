@@ -518,6 +518,25 @@ iter_stmt: FOR '(' expression.opt ';' expression.opt ';' expression.opt ')' stat
         show_error(@2, "expected " WHT "'('" RESET " token\n");
         $$ = NULL;
     }
+    | FOR '(' expression.opt ';' expression.opt ')' statement {
+        show_error(@6, "expected expression before " WHT "')'" RESET "token\n");
+        ast_free($3);
+        ast_free($5);
+        ast_free($7);
+        $$ = NULL;
+    }
+    | FOR '(' error ';' expression.opt ')' statement {
+        show_error(@6, "expected expression before " WHT "')'" RESET "token\n");
+        ast_free($5);
+        ast_free($7);
+        $$ = NULL;
+    }
+    | FOR '(' expression.opt ';' error ')' statement {
+        show_error(@6, "expected expression before " WHT "')'" RESET "token\n");
+        ast_free($3);
+        ast_free($7);
+        $$ = NULL;
+    }
     ;
 
 expression: logical_or_expr
