@@ -104,18 +104,18 @@ SymbolTypes ast_funcall_type_check(AST *ast) {
 
   if (params_l->size != args_l->size) {
     handle_mismatch_number_of_args(declarator, args_l->size, params_l->size);
-  } else {
-    LIST_FOR_EACH(args_l->value, {
-      AST *arg = __IT__->data;
-      AST *param_decl = list_peek(&params_l->value, __K__);
-
-      ast_validate_types(arg);
-
-      if (!can_assign(param_decl->value_type, arg->value_type)) {
-        handle_mismatch_arg_type(arg, param_decl);
-      }
-    });
   }
+
+  LIST_FOR_EACH(args_l->value, {
+    AST *arg = __IT__->data;
+    AST *param_decl = list_peek(&params_l->value, __K__);
+
+    ast_validate_types(arg);
+
+    if (param_decl && !can_assign(param_decl->value_type, arg->value_type)) {
+      handle_mismatch_arg_type(arg, param_decl);
+    }
+  });
 
   ast_validate_types(declarator);
   return declarator->value_type;
