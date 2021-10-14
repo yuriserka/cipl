@@ -74,12 +74,11 @@ SymbolTypes ast_userfunc_type_check(AST *ast) {
   ast_validate_types(statements);
 
   int qtd_ret = 0;
-  LIST_FOR_EACH(statements->value.blockitems->value, {
-    AST *block_item = __IT__->data;
-    if (block_item->type == AST_JMP) ++qtd_ret;
-  });
-
-  if (!qtd_ret) handle_no_return(declarator);
+  AST_FIND_NODE(
+      statements, AST_JMP, { ++qtd_ret; },
+      {
+        if (!qtd_ret) handle_no_return(declarator);
+      });
 
   return declarator->value_type;
 }
