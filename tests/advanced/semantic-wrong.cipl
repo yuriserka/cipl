@@ -61,6 +61,10 @@ int list get_l(int n) {
   return NIL;
 }
 
+float func_ref(int list z, float list r) {
+  return ?%z * ?%r;
+}
+
 int err_assign() {
   int list x;
   x = mismatch_types_fn_call(100, x);
@@ -75,6 +79,7 @@ int err_assign() {
       }
   }
   x = NIL;
+  x = func_ref;
   return 0;
 }
 

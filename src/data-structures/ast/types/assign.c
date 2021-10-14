@@ -67,6 +67,17 @@ static void handle_mismatch_assign(AST *lhs, AST *rhs) {
   ++errors_count;
 }
 
+static void handle_mismatch_assign_func(AST *lhs, AST *rhs) {
+  Cursor c = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
+  LineInfo *li = list_peek(&lines, c.line - 1);
+  char *t = symbol_canonical_type_function(rhs);
+  CIPL_PERROR_CURSOR(
+      "assignment to " BGRN "'%s'" RESET " from " BGRN "'%s'" RESET "\n",
+      li->text, c, symbol_canonical_type_from_enum(lhs->value_type), t);
+  ++errors_count;
+  free(t);
+}
+
 SymbolTypes ast_assign_type_check(AST *ast) {
   AST *lhs = list_peek(&ast->children, 0);
   AST *rhs = list_peek(&ast->children, 1);
@@ -83,6 +94,11 @@ SymbolTypes ast_assign_type_check(AST *ast) {
 
   ast_validate_types(lhs);
   ast_validate_types(rhs);
+
+  if (rhs->type == AST_SYM_REF && rhs->value.symref->symbol->kind == FUNC) {
+    handle_mismatch_assign_func(lhs, rhs);
+    return SYM_INVALID;
+  }
 
   if (!lhs->value_type || !rhs->value_type) return SYM_INVALID;
 
