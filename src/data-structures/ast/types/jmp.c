@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "data-structures/context.h"
+#include "utils/casting.h"
 #include "utils/io.h"
 
 AST *ast_jmp_init(YYLTYPE rule_pos, AST *stmt) {
@@ -50,15 +51,13 @@ void ast_jmp_print_pretty(AST *ast, int depth) {
 
   AST *curr_func = get_curr_func_value_type();
 
-  bool valid_cast = curr_func && stmt && curr_func->value_type < SYM_PTR &&
-                    stmt->value_type < SYM_PTR &&
-                    should_cast(curr_func->value_type, stmt->value_type);
+  CastInfo cast_info =
+      curr_func && stmt
+          ? cast_info_assign(curr_func->value_type, stmt->value_type)
+          : cast_info_none();
+  print_cast(cast_info, depth);
 
-  if (valid_cast)
-    printf("%*.s" BMAG "<%s>" RESET "\n", (depth + 1) * 4, "",
-           curr_func->value_type < stmt->value_type ? "fltoint" : "inttofl");
-
-  ast_print_pretty(stmt, depth + 1 + valid_cast);
+  ast_print_pretty(stmt, depth + 1 + (cast_info.direction == R_CAST));
 }
 
 static void handle_mismatch_return_type(AST *fname, AST *invalid_expr) {

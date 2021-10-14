@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "utils/casting.h"
 #include "utils/io.h"
 
 AST *ast_binop_init(YYLTYPE rule_pos, char *op, AST *l, AST *r) {
@@ -32,37 +33,6 @@ void ast_binop_print(AST *ast) {
   printf("}");
 }
 
-typedef struct {
-  enum CastKind { NONE, FLOAT_TO_INT, INT_TO_FLOAT } kind;
-  enum CastDirection { NO_CAST, L_CAST, R_CAST } direction;
-} CastInfo;
-
-static void print_cast(CastInfo info, int depth) {
-  if (info.kind != NONE)
-    printf("%*.s" BMAG "<%s>" RESET "\n", (depth + 1) * 4, "",
-           info.kind == FLOAT_TO_INT ? "fltoint" : "inttofl");
-}
-
-// only god knows how this works
-static CastInfo get_cast_kind(SymbolTypes t1, SymbolTypes t2) {
-  if (!should_cast(t1, t2)) return (CastInfo){NONE, NO_CAST};
-
-  if (t1 < SYM_PTR && t2 < SYM_PTR) {
-    return t1 < t2 ? (CastInfo){INT_TO_FLOAT, L_CAST}
-                   : (CastInfo){INT_TO_FLOAT, R_CAST};
-  }
-
-  if (t1 > SYM_PTR) {
-    if ((t1 - SYM_PTR) > t2) return (CastInfo){INT_TO_FLOAT, R_CAST};
-    if ((t1 - SYM_PTR) < t2) return (CastInfo){FLOAT_TO_INT, R_CAST};
-  }
-  if (t2 > SYM_PTR) {
-    if (t1 > (t2 - SYM_PTR)) return (CastInfo){FLOAT_TO_INT, L_CAST};
-    if (t1 < (t2 - SYM_PTR)) return (CastInfo){INT_TO_FLOAT, L_CAST};
-  }
-  return (CastInfo){NONE, NO_CAST};
-}
-
 void ast_binop_print_pretty(AST *ast, int depth) {
   AST *lhs = list_peek(&ast->children, 0);
   AST *rhs = list_peek(&ast->children, 1);
@@ -73,27 +43,15 @@ void ast_binop_print_pretty(AST *ast, int depth) {
   printf("%*.s" WHT "%s" RESET "\n", (depth + 1) * 4, "", binop_ast->op);
 
   CastInfo cast_info =
-      (!strstr(binop_ast->op, ">>") && !strstr(binop_ast->op, "<<"))
-          ? get_cast_kind(lhs->value_type, rhs->value_type)
-          : (CastInfo){NONE, NO_CAST};
+      (lhs && rhs && strcmp(binop_ast->op, ">>") && strcmp(binop_ast->op, "<<"))
+          ? cast_info_binop(lhs->value_type, rhs->value_type)
+          : cast_info_none();
 
-  switch (cast_info.direction) {
-    case NO_CAST:
-      print_cast(cast_info, depth);
-      ast_print_pretty(lhs, depth + 1);
-      ast_print_pretty(rhs, depth + 1);
-      break;
-    case L_CAST:
-      print_cast(cast_info, depth);
-      ast_print_pretty(lhs, depth + 2);
-      ast_print_pretty(rhs, depth + 1);
-      break;
-    case R_CAST:
-      ast_print_pretty(lhs, depth + 1);
-      print_cast(cast_info, depth);
-      ast_print_pretty(rhs, depth + 2);
-      break;
-  }
+  if (cast_info.direction == L_CAST) print_cast(cast_info, depth);
+  ast_print_pretty(lhs, depth + 1 + (cast_info.direction == L_CAST));
+
+  if (cast_info.direction == R_CAST) print_cast(cast_info, depth);
+  ast_print_pretty(rhs, depth + 1 + (cast_info.direction == R_CAST));
 }
 
 static bool is_relop(char *op) {

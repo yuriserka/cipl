@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "data-structures/context.h"
+#include "utils/casting.h"
 #include "utils/io.h"
 
 AST *ast_funcall_init(YYLTYPE rule_pos, AST *declarator, AST *args) {
@@ -59,15 +60,13 @@ void ast_funcall_print_pretty(AST *ast, int depth) {
     AST *arg = __IT__->data;
     AST *param_decl = list_peek(&func_decl_params->value.params->value, __K__);
 
-    bool valid_cast = arg && param_decl &&
-                      should_cast(arg->value_type, param_decl->value_type);
+    CastInfo cast_info =
+        param_decl && arg
+            ? cast_info_assign(param_decl->value_type, arg->value_type)
+            : cast_info_none();
+    print_cast(cast_info, depth + 1);
 
-    if (valid_cast) {
-      printf("%*.s" BMAG "<%s>" RESET "\n", (depth + 2) * 4, "",
-             param_decl->value_type < arg->value_type ? "fltoint" : "inttofl");
-    }
-
-    ast_print_pretty(__IT__->data, depth + 2 + valid_cast);
+    ast_print_pretty(__IT__->data, depth + 2 + (cast_info.direction == R_CAST));
   });
 }
 

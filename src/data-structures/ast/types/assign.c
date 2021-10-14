@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "utils/casting.h"
 #include "utils/io.h"
 
 AST *ast_assign_init(YYLTYPE rule_pos, AST *symbol, AST *value) {
@@ -38,15 +39,12 @@ void ast_assign_print_pretty(AST *ast, int depth) {
 
   printf("%*.s" WHT "=" RESET "\n", (depth + 1) * 4, "");
 
-  bool valid_cast = lhs && rhs && lhs->value_type < SYM_PTR &&
-                    rhs->value_type < SYM_PTR &&
-                    should_cast(lhs->value_type, rhs->value_type);
+  CastInfo cast_info = lhs && rhs
+                           ? cast_info_assign(lhs->value_type, rhs->value_type)
+                           : cast_info_none();
+  print_cast(cast_info, depth);
 
-  if (valid_cast)
-    printf("%*.s" BMAG "<%s>" RESET "\n", (depth + 1) * 4, "",
-           lhs->value_type < rhs->value_type ? "fltoint" : "inttofl");
-
-  ast_print_pretty(rhs, depth + 1 + valid_cast);
+  ast_print_pretty(rhs, depth + 1 + (cast_info.direction == R_CAST));
 }
 
 static void handle_lvalue_required(AST *lhs, AST *rhs) {
