@@ -55,7 +55,7 @@ void ast_iter_print_pretty(AST *ast, int depth) {
   ast_print_pretty(stmts, depth + 2);
 }
 
-SymbolTypes ast_iter_type_check(AST *ast) {
+CastInfo ast_iter_type_check(AST *ast) {
   AST *b4_all = list_peek(&ast->children, 0);
   AST *b4_each = list_peek(&ast->children, 1);
   AST *after_each = list_peek(&ast->children, 2);
@@ -66,5 +66,5 @@ SymbolTypes ast_iter_type_check(AST *ast) {
   ast_validate_types(after_each);
   ast_validate_types(stmts);
 
-  return stmts->value_type;
+  return cast_info_none();
 }

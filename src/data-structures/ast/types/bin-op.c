@@ -42,16 +42,11 @@ void ast_binop_print_pretty(AST *ast, int depth) {
   printf("%*.s" BMAG "<binary-op>" RESET "\n", depth * 4, "");
   printf("%*.s" WHT "%s" RESET "\n", (depth + 1) * 4, "", binop_ast->op);
 
-  CastInfo cast_info =
-      (lhs && rhs && strcmp(binop_ast->op, ">>") && strcmp(binop_ast->op, "<<"))
-          ? cast_info_binop(lhs->value_type, rhs->value_type)
-          : cast_info_none();
+  if (ast->cast_info.direction == L_CAST) print_cast(ast->cast_info, depth);
+  ast_print_pretty(lhs, depth + 1 + (ast->cast_info.direction == L_CAST));
 
-  if (cast_info.direction == L_CAST) print_cast(cast_info, depth);
-  ast_print_pretty(lhs, depth + 1 + (cast_info.direction == L_CAST));
-
-  if (cast_info.direction == R_CAST) print_cast(cast_info, depth);
-  ast_print_pretty(rhs, depth + 1 + (cast_info.direction == R_CAST));
+  if (ast->cast_info.direction == R_CAST) print_cast(ast->cast_info, depth);
+  ast_print_pretty(rhs, depth + 1 + (ast->cast_info.direction == R_CAST));
 }
 
 static bool is_relop(char *op) {
@@ -67,8 +62,9 @@ static void invalid_bin_op(AST *lhs, AST *rhs, char *op) {
   CIPL_PERROR_CURSOR_RANGE(
       "invalid operands to binary " WHT "'%s'" RESET " (have " BGRN "'%s'" RESET
       " and " BGRN "'%s'" RESET ")\n",
-      li->text, beg, end, op, symbol_canonical_type_from_enum(lhs->value_type),
-      symbol_canonical_type_from_enum(rhs->value_type));
+      li->text, beg, end, op,
+      symbol_canonical_type_from_enum(lhs->cast_info.data_type),
+      symbol_canonical_type_from_enum(rhs->cast_info.data_type));
   ++errors_count;
 }
 
@@ -78,11 +74,12 @@ static void handle_mismatch_comparison(AST *lhs, AST *rhs) {
   Cursor beg = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
   Cursor end = {.col = beg.col + 1, .line = beg.line};
   LineInfo *li = list_peek(&lines, beg.line - 1);
-  if (!can_compare(lhs->value_type, rhs->value_type)) {
+  if (!can_compare(lhs->cast_info.data_type, rhs->cast_info.data_type)) {
     CIPL_PERROR_CURSOR_RANGE(
         "comparison between " BGRN "'%s'" RESET " and " BGRN "'%s'" RESET "\n",
-        li->text, beg, end, symbol_canonical_type_from_enum(lhs->value_type),
-        symbol_canonical_type_from_enum(rhs->value_type));
+        li->text, beg, end,
+        symbol_canonical_type_from_enum(lhs->cast_info.data_type),
+        symbol_canonical_type_from_enum(rhs->cast_info.data_type));
     ++errors_count;
   }
 }
@@ -109,11 +106,13 @@ static void handle_mismatch_equality(AST *lhs, AST *rhs, char *op) {
 static void handle_mismatch_arithmetic(AST *lhs, AST *rhs, char *op) {
   Cursor c = cursor_init_yyloc_between(lhs->rule_pos, rhs->rule_pos);
   LineInfo *li = list_peek(&lines, c.line - 1);
-  if (lhs->value_type < SYM_PTR || rhs->value_type < SYM_PTR) {
+  if (lhs->cast_info.data_type < SYM_PTR ||
+      rhs->cast_info.data_type < SYM_PTR) {
     CIPL_PERROR_CURSOR(
         BGRN "'%s'" RESET " used in arithmetic\n", li->text, c,
-        symbol_canonical_type_from_enum(
-            lhs->value_type > SYM_REAL ? lhs->value_type : rhs->value_type));
+        symbol_canonical_type_from_enum(lhs->cast_info.data_type > SYM_REAL
+                                            ? lhs->cast_info.data_type
+                                            : rhs->cast_info.data_type));
     ++errors_count;
   } else {
     invalid_bin_op(lhs, rhs, op);
@@ -154,12 +153,12 @@ static void handle_mapfil_mismatch_params(AST *fn, SymbolTypes list_type) {
     ++errors_count;
   } else if (list_type > SYM_PTR) {
     AST *param = list_peek(&params_l->value, 0);
-    if (!can_assign(param->value_type, list_type - SYM_PTR)) {
+    if (!can_assign(param->cast_info.data_type, list_type - SYM_PTR)) {
       CIPL_PERROR_CURSOR_RANGE(
           "expected " BGRN "'%s'" RESET " as argument but list is of type " BGRN
           "'%s'" RESET "\n",
           li->text, beg, end,
-          symbol_canonical_type_from_enum(param->value_type),
+          symbol_canonical_type_from_enum(param->cast_info.data_type),
           symbol_canonical_type_from_enum(list_type - SYM_PTR));
       ++errors_count;
     }
@@ -173,10 +172,10 @@ static void handle_mismatch_mapfil(AST *lhs, AST *rhs, char *op) {
   char tmp[1024] = "";
 
   if (lhs->type == AST_SYM_REF && lhs->value.symref->symbol->kind == FUNC) {
-    handle_mapfil_mismatch_params(lhs, rhs->value_type);
+    handle_mapfil_mismatch_params(lhs, rhs->cast_info.data_type);
   }
 
-  if (lhs->value_type > SYM_PTR) {
+  if (lhs->cast_info.data_type > SYM_PTR) {
     CIPL_PERROR_CURSOR_RANGE("return type of " BBLU "'%s'" RESET " is not " BGRN
                              "'%s'" RESET " or " BGRN "'%s'" RESET "\n",
                              li->text, beg, end,
@@ -191,19 +190,20 @@ static void handle_mismatch_mapfil(AST *lhs, AST *rhs, char *op) {
     invalid_bin_op(lhs, rhs, op);
   } else {
     Symbol *lhs_sym = lhs->value.symref->symbol;
-    if (!lhs_sym->kind == FUNC || rhs->value_type < SYM_PTR) {
+    if (!lhs_sym->kind == FUNC || rhs->cast_info.data_type < SYM_PTR) {
       if (lhs_sym->kind == FUNC) {
         char *func_str = symbol_canonical_type_function(lhs);
         sprintf(tmp, "%s", func_str);
         free(func_str);
       } else {
-        sprintf(tmp, "%s", symbol_canonical_type_from_enum(lhs->value_type));
+        sprintf(tmp, "%s",
+                symbol_canonical_type_from_enum(lhs->cast_info.data_type));
       }
       CIPL_PERROR_CURSOR_RANGE(
           "invalid operands to binary " WHT "'%s'" RESET " (have " BGRN
           "'%s'" RESET " and " BGRN "'%s'" RESET ")\n",
           li->text, beg, end, op, tmp,
-          symbol_canonical_type_from_enum(rhs->value_type));
+          symbol_canonical_type_from_enum(rhs->cast_info.data_type));
       ++errors_count;
     }
   }
@@ -213,45 +213,57 @@ static void handle_mismatch_cons(AST *lhs, AST *rhs, char *op) {
   invalid_bin_op(lhs, rhs, op);
 }
 
-SymbolTypes ast_binop_type_check(AST *ast) {
+CastInfo ast_binop_type_check(AST *ast) {
   BinOpAST *binop_ast = ast->value.binop;
   AST *lhs = list_peek(&ast->children, 0), *rhs = list_peek(&ast->children, 1);
   ast_validate_types(lhs);
   ast_validate_types(rhs);
 
+  CastInfo base_cast_info =
+      strcmp(binop_ast->op, ">>") && strcmp(binop_ast->op, "<<")
+          ? cast_info_binop(lhs->cast_info.data_type, rhs->cast_info.data_type)
+          : cast_info_none();
+
   switch (binop_ast->op[0]) {
     case ':':
-      if (!can_cons_list(lhs->value_type, rhs->value_type)) {
+      if (!can_cons_list(lhs->cast_info.data_type, rhs->cast_info.data_type)) {
         handle_mismatch_cons(lhs, rhs, binop_ast->op);
       }
-      if (rhs->value_type == SYM_PTR) return lhs->value_type + SYM_PTR;
-      return MAX(rhs->value_type, SYM_PTR);
+      return cast_info_with_type(base_cast_info,
+                                 rhs->cast_info.data_type == SYM_PTR
+                                     ? lhs->cast_info.data_type + SYM_PTR
+                                     : MAX(rhs->cast_info.data_type, SYM_PTR));
     case '<':
     case '>': {
       if (is_relop(binop_ast->op)) {
-        if (!can_compare(lhs->value_type, rhs->value_type)) {
+        if (!can_compare(lhs->cast_info.data_type, rhs->cast_info.data_type)) {
           handle_mismatch_comparison(lhs, rhs);
         } else if (lhs->type == AST_BIN_OP || rhs->type == AST_BIN_OP) {
           handle_comparison_chain(lhs, rhs);
         }
-        return SYM_INT;
+        return cast_info_with_type(base_cast_info, SYM_INT);
       } else {
         handle_mismatch_mapfil(lhs, rhs, binop_ast->op);
-        if (*binop_ast->op == '<') return MAX(rhs->value_type, SYM_PTR);
-        return MAX((MIN(lhs->value_type, SYM_PTR) + SYM_PTR) % 6, SYM_PTR);
+        return cast_info_with_type(
+            base_cast_info,
+            *binop_ast->op == '<'
+                ? MAX(rhs->cast_info.data_type, SYM_PTR)
+                : MAX((MIN(lhs->cast_info.data_type, SYM_PTR) + SYM_PTR) % 6,
+                      SYM_PTR));
       }
     } break;
     case '&':
     case '|':
       // anything can be part of a boolean expression and it returns a SYM_INT
-      return SYM_INT;
+      return cast_info_with_type(base_cast_info, SYM_INT);
     default: {
       if (is_rel_equality(binop_ast->op)) {
-        if (!can_compare(lhs->value_type, rhs->value_type)) {
+        if (!can_compare(lhs->cast_info.data_type, rhs->cast_info.data_type)) {
           handle_mismatch_equality(lhs, rhs, binop_ast->op);
         }
-        return SYM_INT;
-      } else if (!can_arith(lhs->value_type, rhs->value_type)) {
+        return cast_info_with_type(base_cast_info, SYM_INT);
+      } else if (!can_arith(lhs->cast_info.data_type,
+                            rhs->cast_info.data_type)) {
         handle_mismatch_arithmetic(lhs, rhs, binop_ast->op);
       } else if (*binop_ast->op == '/' && rhs->type == AST_NUMBER) {
         handle_div_by_zero(lhs, rhs);
@@ -259,7 +271,8 @@ SymbolTypes ast_binop_type_check(AST *ast) {
     }
   }
 
-  return MAX(lhs->value_type, rhs->value_type);
+  return cast_info_with_type(
+      base_cast_info, MAX(lhs->cast_info.data_type, rhs->cast_info.data_type));
 }
 
 static void arith_gen_code(AST *lhs, AST *rhs, char *op, FILE *out) {
@@ -274,11 +287,6 @@ static void arith_gen_code(AST *lhs, AST *rhs, char *op, FILE *out) {
   fprintf(out, "param $%d\n", temp + 1);
   fprintf(out, "call get_var_val, 1\n");
   fprintf(out, "pop $%d\n\n", temp + 3);
-
-  if (lhs->value_type < rhs->value_type)
-    fprintf(out, "inttofl $%d, $%d\n\n", temp + 2, temp + 2);
-  if (rhs->value_type < lhs->value_type)
-    fprintf(out, "inttofl $%d, $%d\n\n", temp + 3, temp + 3);
 
   switch (op[0]) {
     case '+':
@@ -296,8 +304,9 @@ static void arith_gen_code(AST *lhs, AST *rhs, char *op, FILE *out) {
   }
 
   fprintf(out, " $%d, $%d, $%d\n\n", temp + 3, temp + 2, temp + 3);
-  t9n_alloc_from_other(temp + 2, MAX(lhs->value_type, rhs->value_type),
-                       temp + 3, out);
+  t9n_alloc_from_other(temp + 2,
+                       MAX(lhs->cast_info.data_type, rhs->cast_info.data_type),
+                       temp + 3, VAR, out);
 }
 
 void ast_binop_gen_code(AST *ast, FILE *out) {
@@ -305,7 +314,12 @@ void ast_binop_gen_code(AST *ast, FILE *out) {
   AST *lhs = list_peek(&ast->children, 0), *rhs = list_peek(&ast->children, 1);
 
   ast_gen_code(lhs, out);
+  if (ast->cast_info.direction == L_CAST)
+    cast_gen_code(ast->cast_info, current_context->t9n->temp, out);
+
   ast_gen_code(rhs, out);
+  if (ast->cast_info.direction == R_CAST)
+    cast_gen_code(ast->cast_info, current_context->t9n->temp, out);
 
   switch (binop_ast->op[0]) {
     case ':':

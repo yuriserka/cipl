@@ -61,7 +61,7 @@ static void handle_no_return(AST *func_declarator) {
   ++errors_count;
 }
 
-SymbolTypes ast_userfunc_type_check(AST *ast) {
+CastInfo ast_userfunc_type_check(AST *ast) {
   p_ctx_name = true;
   current_context = ast->value.userfunc->context;
 
@@ -80,7 +80,7 @@ SymbolTypes ast_userfunc_type_check(AST *ast) {
         if (!qtd_ret) handle_no_return(declarator);
       });
 
-  return declarator->value_type;
+  return cast_info_with_type(cast_info_none(), declarator->cast_info.data_type);
 }
 
 void ast_userfunc_gen_code(AST *ast, FILE *out) {
@@ -104,10 +104,8 @@ void ast_userfunc_gen_code(AST *ast, FILE *out) {
       int curr_tmp = current_context->t9n->temp;
       fprintf(out, "// param %s %s\n",
               symbol_canonical_type_from_enum(par_sym->type), par_sym->name);
-      fprintf(out, "mema $%d, 2\n", curr_tmp);
-      fprintf(out, "mov $%d, #%d[1]\n", curr_tmp + 1, par_sym->temp);
-      fprintf(out, "mov $%d[1], $%d\n", curr_tmp, curr_tmp + 1);
-      fprintf(out, "mov *$%d, %d\n\n", curr_tmp, par_sym->type);
+      t9n_alloc_from_other(curr_tmp, par_sym->type, par_sym->temp,
+                           par_sym->kind, out);
 
       list_push(&old_params_ref, symbol_init_copy(par_sym));
 

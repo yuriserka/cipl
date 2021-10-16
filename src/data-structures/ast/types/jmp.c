@@ -49,15 +49,9 @@ void ast_jmp_print_pretty(AST *ast, int depth) {
   AST *stmt = list_peek(&ast->children, 0);
   printf("%*.s" BMAG "<return-statement>" RESET "\n", depth * 4, "");
 
-  AST *curr_func = get_curr_func_value_type();
+  print_cast(ast->cast_info, depth);
 
-  CastInfo cast_info =
-      curr_func && stmt
-          ? cast_info_assign(curr_func->value_type, stmt->value_type)
-          : cast_info_none();
-  print_cast(cast_info, depth);
-
-  ast_print_pretty(stmt, depth + 1 + (cast_info.direction == R_CAST));
+  ast_print_pretty(stmt, depth + 1 + (ast->cast_info.direction == R_CAST));
 }
 
 static void handle_mismatch_return_type(AST *fname, AST *invalid_expr) {
@@ -68,22 +62,24 @@ static void handle_mismatch_return_type(AST *fname, AST *invalid_expr) {
       "incompatible types when returning type " BGRN "'%s'" RESET " but " BGRN
       "'%s'" RESET " was expected\n",
       li->text, beg, end,
-      symbol_canonical_type_from_enum(invalid_expr->value_type),
-      symbol_canonical_type_from_enum(fname->value_type));
+      symbol_canonical_type_from_enum(invalid_expr->cast_info.data_type),
+      symbol_canonical_type_from_enum(fname->cast_info.data_type));
   ++errors_count;
 }
 
-SymbolTypes ast_jmp_type_check(AST *ast) {
+CastInfo ast_jmp_type_check(AST *ast) {
   AST *stmt = list_peek(&ast->children, 0);
   AST *curr_func = get_curr_func_value_type();
 
   ast_validate_types(stmt);
 
-  if (!can_assign(curr_func->value_type, stmt->value_type)) {
+  if (!can_assign(curr_func->cast_info.data_type, stmt->cast_info.data_type)) {
     handle_mismatch_return_type(curr_func, stmt);
   }
 
-  return stmt->value_type;
+  return cast_info_with_type(cast_info_assign(curr_func->cast_info.data_type,
+                                              stmt->cast_info.data_type),
+                             stmt->cast_info.data_type);
 }
 
 void ast_jmp_gen_code(AST *ast, FILE *out) {

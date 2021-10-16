@@ -12,4 +12,4 @@ SymbolValues ast_uniop_eval(AST *ast);
 void ast_uniop_print(AST *ast);
 void ast_uniop_print_pretty(AST *ast, int depth);
 
-SymbolTypes ast_uniop_type_check(AST *ast);
+CastInfo ast_uniop_type_check(AST *ast);

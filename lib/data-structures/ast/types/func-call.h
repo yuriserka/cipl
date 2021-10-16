@@ -14,5 +14,5 @@ SymbolValues ast_funcall_eval(AST *ast);
 void ast_funcall_print(AST *ast);
 void ast_funcall_print_pretty(AST *ast, int depth);
 
-SymbolTypes ast_funcall_type_check(AST *ast);
+CastInfo ast_funcall_type_check(AST *ast);
 void ast_funcall_gen_code(AST *ast, FILE *out);

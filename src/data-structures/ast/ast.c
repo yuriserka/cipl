@@ -13,7 +13,7 @@ AST *ast_cast(AstTypes type, YYLTYPE rule_pos, int n_children, ...) {
   AST *ast = calloc(1, sizeof(AST));
   ast->type = type;
   ast->rule_pos = rule_pos;
-  ast->value_type = SYM_INVALID;
+  ast->cast_info = cast_info_none();
 
   ++n_children;
 
@@ -341,57 +341,55 @@ void ast_validate_types(AST *ast) {
 
   switch (ast->type) {
     case AST_NUMBER:
-      ast->value_type = ast_number_type_check(ast);
+      ast->cast_info = ast_number_type_check(ast);
       break;
     case AST_BIN_OP:
-      ast->value_type = ast_binop_type_check(ast);
+      ast->cast_info = ast_binop_type_check(ast);
       break;
     case AST_UNI_OP:
-      ast->value_type = ast_uniop_type_check(ast);
+      ast->cast_info = ast_uniop_type_check(ast);
       break;
     case AST_SYM_REF:
-      ast->value_type = ast_symref_type_check(ast);
+      ast->cast_info = ast_symref_type_check(ast);
       break;
     case AST_ASSIGN_OP:
-      ast->value_type = ast_assign_type_check(ast);
+      ast->cast_info = ast_assign_type_check(ast);
       break;
     case AST_USER_FUNC:
-      ast->value_type = ast_userfunc_type_check(ast);
+      ast->cast_info = ast_userfunc_type_check(ast);
       break;
     case AST_JMP:
-      ast->value_type = ast_jmp_type_check(ast);
+      ast->cast_info = ast_jmp_type_check(ast);
       break;
     case AST_BLOCK_ITEM_LIST:
-      ast->value_type = ast_blockitems_type_check(ast);
+      ast->cast_info = ast_blockitems_type_check(ast);
       break;
     case AST_DECLARATION:
-      ast->value_type = ast_declaration_type_check(ast);
+      ast->cast_info = ast_declaration_type_check(ast);
       break;
     case AST_FUNC_CALL:
-      ast->value_type = ast_funcall_type_check(ast);
+      ast->cast_info = ast_funcall_type_check(ast);
       break;
     case AST_BUILTIN_FUNC:
-      ast->value_type = ast_builtinfn_type_check(ast);
+      ast->cast_info = ast_builtinfn_type_check(ast);
       break;
     case AST_STR_LITERAL:
-      ast->value_type = ast_str_type_check(ast);
+      ast->cast_info = ast_str_type_check(ast);
       break;
     case AST_FLOW:
-      ast->value_type = ast_flow_type_check(ast);
+      ast->cast_info = ast_flow_type_check(ast);
       break;
     case AST_ITER:
-      ast->value_type = ast_iter_type_check(ast);
+      ast->cast_info = ast_iter_type_check(ast);
       break;
     case AST_PARAM_LIST:
-      ast->value_type = ast_params_type_check(ast);
+      ast->cast_info = ast_params_type_check(ast);
       break;
     case AST_PROG: {
       LIST_FOR_EACH(ast->children, {
         AST *child = __IT__->data;
         ast_validate_types(child);
-        ast->value_type = child->value_type && ast->value_type;
       });
-
       AST_FIND_NODE(
           root, AST_USER_FUNC,
           {

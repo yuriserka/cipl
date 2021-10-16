@@ -9,6 +9,7 @@
 typedef struct cipl_ast AST;
 
 #include <data-structures/symbol-table/symbol.h>
+#include <utils/casting.h>
 
 #include "data-structures/ast/types/assign.h"
 #include "data-structures/ast/types/bin-op.h"
@@ -48,10 +49,10 @@ typedef union cipl_ast_node_value {
 
 struct cipl_ast {
   YYLTYPE rule_pos;
-  SymbolTypes value_type;
+  CastInfo cast_info;
   AstTypes type;
-  ListNode *children;
   AstNodeValue value;
+  ListNode *children;
 };
 
 void ast_child_print_aux_label(const char *label, AST *ast);

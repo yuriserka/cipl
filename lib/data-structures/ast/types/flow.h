@@ -15,4 +15,4 @@ SymbolValues ast_flow_eval(AST *ast);
 void ast_flow_print(AST *ast);
 void ast_flow_print_pretty(AST *ast, int depth);
 
-SymbolTypes ast_flow_type_check(AST *ast);
+CastInfo ast_flow_type_check(AST *ast);

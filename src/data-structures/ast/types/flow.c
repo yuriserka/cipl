@@ -49,7 +49,7 @@ void ast_flow_print_pretty(AST *ast, int depth) {
   ast_print_pretty(else_branch, depth + 2);
 }
 
-SymbolTypes ast_flow_type_check(AST *ast) {
+CastInfo ast_flow_type_check(AST *ast) {
   AST *conditional = list_peek(&ast->children, 0);
   AST *then_branch = list_peek(&ast->children, 1);
   AST *else_branch = list_peek(&ast->children, 2);
@@ -58,6 +58,5 @@ SymbolTypes ast_flow_type_check(AST *ast) {
   ast_validate_types(then_branch);
   ast_validate_types(else_branch);
 
-  return MAX(then_branch->value_type,
-             else_branch ? else_branch->value_type : SYM_INVALID);
+  return cast_info_none();
 }

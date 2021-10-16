@@ -60,13 +60,12 @@ void ast_funcall_print_pretty(AST *ast, int depth) {
     AST *arg = __IT__->data;
     AST *param_decl = list_peek(&func_decl_params->value.params->value, __K__);
 
-    CastInfo cast_info =
-        param_decl && arg
-            ? cast_info_assign(param_decl->value_type, arg->value_type)
-            : cast_info_none();
-    print_cast(cast_info, depth + 1);
+    CastInfo ctx_cast_info = cast_info_assign(param_decl->cast_info.data_type,
+                                              arg->cast_info.data_type);
+    print_cast(ctx_cast_info, depth + 1);
 
-    ast_print_pretty(__IT__->data, depth + 2 + (cast_info.direction == R_CAST));
+    ast_print_pretty(__IT__->data,
+                     depth + 2 + (ctx_cast_info.direction == R_CAST));
   });
 }
 
@@ -74,11 +73,12 @@ static void handle_mismatch_arg_type(AST *arg, AST *param) {
   Cursor beg = cursor_init_yylloc_begin(arg->rule_pos);
   Cursor end = cursor_init_yylloc_end(arg->rule_pos);
   LineInfo *li = list_peek(&lines, beg.line - 1);
-  CIPL_PERROR_CURSOR_RANGE("expected " BGRN "'%s'" RESET
-                           " but argument is of type " BGRN "'%s'" RESET "\n",
-                           li->text, beg, end,
-                           symbol_canonical_type_from_enum(param->value_type),
-                           symbol_canonical_type_from_enum(arg->value_type));
+  CIPL_PERROR_CURSOR_RANGE(
+      "expected " BGRN "'%s'" RESET " but argument is of type " BGRN
+      "'%s'" RESET "\n",
+      li->text, beg, end,
+      symbol_canonical_type_from_enum(param->cast_info.data_type),
+      symbol_canonical_type_from_enum(arg->cast_info.data_type));
   ++errors_count;
 }
 
@@ -94,7 +94,7 @@ static void handle_mismatch_number_of_args(AST *fn_declarator, int args_size,
   ++errors_count;
 }
 
-SymbolTypes ast_funcall_type_check(AST *ast) {
+CastInfo ast_funcall_type_check(AST *ast) {
   AST *declarator = list_peek(&ast->children, 0);
   AST *args = list_peek(&ast->children, 1);
   AST *func_decl = get_func_called(declarator);
@@ -112,13 +112,14 @@ SymbolTypes ast_funcall_type_check(AST *ast) {
 
     ast_validate_types(arg);
 
-    if (param_decl && !can_assign(param_decl->value_type, arg->value_type)) {
+    if (!can_assign(param_decl->cast_info.data_type,
+                    arg->cast_info.data_type)) {
       handle_mismatch_arg_type(arg, param_decl);
     }
   });
 
   ast_validate_types(declarator);
-  return declarator->value_type;
+  return cast_info_with_type(cast_info_none(), declarator->cast_info.data_type);
 }
 
 void ast_funcall_gen_code(AST *ast, FILE *out) {

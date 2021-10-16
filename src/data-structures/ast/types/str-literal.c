@@ -33,7 +33,9 @@ void ast_str_print_pretty(AST *ast, int depth) {
   printf("%*.s" BYEL "'%s'" RESET "\n", depth * 4, "", str_ast->value);
 }
 
-SymbolTypes ast_str_type_check(AST *ast) { return SYM_PTR; }
+CastInfo ast_str_type_check(AST *ast) {
+  return cast_info_with_type(cast_info_none(), SYM_PTR);
+}
 
 void ast_str_gen_code(AST *ast, FILE *out) {
   t9n_alloc_from_literal(current_context->t9n->temp,

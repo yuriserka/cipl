@@ -22,6 +22,6 @@ void ast_builtinfn_print_pretty(AST *ast, int depth);
 BuiltInFuncTypes builtinfn_type_from_str(char *sym_name);
 const char *builtinfn_str_from_type(BuiltInFuncTypes type);
 
-SymbolTypes ast_builtinfn_type_check(AST *ast);
+CastInfo ast_builtinfn_type_check(AST *ast);
 
 void ast_builtinfn_gen_code(AST *ast, FILE *out);

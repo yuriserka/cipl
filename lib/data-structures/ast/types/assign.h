@@ -14,5 +14,5 @@ SymbolValues ast_assign_eval(AST *ast);
 void ast_assign_print(AST *ast);
 void ast_assign_print_pretty(AST *ast, int depth);
 
-SymbolTypes ast_assign_type_check(AST *ast);
+CastInfo ast_assign_type_check(AST *ast);
 void ast_assign_gen_code(AST *ast, FILE *out);

@@ -15,4 +15,4 @@ SymbolValues ast_iter_eval(AST *ast);
 void ast_iter_print(AST *ast);
 void ast_iter_print_pretty(AST *ast, int depth);
 
-SymbolTypes ast_iter_type_check(AST *ast);
+CastInfo ast_iter_type_check(AST *ast);

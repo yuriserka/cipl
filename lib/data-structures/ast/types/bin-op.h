@@ -12,5 +12,5 @@ SymbolValues ast_binop_eval(AST *ast);
 void ast_binop_print(AST *ast);
 void ast_binop_print_pretty(AST *ast, int depth);
 
-SymbolTypes ast_binop_type_check(AST *ast);
+CastInfo ast_binop_type_check(AST *ast);
 void ast_binop_gen_code(AST *ast, FILE *out);

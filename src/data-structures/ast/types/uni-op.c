@@ -43,10 +43,11 @@ static void invalid_uni_op(AST *rhs, char *op) {
   Cursor beg = cursor_init_yylloc_begin(rhs->rule_pos);
   Cursor end = cursor_init_yylloc_end(rhs->rule_pos);
   LineInfo *li = list_peek(&lines, beg.line - 1);
-  CIPL_PERROR_CURSOR_RANGE("invalid operands to unary " WHT "'%s'" RESET
-                           " (have " BGRN "'%s'" RESET ")\n",
-                           li->text, beg, end, op,
-                           symbol_canonical_type_from_enum(rhs->value_type));
+  CIPL_PERROR_CURSOR_RANGE(
+      "invalid operands to unary " WHT "'%s'" RESET " (have " BGRN "'%s'" RESET
+      ")\n",
+      li->text, beg, end, op,
+      symbol_canonical_type_from_enum(rhs->cast_info.data_type));
   ++errors_count;
 }
 
@@ -58,33 +59,40 @@ static void handle_mismatch_sign_change(AST *rhs, char *op) {
   invalid_uni_op(rhs, op);
 }
 
-SymbolTypes ast_uniop_type_check(AST *ast) {
+CastInfo ast_uniop_type_check(AST *ast) {
   AST *rhs = list_peek(&ast->children, 0);
   UniOpAST *uniop_ast = ast->value.uniop;
 
   ast_validate_types(rhs);
+
+  CastInfo base_cast = cast_info_none();
+
   switch (*uniop_ast->op) {
     case '!':
-      if (rhs->value_type == SYM_PTR) {
+      if (rhs->cast_info.data_type == SYM_PTR) {
         handle_mismatch_tailop_type(rhs, uniop_ast->op);
-        return SYM_INVALID;
+        return base_cast;
       }
-      return rhs->value_type < SYM_PTR ? SYM_INT : rhs->value_type;
+      return cast_info_with_type(base_cast, rhs->cast_info.data_type < SYM_PTR
+                                                ? SYM_INT
+                                                : rhs->cast_info.data_type);
     case '?':
     case '%':
-      if (rhs->value_type <= SYM_PTR) {
+      if (rhs->cast_info.data_type <= SYM_PTR) {
         handle_mismatch_tailop_type(rhs, uniop_ast->op);
-        return SYM_INVALID;
+        return base_cast;
       }
-      return *uniop_ast->op == '?' ? (rhs->value_type - SYM_PTR)
-                                   : rhs->value_type;
+      return cast_info_with_type(base_cast,
+                                 *uniop_ast->op == '?'
+                                     ? (rhs->cast_info.data_type - SYM_PTR)
+                                     : rhs->cast_info.data_type);
     case '+':
     case '-':
-      if (rhs->value_type >= SYM_PTR) {
+      if (rhs->cast_info.data_type >= SYM_PTR) {
         handle_mismatch_sign_change(rhs, uniop_ast->op);
-        return SYM_INVALID;
+        return base_cast;
       }
   }
 
-  return rhs->value_type;
+  return cast_info_with_type(base_cast, rhs->cast_info.data_type);
 }

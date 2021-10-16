@@ -16,5 +16,5 @@ SymbolValues ast_symref_eval(AST *ast);
 void ast_symref_print(AST *ast);
 void ast_symref_print_pretty(AST *ast, int depth);
 
-SymbolTypes ast_symref_type_check(AST *ast);
+CastInfo ast_symref_type_check(AST *ast);
 void ast_symref_gen_code(AST *ast, FILE *out);

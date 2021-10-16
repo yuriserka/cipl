@@ -68,19 +68,19 @@ static void handle_list_as_arg(AST *arg) {
       " but argument is of type " BGRN "'%s'" RESET "\n",
       li->text, beg, end, symbol_canonical_type_from_enum(SYM_INT),
       symbol_canonical_type_from_enum(SYM_REAL),
-      symbol_canonical_type_from_enum(arg->value_type));
+      symbol_canonical_type_from_enum(arg->cast_info.data_type));
   ++errors_count;
 }
 
-SymbolTypes ast_builtinfn_type_check(AST *ast) {
+CastInfo ast_builtinfn_type_check(AST *ast) {
   AST *args = list_peek(&ast->children, 0);
   ast_validate_types(args);
 
-  if (args->value_type > SYM_PTR) {
+  if (args->cast_info.data_type > SYM_PTR) {
     handle_list_as_arg(args);
   }
 
-  return SYM_INT;
+  return cast_info_with_type(cast_info_none(), SYM_INT);
 }
 
 void ast_builtinfn_gen_code(AST *ast, FILE *out) {

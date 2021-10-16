@@ -36,8 +36,8 @@ void ast_params_print_pretty(AST *ast, int depth) {
                 { ast_print_pretty(__IT__->data, depth + 1); });
 }
 
-SymbolTypes ast_params_type_check(AST *ast) {
+CastInfo ast_params_type_check(AST *ast) {
   LIST_FOR_EACH(ast->value.params->value,
                 { ast_validate_types(__IT__->data); });
-  return SYM_INVALID;
+  return cast_info_none();
 }

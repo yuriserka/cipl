@@ -37,15 +37,11 @@ void ast_blockitems_print_pretty(AST *ast, int depth) {
                 { ast_print_pretty(__IT__->data, depth + 1); });
 }
 
-SymbolTypes ast_blockitems_type_check(AST *ast) {
+CastInfo ast_blockitems_type_check(AST *ast) {
   BlockItemListAST *blockitems_ast = ast->value.blockitems;
   LIST_FOR_EACH(blockitems_ast->value, { ast_validate_types(__IT__->data); });
 
-  AST *possible_return = list_peek_last(&blockitems_ast->value);
-
-  return possible_return && possible_return->type != AST_JMP
-             ? SYM_INVALID
-             : possible_return->value_type;
+  return cast_info_none();
 }
 
 void ast_blockitems_gen_code(AST *ast, FILE *out) {

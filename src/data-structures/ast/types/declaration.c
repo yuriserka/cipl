@@ -34,10 +34,10 @@ void ast_declaration_print_pretty(AST *ast, int depth) {
   ast_print_pretty(name, depth + 1);
 }
 
-SymbolTypes ast_declaration_type_check(AST *ast) {
+CastInfo ast_declaration_type_check(AST *ast) {
   AST *name = list_peek(&ast->children, 0);
   ast_validate_types(name);
-  return name->value_type;
+  return cast_info_none();
 }
 
 void ast_declaration_gen_code(AST *ast, FILE *out) {
@@ -45,24 +45,5 @@ void ast_declaration_gen_code(AST *ast, FILE *out) {
   Symbol *declared = name->value.symref->symbol;
   fprintf(out, "// var %s %s\n",
           symbol_canonical_type_from_enum(declared->type), declared->name);
-  switch (declared->type) {
-    case SYM_INT:
-      // $temp[0] = type
-      // $temp[1] = &$var
-      fprintf(out, "mema $%d, 2\n", declared->temp);
-      fprintf(out, "mov $%d[1], %d\n", declared->temp, declared->value.integer);
-      break;
-    case SYM_REAL:
-      // $temp[0] = type
-      // $temp[1] = &$var
-      fprintf(out, "mema $%d, 2\n", declared->temp);
-      fprintf(out, "mov $%d[1], %lf\n", declared->temp, declared->value.real);
-      break;
-    default:
-      // $temp[0] = type
-      // $temp[1] = size
-      // $temp[1] = &list per say
-      fprintf(out, "mema $%d, 3\n", declared->temp);
-  }
-  fprintf(out, "mov *$%d, %d\n\n", declared->temp, declared->type);
+  t9n_alloc_decl(declared->temp, declared->type, out);
 }

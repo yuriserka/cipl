@@ -39,12 +39,12 @@ void ast_symref_print_pretty(AST *ast, int depth) {
   symbol_print_pretty(symref->symbol);
 }
 
-SymbolTypes ast_symref_type_check(AST *ast) {
+CastInfo ast_symref_type_check(AST *ast) {
   SymbolRefAST *symref = ast->value.symref;
-  return symref->symbol->type;
+  return cast_info_with_type(cast_info_none(), symref->symbol->type);
 }
 
 void ast_symref_gen_code(AST *ast, FILE *out) {
   Symbol *sym = ast->value.symref->symbol;
-  fprintf(out, "push %c%d\n\n", t9n_prefix(sym), sym->temp);
+  fprintf(out, "push %c%d\n\n", t9n_prefix(sym->kind), sym->temp);
 }

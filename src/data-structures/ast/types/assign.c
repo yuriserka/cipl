@@ -39,12 +39,9 @@ void ast_assign_print_pretty(AST *ast, int depth) {
 
   printf("%*.s" WHT "=" RESET "\n", (depth + 1) * 4, "");
 
-  CastInfo cast_info = lhs && rhs
-                           ? cast_info_assign(lhs->value_type, rhs->value_type)
-                           : cast_info_none();
-  print_cast(cast_info, depth);
+  print_cast(ast->cast_info, depth);
 
-  ast_print_pretty(rhs, depth + 1 + (cast_info.direction == R_CAST));
+  ast_print_pretty(rhs, depth + 1 + (ast->cast_info.direction == R_CAST));
 }
 
 static void handle_lvalue_required(AST *lhs, AST *rhs) {
@@ -62,8 +59,8 @@ static void handle_mismatch_assign(AST *lhs, AST *rhs) {
   CIPL_PERROR_CURSOR("incompatible types when assigning to type " BGRN
                      "'%s'" RESET " from type " BGRN "'%s'" RESET "\n",
                      li->text, c,
-                     symbol_canonical_type_from_enum(lhs->value_type),
-                     symbol_canonical_type_from_enum(rhs->value_type));
+                     symbol_canonical_type_from_enum(lhs->cast_info.data_type),
+                     symbol_canonical_type_from_enum(rhs->cast_info.data_type));
   ++errors_count;
 }
 
@@ -73,23 +70,24 @@ static void handle_mismatch_assign_func(AST *lhs, AST *rhs) {
   char *t = symbol_canonical_type_function(rhs);
   CIPL_PERROR_CURSOR(
       "assignment to " BGRN "'%s'" RESET " from " BGRN "'%s'" RESET "\n",
-      li->text, c, symbol_canonical_type_from_enum(lhs->value_type), t);
+      li->text, c, symbol_canonical_type_from_enum(lhs->cast_info.data_type),
+      t);
   ++errors_count;
   free(t);
 }
 
-SymbolTypes ast_assign_type_check(AST *ast) {
+CastInfo ast_assign_type_check(AST *ast) {
   AST *lhs = list_peek(&ast->children, 0);
   AST *rhs = list_peek(&ast->children, 1);
 
   if (lhs->type != AST_SYM_REF) {
     handle_lvalue_required(lhs, rhs);
-    return SYM_INVALID;
+    return cast_info_none();
   }
 
   if (lhs->value.symref->symbol->kind == FUNC) {
     handle_lvalue_required(lhs, rhs);
-    return SYM_INVALID;
+    return cast_info_none();
   }
 
   ast_validate_types(lhs);
@@ -97,23 +95,29 @@ SymbolTypes ast_assign_type_check(AST *ast) {
 
   if (rhs->type == AST_SYM_REF && rhs->value.symref->symbol->kind == FUNC) {
     handle_mismatch_assign_func(lhs, rhs);
-    return SYM_INVALID;
+    return cast_info_none();
   }
 
-  if (!lhs->value_type || !rhs->value_type) return SYM_INVALID;
+  if (!lhs->cast_info.data_type || !rhs->cast_info.data_type)
+    return cast_info_none();
 
-  if (!can_assign(lhs->value_type, rhs->value_type)) {
+  if (!can_assign(lhs->cast_info.data_type, rhs->cast_info.data_type))
     handle_mismatch_assign(lhs, rhs);
-  }
 
-  return MAX(lhs->value_type, rhs->value_type);
+  return cast_info_with_type(
+      cast_info_assign(lhs->cast_info.data_type, rhs->cast_info.data_type),
+      MAX(lhs->cast_info.data_type, rhs->cast_info.data_type));
 }
 
 void ast_assign_gen_code(AST *ast, FILE *out) {
-  // AST *lhs = list_peek(&ast->children, 0);
-  // AST *rhs = list_peek(&ast->children, 1);
+  AST *lhs = list_peek(&ast->children, 0);
+  AST *rhs = list_peek(&ast->children, 1);
 
-  // ast_gen_code(rhs, out);
+  ast_gen_code(rhs, out);
 
-  // fprintf(out, "pop $%d\n", current_context->t9n->temp);
+  Symbol *lhs_sym = lhs->value.symref->symbol;
+
+  fprintf(out, "pop $%d\n", current_context->t9n->temp);
+  fprintf(out, "mov %c%d $%d\n", t9n_prefix(lhs_sym->kind), lhs_sym->temp,
+          current_context->t9n->temp);
 }

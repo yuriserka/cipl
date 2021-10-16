@@ -50,7 +50,7 @@ void ast_number_print_pretty(AST *ast, int depth) {
   NumberAST *num_ast = ast->value.number;
 
   printf("%*.s", depth * 4, "");
-                  
+
   switch (num_ast->num_type) {
     case K_REAL:
       CIPL_PRINTF_COLOR(BYEL, "%lf\n", num_ast->value.real);
@@ -64,9 +64,9 @@ void ast_number_print_pretty(AST *ast, int depth) {
   }
 }
 
-SymbolTypes ast_number_type_check(AST *ast) {
+CastInfo ast_number_type_check(AST *ast) {
   NumberAST *num_ast = ast->value.number;
-  return num_ast->sym_type;
+  return cast_info_with_type(cast_info_none(), num_ast->sym_type);
 }
 
 void ast_number_gen_code(AST *ast, FILE *out) {
