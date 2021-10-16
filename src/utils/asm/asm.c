@@ -14,21 +14,26 @@ T9nUnit *t9n_init() {
 
 void t9n_free(T9nUnit *t9n) { free(t9n); }
 
-char t9n_prefix(Symbol *symbol) { return symbol->kind == PARAM ? '#' : '$'; }
+char t9n_prefix(SymbolKinds kind) { return kind == PARAM ? '#' : '$'; }
 
-void t9n_alloc_from_other(int to, SymbolTypes type, int from, FILE *out) {
+void t9n_alloc_from_other(int to, SymbolTypes type, int from, SymbolKinds kind,
+                          FILE *out) {
   switch (type) {
     case SYM_INT:
     case SYM_REAL:
       fprintf(out, "mema $%d, 2\n", to);
       fprintf(out, "mov $%d[0], %d\n", to, type);
-      fprintf(out, "mov $%d[1], $%d\n", to, from);
+      fprintf(out, "mov $%d, %c%d[1]\n", to + 1, t9n_prefix(kind), from);
+      fprintf(out, "mov $%d[1], $%d\n", to, to + 1);
       break;
     default:
       fprintf(out, "mema $%d, 3\n", to);
       fprintf(out, "mov $%d[0], %d\n", to, type);
-      fprintf(out, "mov $%d[1], $%d\n", to, 0);
-      fprintf(out, "mov $%d[2], $%d\n", to, from);
+      fprintf(out, "mov $%d, %c%d[1]\n", to + 1, t9n_prefix(kind), from);
+      fprintf(out, "mov $%d[1], $%d\n", to, to + 1);
+      fprintf(out, "mov $%d, %c%d[2]\n", to + 2, t9n_prefix(kind), from);
+      fprintf(out, "mov $%d[2], $%d\n", to, to + 2);
+      // fprintf(out, "mov $%d[2], %c%d\n", to, t9n_prefix(kind), from);
   }
 }
 
@@ -63,6 +68,19 @@ void t9n_alloc_from_constant(int to, SymbolTypes type, NumberValue value,
       fprintf(out, "mov $%d[0], %d\n", to, type);
       fprintf(out, "mov $%d[1], $%d\n", to, 0);
       // fprintf(out, "mov $%d[2], \n", to, from);
+  }
+}
+
+void t9n_alloc_decl(int to, SymbolTypes type, FILE *out) {
+  switch (type) {
+    case SYM_INT:
+      t9n_alloc_from_constant(to, type, (NumberValue){.integer = 0}, out);
+      break;
+    case SYM_REAL:
+      t9n_alloc_from_constant(to, type, (NumberValue){.real = 0}, out);
+      break;
+    default:
+      t9n_alloc_from_constant(to, type, (NumberValue){.integer = 0}, out);
   }
 }
 

@@ -46,7 +46,9 @@ int cipl_intermediate_code() {
       calloc(sizeof("tests/asm/out/") + sizeof(filename) + sizeof(".tac") + 10,
              sizeof(char));
   strcat(outname, "tests/asm/out/");
-  strcat(outname, filename);
+  char *no_ext_filename = calloc(strlen(filename), sizeof(char));
+  sscanf(filename, "%[^.]", no_ext_filename);
+  strcat(outname, no_ext_filename);
   strcat(outname, ".tac");
   FILE *asmf = fopen(outname, "w+");
   ast_gen_code_init(asmf);
@@ -54,7 +56,7 @@ int cipl_intermediate_code() {
   ast_gen_code_end(asmf);
   fclose(asmf);
   free(outname);
-
+  free(no_ext_filename);
   return 1;
 }
 
@@ -88,7 +90,7 @@ int cipl_main(int argc, char *argv[]) {
   current_context = list_peek(&contexts, 0);
   curr_line_info = line_init(1, "");
 
-  bool succeeded = cipl_syntax() && cipl_semantic();
+  bool succeeded = cipl_syntax() && cipl_semantic() && cipl_intermediate_code();
 
   main_ast_pretty();
   main_context_pretty();
