@@ -7,14 +7,17 @@
 typedef struct {
   int temp;
   int param;
+  int label;
 } T9nUnit;
 
 T9nUnit *t9n_init();
 void t9n_free(T9nUnit *t9n);
 char t9n_prefix(SymbolKinds kind);
 
-void t9n_alloc_from_other(int to, SymbolTypes type, int from, SymbolKinds kind,
-                          FILE *out);
+void t9n_alloc_from_other_value(int to, SymbolTypes type, int from,
+                                SymbolKinds kind, FILE *out);
+void t9n_alloc_from_other_var(int to, SymbolTypes type, int from,
+                              SymbolKinds kind, FILE *out);
 void t9n_alloc_from_constant(int to, SymbolTypes type, NumberValue value,
                              FILE *out);
 void t9n_alloc_from_literal(int to, char *tb_ref, FILE *out);

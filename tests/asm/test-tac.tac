@@ -8,27 +8,22 @@ char snil[] = "nil"
 
 .code
 
-cast_num:
-    mov $0, *#0
-    mov $1, *#1
-    seq $2, $0, $1
-    brnz cast_num_EQ
-    slt $2, $1, $0
-    slt $2, $0, $1
-    brnz set_var_val_F2I, $2
-    mov $2, $2
+cast:
+    seq $0, #1, 1
+    brnz cast_F2I, $0
+cast_I2F:
+    mov $1, 2
+    mov $2, #0[1]
     inttofl $2, $2
     jump cast_num_END
-set_var_val_F2I:
-    mov $2, $2
+cast_F2I:
+    mov $1, 1
+    mov $2, #0[1]
     fltoint $2, $2
-    jump cast_num_END
-cast_num_EQ:
-    mov $2, #1[1]
-cast_num_END:
+cast_END:
     mema $3, 2
+    mov $3[0], $1
     mov $3[1], $2
-    mov *$3, 1
     return $3
 
 get_var_val:
@@ -43,32 +38,22 @@ get_var_val_END:
     return $0
 
 set_var_val:
-    seq $0, #2, 0
-    brz set_var_val_FROM_VAR, $0
-    mov $0, *#0
-    mov $3, 42
+    slt $0, #2, 3
+    brz set_var_val_LIST, $0
+set_var_val_NUMBER:
+    mov $0, #1[1]
+    mov #0[1], $0
     jump set_var_val_END
-set_var_val_FROM_VAR:
-    mov $0, *#0
-    mov $1, *#1
-    mov $2, #1[1]
-set_var_val_START:
-    seq $3, $0, $1
-    brnz set_var_val_EQUAL, $3
-    slt $3, $0, $1
-    brnz set_var_val_F2I, $3
-    mov $3, $2
-    inttofl $3, $3
-    jump set_var_val_END
-set_var_val_F2I:
-    mov $3, $2
-    fltoint $3, $3
-    jump set_var_val_END
-set_var_val_EQUAL:
-    mov $3, $2
+set_var_val_LIST:
+    mov $0, #1[1]
+    mov #0[1], $0
+    mov $0, 0
+set_var_val_LIST_LOOP:
+    mov $1, #0[1]
+    slt $1, $0, $1
+    brnz set_var_val_END, $1 
 set_var_val_END:
-    mov #0[1], $3
-    return 0
+    return
 
 read:
     mov $0, *#0

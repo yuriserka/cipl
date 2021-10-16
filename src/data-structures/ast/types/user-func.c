@@ -104,8 +104,8 @@ void ast_userfunc_gen_code(AST *ast, FILE *out) {
       int curr_tmp = current_context->t9n->temp;
       fprintf(out, "// param %s %s\n",
               symbol_canonical_type_from_enum(par_sym->type), par_sym->name);
-      t9n_alloc_from_other(curr_tmp, par_sym->type, par_sym->temp,
-                           par_sym->kind, out);
+      t9n_alloc_from_other_var(curr_tmp, par_sym->type, par_sym->temp,
+                               par_sym->kind, out);
 
       list_push(&old_params_ref, symbol_init_copy(par_sym));
 

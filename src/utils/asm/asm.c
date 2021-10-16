@@ -9,6 +9,7 @@ T9nUnit *t9n_init() {
   T9nUnit *t9n = calloc(1, sizeof(T9nUnit));
   t9n->temp = 0;
   t9n->param = 0;
+  t9n->label = 0;
   return t9n;
 }
 
@@ -16,15 +17,32 @@ void t9n_free(T9nUnit *t9n) { free(t9n); }
 
 char t9n_prefix(SymbolKinds kind) { return kind == PARAM ? '#' : '$'; }
 
-void t9n_alloc_from_other(int to, SymbolTypes type, int from, SymbolKinds kind,
-                          FILE *out) {
+void t9n_alloc_from_other_value(int to, SymbolTypes type, int from,
+                                SymbolKinds kind, FILE *out) {
+  switch (type) {
+    case SYM_INT:
+    case SYM_REAL:
+      fprintf(out, "mema $%d, 2\n", to);
+      fprintf(out, "mov $%d[0], %d\n", to, type);
+      fprintf(out, "mov $%d[1], $%d\n", to, from);
+      break;
+    default:
+      fprintf(out, "mema $%d, 3\n", to);
+      fprintf(out, "mov $%d[0], %d\n", to, type);
+      fprintf(out, "mov $%d[1], $%d\n", to, 0);
+      fprintf(out, "mov $%d[2], $%d\n", to, from);
+  }
+}
+
+void t9n_alloc_from_other_var(int to, SymbolTypes type, int from,
+                              SymbolKinds kind, FILE *out) {
   switch (type) {
     case SYM_INT:
     case SYM_REAL:
       fprintf(out, "mema $%d, 2\n", to);
       fprintf(out, "mov $%d[0], %d\n", to, type);
       fprintf(out, "mov $%d, %c%d[1]\n", to + 1, t9n_prefix(kind), from);
-      fprintf(out, "mov $%d[1], $%d\n", to, to + 1);
+      fprintf(out, "mov $%d[1], $%d\n\n", to, to + 1);
       break;
     default:
       fprintf(out, "mema $%d, 3\n", to);
@@ -32,8 +50,7 @@ void t9n_alloc_from_other(int to, SymbolTypes type, int from, SymbolKinds kind,
       fprintf(out, "mov $%d, %c%d[1]\n", to + 1, t9n_prefix(kind), from);
       fprintf(out, "mov $%d[1], $%d\n", to, to + 1);
       fprintf(out, "mov $%d, %c%d[2]\n", to + 2, t9n_prefix(kind), from);
-      fprintf(out, "mov $%d[2], $%d\n", to, to + 2);
-      // fprintf(out, "mov $%d[2], %c%d\n", to, t9n_prefix(kind), from);
+      fprintf(out, "mov $%d[2], $%d\n\n", to, to + 2);
   }
 }
 
@@ -104,6 +121,26 @@ void asm_generate_table_header(FILE *out) {
   asm_insert_str_literal_header(out);
 }
 
+static void asm_cast(FILE *out) {
+  fprintf(out, "cast:\n");
+  fprintf(out, "seq $0, #1, 1\n");
+  fprintf(out, "brnz cast_F2I, $0\n");
+  fprintf(out, "cast_I2F:\n");
+  fprintf(out, "mov $1, 2\n");
+  fprintf(out, "mov $2, #0[1]\n");
+  fprintf(out, "inttofl $2, $2\n");
+  fprintf(out, "jump cast_END\n");
+  fprintf(out, "cast_F2I:\n");
+  fprintf(out, "mov $1, 1\n");
+  fprintf(out, "mov $2, #0[1]\n");
+  fprintf(out, "fltoint $2, $2\n");
+  fprintf(out, "cast_END:\n");
+  fprintf(out, "mema $3, 2\n");
+  fprintf(out, "mov $3[0], $1\n");
+  fprintf(out, "mov $3[1], $2\n");
+  fprintf(out, "return $3\n\n");
+}
+
 static void asm_set_var_val(FILE *out) {
   fprintf(out, "set_var_val:\n");
   fprintf(out, "seq $0, #2, 0\n");
@@ -148,6 +185,7 @@ static void asm_get_var_val(FILE *out) {
 }
 
 static void asm_generate_utils(FILE *out) {
+  asm_cast(out);
   asm_set_var_val(out);
   asm_get_var_val(out);
 }

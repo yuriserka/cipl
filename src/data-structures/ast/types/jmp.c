@@ -84,6 +84,11 @@ CastInfo ast_jmp_type_check(AST *ast) {
 
 void ast_jmp_gen_code(AST *ast, FILE *out) {
   AST *stmt = list_peek(&ast->children, 0);
+
   ast_gen_code(stmt, out);
-  fprintf(out, "return $%d\n", current_context->t9n->temp - 1);
+
+  cast_gen_code(ast->cast_info, current_context->t9n->temp, out);
+
+  fprintf(out, "pop $%d\n", current_context->t9n->temp);
+  fprintf(out, "return $%d\n", current_context->t9n->temp);
 }

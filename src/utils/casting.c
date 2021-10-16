@@ -57,7 +57,12 @@ void print_cast(CastInfo info, int depth) {
 }
 
 void cast_gen_code(CastInfo info, int temp, FILE *out) {
-  if (info.kind != NONE)
-    fprintf(out, "%s $%d, $%d\n\n",
-            info.kind == FLOAT_TO_INT ? "fltoint" : "inttofl", temp, temp);
+  if (info.kind != NONE) {
+    fprintf(out, "pop $%d\n", temp);
+    fprintf(out, "param $%d\n", temp);
+    fprintf(out, "param %d\n", info.kind == FLOAT_TO_INT ? 1 : 2);
+    fprintf(out, "call cast, 2\n");
+    fprintf(out, "pop $%d\n", temp);
+    fprintf(out, "push $%d\n\n", temp);
+  }
 }

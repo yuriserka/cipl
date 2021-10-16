@@ -1,9 +1,15 @@
+float arith(float a) {
+    return a + 2 - 3 * 4 / 5 + 1.1 - 2.1 * 10;
+}
+
 int main() {
     int a;
     write("digite o valor de \033[33m'a'\033[0m: ");
+
     read(a);
-    write("'a + 2 - 3 * 4 / 5 + 1.0 - 2.0 * 10' = ");
-    writeln(a + 2 - 3 * 4 / 5 + 1.0 - 2.0 * 10);
+
+    write("func call: 'calc(a)' = ");
+    writeln(arith(a));
 
     write("static int: ");
     writeln(78);

@@ -304,9 +304,9 @@ static void arith_gen_code(AST *lhs, AST *rhs, char *op, FILE *out) {
   }
 
   fprintf(out, " $%d, $%d, $%d\n\n", temp + 3, temp + 2, temp + 3);
-  t9n_alloc_from_other(temp + 2,
-                       MAX(lhs->cast_info.data_type, rhs->cast_info.data_type),
-                       temp + 3, VAR, out);
+  t9n_alloc_from_other_value(
+      temp + 2, MAX(lhs->cast_info.data_type, rhs->cast_info.data_type),
+      temp + 3, VAR, out);
 }
 
 void ast_binop_gen_code(AST *ast, FILE *out) {

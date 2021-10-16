@@ -60,8 +60,10 @@ void ast_funcall_print_pretty(AST *ast, int depth) {
     AST *arg = __IT__->data;
     AST *param_decl = list_peek(&func_decl_params->value.params->value, __K__);
 
-    CastInfo ctx_cast_info = cast_info_assign(param_decl->cast_info.data_type,
-                                              arg->cast_info.data_type);
+    CastInfo ctx_cast_info =
+        param_decl && arg ? cast_info_assign(param_decl->cast_info.data_type,
+                                             arg->cast_info.data_type)
+                          : cast_info_none();
     print_cast(ctx_cast_info, depth + 1);
 
     ast_print_pretty(__IT__->data,
@@ -112,8 +114,8 @@ CastInfo ast_funcall_type_check(AST *ast) {
 
     ast_validate_types(arg);
 
-    if (!can_assign(param_decl->cast_info.data_type,
-                    arg->cast_info.data_type)) {
+    if (param_decl && !can_assign(param_decl->cast_info.data_type,
+                                  arg->cast_info.data_type)) {
       handle_mismatch_arg_type(arg, param_decl);
     }
   });
@@ -126,12 +128,25 @@ void ast_funcall_gen_code(AST *ast, FILE *out) {
   AST *declarator = list_peek(&ast->children, 0);
   AST *args = list_peek(&ast->children, 1);
 
+  AST *func_decl = get_func_called(declarator);
+  AST *func_decl_params = list_peek(&func_decl->children, 1);
+
   Symbol *fn_name = declarator->value.symref->symbol;
   LIST_FOR_EACH(args->value.params->value, {
     AST *arg = __IT__->data;
+    AST *param_decl = list_peek(&func_decl_params->value.params->value, __K__);
+
     ast_gen_code(arg, out);
-    fprintf(out, "pop $%d\n", current_context->t9n->temp + __K__ + 1);
-    fprintf(out, "param $%d\n", current_context->t9n->temp + __K__ + 1);
-  })
-  fprintf(out, "call func_%s, %d\n", fn_name->name, args->value.params->size);
+
+    CastInfo ctx_cast_info = cast_info_assign(param_decl->cast_info.data_type,
+                                              arg->cast_info.data_type);
+
+    if (ctx_cast_info.kind != NONE)
+      cast_gen_code(ctx_cast_info, current_context->t9n->temp + __K__, out);
+
+    fprintf(out, "pop $%d\n", current_context->t9n->temp + __K__);
+    fprintf(out, "param $%d\n", current_context->t9n->temp + __K__);
+  });
+
+  fprintf(out, "call func_%s, %d\n\n", fn_name->name, args->value.params->size);
 }
