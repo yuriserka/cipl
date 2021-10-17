@@ -54,10 +54,10 @@ void t9n_alloc_from_other_var(int to, SymbolTypes type, int from,
   }
 }
 
-void t9n_alloc_from_literal(int to, char *tb_ref, FILE *out) {
+void t9n_alloc_from_literal(int to, int str_tb_ref, FILE *out) {
   fprintf(out, "mema $%d, 2\n", to);
   fprintf(out, "mov $%d[0], %d\n", to, SYM_PTR);
-  fprintf(out, "mov $%d[1], &%s\n", to, tb_ref);
+  fprintf(out, "mov $%d[1], &str_%d\n", to, str_tb_ref);
 }
 
 void t9n_alloc_from_constant(int to, SymbolTypes type, NumberValue value,
@@ -99,6 +99,7 @@ void t9n_alloc_decl(int to, SymbolTypes type, FILE *out) {
     default:
       t9n_alloc_from_constant(to, type, (NumberValue){.integer = 0}, out);
   }
+  fprintf(out, "\n");
 }
 
 static void asm_insert_str_literal_header(FILE *out) {
@@ -106,11 +107,9 @@ static void asm_insert_str_literal_header(FILE *out) {
   fprintf(out, "\nchar str_nil[] = \"nil\"\n");
   AST_FIND_NODE(root, AST_STR_LITERAL,
                 {
-                  char *val = __AST__->value.str->value;
-                  char *entry = calloc(sizeof("str_") + 100, sizeof(char));
-                  fprintf(out, "char str_%d[] = \"%s\"\n", i, val);
-                  sprintf(entry, "str_%d", i++);
-                  __AST__->value.str->table_entry = entry;
+                  StringLiteralAST *str_ast = __AST__->value.str;
+                  fprintf(out, "char str_%d[] = \"%s\"\n", i, str_ast->value);
+                  str_ast->table_entry = i++;
                 },
                 {});
   fprintf(out, "\n");
@@ -143,43 +142,33 @@ static void asm_cast(FILE *out) {
 
 static void asm_set_var_val(FILE *out) {
   fprintf(out, "set_var_val:\n");
-  fprintf(out, "seq $0, #2, 0\n");
-  fprintf(out, "brz set_var_val_FROM_VAR, $0\n");
-  fprintf(out, "mov $0, *#0\n");
-  fprintf(out, "mov $3, #1\n");
+  fprintf(out, "mov $0, #1[0]\n");
+  fprintf(out, "slt $0, $0, 3\n");
+  fprintf(out, "brz set_var_val_LIST, $0\n");
+  fprintf(out, "set_var_val_NUMBER:\n");
+  fprintf(out, "mov $0, #1[1]\n");
+  fprintf(out, "mov #0[1], $0\n");
   fprintf(out, "jump set_var_val_END\n");
-  fprintf(out, "set_var_val_FROM_VAR:\n");
-  fprintf(out, "mov $0, *#0\n");
-  fprintf(out, "mov $1, *#1\n");
-  fprintf(out, "mov $2, #1[1]\n");
-  fprintf(out, "set_var_val_START:\n");
-  fprintf(out, "seq $3, $0, $1\n");
-  fprintf(out, "brnz set_var_val_EQUAL, $3\n");
-  fprintf(out, "slt $3, $0, $1\n");
-  fprintf(out, "brnz set_var_val_F2I, $3\n");
-  fprintf(out, "mov $3, $2\n");
-  fprintf(out, "inttofl $3, $3\n");
-  fprintf(out, "jump set_var_val_END\n");
-  fprintf(out, "set_var_val_F2I:\n");
-  fprintf(out, "mov $3, $2\n");
-  fprintf(out, "fltoint $3, $3\n");
-  fprintf(out, "jump set_var_val_END\n");
-  fprintf(out, "set_var_val_EQUAL:\n");
-  fprintf(out, "mov $3, $2\n");
+  fprintf(out, "set_var_val_LIST:\n");
+  fprintf(out, "mov $0, #1[1]\n");
+  fprintf(out, "mov #0[1], $0\n");
+  fprintf(out, "mov $0, 0\n");
+  fprintf(out, "set_var_val_LIST_LOOP:\n");
+  fprintf(out, "mov $1, #0[1]\n");
+  fprintf(out, "slt $1, $0, $1\n");
   fprintf(out, "set_var_val_END:\n");
-  fprintf(out, "mov #0[1], $3\n");
-  fprintf(out, "return 0\n\n");
+  fprintf(out, "return\n\n");
 }
 
 static void asm_get_var_val(FILE *out) {
   fprintf(out, "get_var_val:\n");
-  fprintf(out, "mov $0, *#0\n");
-  fprintf(out, "seq $0, $0, 2\n");
-  fprintf(out, "brz get_var_val_INT, $0\n");
+  fprintf(out, "mov $0, #0[0]\n");
+  fprintf(out, "slt $0, $0, 3\n");
+  fprintf(out, "brz get_var_val_LIST, $0\n");
   fprintf(out, "mov $0, #0[1]\n");
   fprintf(out, "jump get_var_val_END\n");
-  fprintf(out, "get_var_val_INT:\n");
-  fprintf(out, "mov $0, #0[1]\n");
+  fprintf(out, "get_var_val_LIST:\n");
+  fprintf(out, "mov $0, #0[2]\n");
   fprintf(out, "get_var_val_END:\n");
   fprintf(out, "return $0\n\n");
 }
@@ -192,7 +181,7 @@ static void asm_generate_utils(FILE *out) {
 
 static void asm_read(FILE *out) {
   fprintf(out, "read:\n");
-  fprintf(out, "mov $0, *#0\n");
+  fprintf(out, "mov $0, #0[0]\n");
   fprintf(out, "seq $0, $0, 2\n");
   fprintf(out, "brz read_INT, $0\n");
   fprintf(out, "scanf $1\n");
@@ -204,7 +193,6 @@ static void asm_read(FILE *out) {
   fprintf(out, "return 0\n\n");
 }
 
-// receive 1 param of of t9n_alloc
 static void asm_write(FILE *out) {
   fprintf(out, "write:\n");
   fprintf(out, "mov $0, #0[0]\n");
@@ -227,10 +215,11 @@ static void asm_write(FILE *out) {
   fprintf(out, "add $2, $2, 1\n");
   fprintf(out, "jump write_STR_LOOP\n");
   fprintf(out, "write_END:\n");
-  fprintf(out, "return 0\n");
+  fprintf(out, "return 0\n\n");
 }
+
 static void asm_writeln(FILE *out) {
-  fprintf(out, "\nwriteln:\n");
+  fprintf(out, "writeln:\n");
   fprintf(out, "param #0\n");
   fprintf(out, "param #1\n");
   fprintf(out, "call write, 2\n");

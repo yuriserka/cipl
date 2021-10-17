@@ -27,13 +27,13 @@ cast_END:
     return $3
 
 get_var_val:
-    mov $0, *#0
-    seq $0, $0, 2
-    brz get_var_val_INT, $0
+    mov $0, #0[0]
+    slt $0, $0, 3
+    brz get_var_val_LIST, $0
     mov $0, #0[1]
     jump get_var_val_END
-get_var_val_INT:
-    mov $0, #0[1]
+get_var_val_LIST:
+    mov $0, #0[2]
 get_var_val_END:
     return $0
 

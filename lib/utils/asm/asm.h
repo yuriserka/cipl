@@ -20,7 +20,7 @@ void t9n_alloc_from_other_var(int to, SymbolTypes type, int from,
                               SymbolKinds kind, FILE *out);
 void t9n_alloc_from_constant(int to, SymbolTypes type, NumberValue value,
                              FILE *out);
-void t9n_alloc_from_literal(int to, char *tb_ref, FILE *out);
+void t9n_alloc_from_literal(int to, int tb_ref, FILE *out);
 void t9n_alloc_decl(int to, SymbolTypes type, FILE *out);
 
 void asm_generate_table_header(FILE *out);

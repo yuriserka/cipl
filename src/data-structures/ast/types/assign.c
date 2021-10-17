@@ -110,14 +110,17 @@ CastInfo ast_assign_type_check(AST *ast) {
 }
 
 void ast_assign_gen_code(AST *ast, FILE *out) {
-  AST *lhs = list_peek(&ast->children, 0);
   AST *rhs = list_peek(&ast->children, 1);
 
   ast_gen_code(rhs, out);
 
+  cast_gen_code(ast->cast_info, current_context->t9n->temp, out);
+
+  AST *lhs = list_peek(&ast->children, 0);
   Symbol *lhs_sym = lhs->value.symref->symbol;
 
   fprintf(out, "pop $%d\n", current_context->t9n->temp);
-  fprintf(out, "mov %c%d $%d\n", t9n_prefix(lhs_sym->kind), lhs_sym->temp,
-          current_context->t9n->temp);
+  fprintf(out, "param %c%d\n", t9n_prefix(lhs_sym->kind), lhs_sym->temp);
+  fprintf(out, "param $%d\n", current_context->t9n->temp);
+  fprintf(out, "call set_var_val, 2\n\n");
 }

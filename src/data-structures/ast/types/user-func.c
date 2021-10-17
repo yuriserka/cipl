@@ -96,7 +96,7 @@ void ast_userfunc_gen_code(AST *ast, FILE *out) {
 
   ListNode *old_params_ref = NULL;
 
-  STACK_FOR_EACH(params->value.params->value, {
+  LIST_FOR_EACH(params->value.params->value, {
     AST *param = __IT__->data;
     Symbol *par_sym = param->value.symref->symbol;
     // int/float are passed by value so have to copy them to a temp
@@ -117,7 +117,7 @@ void ast_userfunc_gen_code(AST *ast, FILE *out) {
   ast_gen_code(statements, out);
 
   // recover #param number
-  STACK_FOR_EACH(params->value.params->value, {
+  LIST_FOR_EACH(params->value.params->value, {
     AST *param = __IT__->data;
     Symbol *par_sym = param->value.symref->symbol;
     if (par_sym->type < SYM_PTR) {

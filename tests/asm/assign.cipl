@@ -1,0 +1,46 @@
+int readme(int a, float c) {
+    write("digite o valor de \033[33m'a'\033[0m na func: ");
+    read(a);
+
+    int b;
+    b = a + 7/c * 2.5;
+
+    write("func a: ");
+    writeln(a);
+
+    write("func b: ");
+    writeln(b);
+
+    return b;
+}
+
+int main() {
+    int a;
+    write("digite o valor de \033[33m'a'\033[0m na main: ");
+    read(a);
+
+    write("b4 a: ");
+    writeln(a);
+
+    int b;
+    b = readme(a, 1.57);
+    write("after a: ");
+    writeln(a);
+
+    write("b: ");
+    writeln(b);
+
+    float c;
+    c = 1.5 - b * a;
+
+    write("c: ");
+    writeln(c);
+
+    float d;
+    d = c;
+
+    write("d = c: ");
+    writeln(d);
+
+    return 0;
+}
