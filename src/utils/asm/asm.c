@@ -7,7 +7,7 @@
 
 T9nUnit *t9n_init() {
   T9nUnit *t9n = calloc(1, sizeof(T9nUnit));
-  t9n->temp = 0;
+  t9n->temp = current_context ? current_context->t9n->temp : 0;
   t9n->param = 0;
   t9n->label = 0;
   return t9n;
@@ -15,7 +15,7 @@ T9nUnit *t9n_init() {
 
 void t9n_free(T9nUnit *t9n) { free(t9n); }
 
-char t9n_prefix(SymbolKinds kind) { return kind == PARAM ? '#' : '$'; }
+char *t9n_prefix(SymbolKinds kind) { return kind == PARAM ? "#" : "$"; }
 
 void t9n_alloc_from_other_value(int to, SymbolTypes type, int from,
                                 SymbolKinds kind, FILE *out) {
@@ -29,8 +29,10 @@ void t9n_alloc_from_other_value(int to, SymbolTypes type, int from,
     default:
       fprintf(out, "mema $%d, 3\n", to);
       fprintf(out, "mov $%d[0], %d\n", to, type);
-      fprintf(out, "mov $%d[1], $%d\n", to, 0);
-      fprintf(out, "mov $%d[2], $%d\n", to, from);
+      fprintf(out, "mov $%d, $%d[1]\n", to + 1, from);
+      fprintf(out, "mov $%d[1], $%d\n", to, to + 1);
+      fprintf(out, "mov $%d, $%d[2]\n", to + 1, from);
+      fprintf(out, "mov $%d[2], $%d\n", to, to + 1);
   }
 }
 
@@ -41,15 +43,15 @@ void t9n_alloc_from_other_var(int to, SymbolTypes type, int from,
     case SYM_REAL:
       fprintf(out, "mema $%d, 2\n", to);
       fprintf(out, "mov $%d[0], %d\n", to, type);
-      fprintf(out, "mov $%d, %c%d[1]\n", to + 1, t9n_prefix(kind), from);
+      fprintf(out, "mov $%d, %s%d[1]\n", to + 1, t9n_prefix(kind), from);
       fprintf(out, "mov $%d[1], $%d\n\n", to, to + 1);
       break;
     default:
       fprintf(out, "mema $%d, 3\n", to);
       fprintf(out, "mov $%d[0], %d\n", to, type);
-      fprintf(out, "mov $%d, %c%d[1]\n", to + 1, t9n_prefix(kind), from);
+      fprintf(out, "mov $%d, %s%d[1]\n", to + 1, t9n_prefix(kind), from);
       fprintf(out, "mov $%d[1], $%d\n", to, to + 1);
-      fprintf(out, "mov $%d, %c%d[2]\n", to + 2, t9n_prefix(kind), from);
+      fprintf(out, "mov $%d, %s%d[2]\n", to + 2, t9n_prefix(kind), from);
       fprintf(out, "mov $%d[2], $%d\n\n", to, to + 2);
   }
 }
@@ -84,7 +86,8 @@ void t9n_alloc_from_constant(int to, SymbolTypes type, NumberValue value,
       fprintf(out, "mema $%d, 3\n", to);
       fprintf(out, "mov $%d[0], %d\n", to, type);
       fprintf(out, "mov $%d[1], $%d\n", to, 0);
-      // fprintf(out, "mov $%d[2], \n", to, from);
+      fprintf(out, "mema $%d, 0\n", to + 1);
+      fprintf(out, "mov $%d[2], $%d\n", to, to + 1);
   }
 }
 
@@ -105,6 +108,7 @@ void t9n_alloc_decl(int to, SymbolTypes type, FILE *out) {
 static void asm_insert_str_literal_header(FILE *out) {
   int i = 0;
   fprintf(out, "\nchar str_nil[] = \"nil\"\n");
+  fprintf(out, "int list_nil[] = {%d, 0}\n", SYM_PTR);
   AST_FIND_NODE(root, AST_STR_LITERAL,
                 {
                   StringLiteralAST *str_ast = __AST__->value.str;
@@ -112,12 +116,21 @@ static void asm_insert_str_literal_header(FILE *out) {
                   str_ast->table_entry = i++;
                 },
                 {});
-  fprintf(out, "\n");
+  if (i) fprintf(out, "\n");
+}
+
+static void asm_insert_globals_header(FILE *out) {
+  int i = 0;
+  AST_TRAVERSE(root, AST_DECLARATION, {
+    DeclarationAST *decl_ast = __AST__->value.declaration;
+    decl_ast->table_entry = i++;
+  });
 }
 
 void asm_generate_table_header(FILE *out) {
   fprintf(out, ".table\n");
   asm_insert_str_literal_header(out);
+  asm_insert_globals_header(out);
 }
 
 static void asm_cast(FILE *out) {
@@ -237,9 +250,11 @@ void asm_generate_code_header(FILE *out) {
   fprintf(out, ".code\n");
   asm_generate_utils(out);
   asm_generate_builtin_funcs(out);
+  fprintf(out, "main:\n\n");
 }
 
 void asm_generate_code_end(FILE *out) {
+  fprintf(out, "jump func_main\n");
   fprintf(out, "\nEOF:\n");
   fprintf(out, "nop\n");
 }

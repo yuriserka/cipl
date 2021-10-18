@@ -1,0 +1,22 @@
+float a;
+
+int writeglobal() {
+    write("insider other function a: ");
+    writeln(a);
+    return 0;
+}
+
+int main() {
+    a = 77.2347;
+    write("global a: ");
+    writeln(a);
+    
+    writeglobal();
+
+    int a;
+    a = 2;
+    write("local a: ");
+    writeln(a);
+
+    return 0;
+}

@@ -1,7 +1,7 @@
 #pragma once
 
 typedef struct cipl_ast_declaration {
-  char dummy;
+  int table_entry;
 } DeclarationAST;
 
 #include "data-structures/ast/ast.h"

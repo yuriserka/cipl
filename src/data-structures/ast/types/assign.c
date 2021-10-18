@@ -120,7 +120,7 @@ void ast_assign_gen_code(AST *ast, FILE *out) {
   Symbol *lhs_sym = lhs->value.symref->symbol;
 
   fprintf(out, "pop $%d\n", current_context->t9n->temp);
-  fprintf(out, "param %c%d\n", t9n_prefix(lhs_sym->kind), lhs_sym->temp);
+  fprintf(out, "param %s%d\n", t9n_prefix(lhs_sym->kind), lhs_sym->temp);
   fprintf(out, "param $%d\n", current_context->t9n->temp);
   fprintf(out, "call set_var_val, 2\n\n");
 }

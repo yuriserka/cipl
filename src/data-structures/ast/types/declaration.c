@@ -8,6 +8,7 @@
 
 AST *ast_declaration_init(YYLTYPE rule_pos, AST *name) {
   DeclarationAST *ast = calloc(1, sizeof(DeclarationAST));
+  ast->table_entry = -1;
   return ast_cast(AST_DECLARATION, rule_pos, 1, ast, name);
 }
 

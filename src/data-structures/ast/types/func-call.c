@@ -148,5 +148,9 @@ void ast_funcall_gen_code(AST *ast, FILE *out) {
     fprintf(out, "param $%d\n", current_context->t9n->temp + __K__);
   });
 
+  AST_TRAVERSE(root, AST_DECLARATION, {
+    DeclarationAST *decl_ast = __AST__->value.declaration;
+    fprintf(out, "push $%d\n", decl_ast->table_entry);
+  });
   fprintf(out, "call func_%s, %d\n\n", fn_name->name, args->value.params->size);
 }

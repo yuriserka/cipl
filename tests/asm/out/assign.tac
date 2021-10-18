@@ -1,6 +1,7 @@
 .table
 
 char str_nil[] = "nil"
+int list_nil[] = {3, 0}
 char str_0[] = "digite o valor de \033[33m'a'\033[0m na func: "
 char str_1[] = "func a: "
 char str_2[] = "func b: "
@@ -100,6 +101,10 @@ param #1
 call write, 2
 println
 return 0
+main:
+
+
+jump func_readme_END
 
 func_readme:
 // param int a
@@ -266,7 +271,11 @@ push $0
 pop $3
 return $3
 
-main:
+func_readme_END:
+
+jump func_main_END
+
+func_main:
 // var int a
 mema $0, 2
 mov $0[0], 1
@@ -462,6 +471,9 @@ param $4
 call writeln, 1
 
 jump EOF
+
+func_main_END:
+jump func_main
 
 EOF:
 nop

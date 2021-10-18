@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "utils/asm/asm.h"
 #include "utils/io.h"
 
 AST *ast_symref_init(YYLTYPE rule_pos, Symbol *symbol) {
@@ -46,5 +47,5 @@ CastInfo ast_symref_type_check(AST *ast) {
 
 void ast_symref_gen_code(AST *ast, FILE *out) {
   Symbol *sym = ast->value.symref->symbol;
-  fprintf(out, "push %c%d\n\n", t9n_prefix(sym->kind), sym->temp);
+  fprintf(out, "push %s%d\n\n", t9n_prefix(sym->kind), sym->temp);
 }

@@ -12,7 +12,7 @@ typedef struct {
 
 T9nUnit *t9n_init();
 void t9n_free(T9nUnit *t9n);
-char t9n_prefix(SymbolKinds kind);
+char *t9n_prefix(SymbolKinds kind);
 
 void t9n_alloc_from_other_value(int to, SymbolTypes type, int from,
                                 SymbolKinds kind, FILE *out);
