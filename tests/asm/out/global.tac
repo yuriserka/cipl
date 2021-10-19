@@ -3,8 +3,9 @@
 char str_nil[] = "nil"
 int list_nil[] = {3, 0}
 char str_0[] = "insider other function a: "
-char str_1[] = "global a: "
-char str_2[] = "local a: "
+char str_1[] = "enter value for the meta-parameter B: "
+char str_2[] = "global a: "
+char str_3[] = "local a + global b: "
 
 .code
 cast:
@@ -95,13 +96,13 @@ param #1
 call write, 2
 println
 return 0
+
 main:
 
-// var float a
+// global var float a
 mema $0, 2
 mov $0[0], 2
 mov $0[1], 0.000000
-
 
 jump func_writeglobal_END
 
@@ -132,70 +133,159 @@ return $1
 
 func_writeglobal_END:
 
-jump func_main_END
-
-func_main:
-mema $2, 2
-mov $2[0], 2
-mov $2[1], 77.234700
-push $2
-
-pop $2
-param $0
-param $2
-call set_var_val, 2
-
-mema $2, 2
-mov $2[0], 3
-mov $2[1], &str_1
-push $2
-
-pop $2
-param $2
-call write, 1
-
-push $0
-
-pop $2
-param $2
-call writeln, 1
-
-push $0
-call func_writeglobal, 0
-
-// var int a
+// global var int b
 mema $1, 2
 mov $1[0], 1
 mov $1[1], 0
 
+// global var float c
 mema $2, 2
-mov $2[0], 1
-mov $2[1], 2
-push $2
+mov $2[0], 2
+mov $2[1], 0.000000
 
+// global var float d
+mema $3, 2
+mov $3[0], 2
+mov $3[1], 0.000000
+
+// global var int e
+mema $4, 2
+mov $4[0], 1
+mov $4[1], 0
+
+// global var float f
+mema $5, 2
+mov $5[0], 2
+mov $5[1], 0.000000
+
+jump func_readb_END
+
+func_readb:
+pop $5
+pop $4
+pop $3
 pop $2
-param $1
-param $2
-call set_var_val, 2
+pop $1
+pop $0
+mema $6, 2
+mov $6[0], 3
+mov $6[1], &str_1
+push $6
 
-mema $2, 2
-mov $2[0], 3
-mov $2[1], &str_2
-push $2
-
-pop $2
-param $2
+pop $6
+param $6
 call write, 1
 
 push $1
 
-pop $2
-param $2
+pop $6
+param $6
+call read, 1
+
+mema $6, 2
+mov $6[0], 1
+mov $6[1], 0
+push $6
+
+pop $6
+return $6
+
+func_readb_END:
+
+jump func_main_END
+
+func_main:
+mema $7, 2
+mov $7[0], 2
+mov $7[1], 77.234700
+push $7
+
+pop $7
+param $0
+param $7
+call set_var_val, 2
+
+mema $7, 2
+mov $7[0], 3
+mov $7[1], &str_2
+push $7
+
+pop $7
+param $7
+call write, 1
+
+push $0
+
+pop $7
+param $7
+call writeln, 1
+
+push $0
+push $1
+push $2
+push $3
+push $4
+push $5
+call func_readb, 0
+
+push $0
+call func_writeglobal, 0
+
+// local var int a
+mema $6, 2
+mov $6[0], 1
+mov $6[1], 0
+
+mema $7, 2
+mov $7[0], 1
+mov $7[1], 2
+push $7
+
+pop $7
+param $6
+param $7
+call set_var_val, 2
+
+mema $7, 2
+mov $7[0], 3
+mov $7[1], &str_3
+push $7
+
+pop $7
+param $7
+call write, 1
+
+push $6
+
+push $1
+
+pop $8
+
+pop $7
+
+param $7
+call get_var_val, 1
+pop $9
+
+param $8
+call get_var_val, 1
+pop $10
+
+add $10, $9, $10
+
+mema $9, 2
+mov $9[0], 1
+mov $9[1], $10
+push $9
+
+pop $7
+param $7
 call writeln, 1
 
 jump EOF
 
 func_main_END:
+
 jump func_main
 
 EOF:

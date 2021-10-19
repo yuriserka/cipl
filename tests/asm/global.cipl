@@ -6,17 +6,26 @@ int writeglobal() {
     return 0;
 }
 
+int b;
+
+int readb() {
+    write("enter value for the meta-parameter B: ");
+    read(b);
+    return 0;
+}
+
 int main() {
     a = 77.2347;
     write("global a: ");
     writeln(a);
     
+    readb();
     writeglobal();
 
     int a;
     a = 2;
-    write("local a: ");
-    writeln(a);
+    write("local a + global b: ");
+    writeln(a + b);
 
     return 0;
 }

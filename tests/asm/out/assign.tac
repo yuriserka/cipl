@@ -101,8 +101,8 @@ param #1
 call write, 2
 println
 return 0
-main:
 
+main:
 
 jump func_readme_END
 
@@ -134,7 +134,7 @@ pop $3
 param $3
 call read, 1
 
-// var int b
+// local var int b
 mema $0, 2
 mov $0[0], 1
 mov $0[1], 0
@@ -276,7 +276,7 @@ func_readme_END:
 jump func_main_END
 
 func_main:
-// var int a
+// local var int a
 mema $0, 2
 mov $0[0], 1
 mov $0[1], 0
@@ -311,7 +311,7 @@ pop $4
 param $4
 call writeln, 1
 
-// var int b
+// local var int b
 mema $1, 2
 mov $1[0], 1
 mov $1[1], 0
@@ -364,7 +364,7 @@ pop $4
 param $4
 call writeln, 1
 
-// var float c
+// local var float c
 mema $2, 2
 mov $2[0], 2
 mov $2[1], 0.000000
@@ -443,7 +443,7 @@ pop $4
 param $4
 call writeln, 1
 
-// var float d
+// local var float d
 mema $3, 2
 mov $3[0], 2
 mov $3[1], 0.000000
@@ -473,6 +473,7 @@ call writeln, 1
 jump EOF
 
 func_main_END:
+
 jump func_main
 
 EOF:

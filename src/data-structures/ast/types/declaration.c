@@ -44,7 +44,7 @@ CastInfo ast_declaration_type_check(AST *ast) {
 void ast_declaration_gen_code(AST *ast, FILE *out) {
   AST *name = list_peek(&ast->children, 0);
   Symbol *declared = name->value.symref->symbol;
-  fprintf(out, "// var %s %s\n",
+  fprintf(out, "// %s var %s %s\n", declared->scope ? "local" : "global",
           symbol_canonical_type_from_enum(declared->type), declared->name);
   t9n_alloc_decl(declared->temp, declared->type, out);
 }

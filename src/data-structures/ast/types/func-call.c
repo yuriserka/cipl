@@ -132,6 +132,7 @@ void ast_funcall_gen_code(AST *ast, FILE *out) {
   AST *func_decl_params = list_peek(&func_decl->children, 1);
 
   Symbol *fn_name = declarator->value.symref->symbol;
+
   LIST_FOR_EACH(args->value.params->value, {
     AST *arg = __IT__->data;
     AST *param_decl = list_peek(&func_decl_params->value.params->value, __K__);
@@ -141,16 +142,26 @@ void ast_funcall_gen_code(AST *ast, FILE *out) {
     CastInfo ctx_cast_info = cast_info_assign(param_decl->cast_info.data_type,
                                               arg->cast_info.data_type);
 
-    if (ctx_cast_info.kind != NONE)
-      cast_gen_code(ctx_cast_info, current_context->t9n->temp + __K__, out);
+    cast_gen_code(ctx_cast_info, current_context->t9n->temp + __K__, out);
 
     fprintf(out, "pop $%d\n", current_context->t9n->temp + __K__);
     fprintf(out, "param $%d\n", current_context->t9n->temp + __K__);
   });
 
-  AST_TRAVERSE(root, AST_DECLARATION, {
-    DeclarationAST *decl_ast = __AST__->value.declaration;
-    fprintf(out, "push $%d\n", decl_ast->table_entry);
-  });
+  AST_TRAVERSE_UNTIL(
+      root, AST_DECLARATION,
+      {
+        if (__AST__->type == AST_USER_FUNC) {
+          AST *key = list_peek(&__AST__->children, 0);
+          if (!strcmp(key->value.symref->symbol->name, fn_name->name)) {
+            __FOUND__ = 1;
+          }
+        }
+      },
+      {
+        AST *var_ast = list_peek(&__AST__->children, 0);
+        Symbol *var_sym = var_ast->value.symref->symbol;
+        fprintf(out, "push $%d\n", var_sym->temp);
+      });
   fprintf(out, "call func_%s, %d\n\n", fn_name->name, args->value.params->size);
 }

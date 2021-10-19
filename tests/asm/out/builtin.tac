@@ -1,6 +1,7 @@
 .table
 
 char str_nil[] = "nil"
+int list_nil[] = {3, 0}
 char str_0[] = "digite o valor de \033[33m'a'\033[0m: "
 char str_1[] = "func call: 'calc(a)' = "
 char str_2[] = "static int: "
@@ -97,6 +98,10 @@ param #1
 call write, 2
 println
 return 0
+
+main:
+
+jump func_arith_END
 
 func_arith:
 // param float a
@@ -299,8 +304,12 @@ push $3
 pop $1
 return $1
 
-main:
-// var int a
+func_arith_END:
+
+jump func_main_END
+
+func_main:
+// local var int a
 mema $0, 2
 mov $0[0], 1
 mov $0[1], 0
@@ -540,6 +549,10 @@ param $1
 call writeln, 1
 
 jump EOF
+
+func_main_END:
+
+jump func_main
 
 EOF:
 nop

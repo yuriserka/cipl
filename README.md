@@ -18,7 +18,7 @@ make mem_check filename=tests/{input}.cipl
 ## Installation
 
 ```shell
-sudo apt install flex gcc make bison
+sudo apt install flex gcc make bison automake valgrind
 git submodule init && git submodule update
 cd tac-module && ./autogen.sh && ./configure && make
 cd .. && make

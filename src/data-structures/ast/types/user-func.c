@@ -89,15 +89,24 @@ void ast_userfunc_gen_code(AST *ast, FILE *out) {
   AST *statements = list_peek(&ast->children, 2);
   current_context = ast->value.userfunc->context;
 
-  fprintf(out, "\njump func_%s_END\n", name->value.symref->symbol->name);
+  fprintf(out, "jump func_%s_END\n", name->value.symref->symbol->name);
   fprintf(out, "\nfunc_%s:\n", name->value.symref->symbol->name);
   ListNode *old_params_ref = NULL;
 
   if (strcmp(name->value.symref->symbol->name, "main")) {
-    AST_TRAVERSE(root, AST_DECLARATION, {
-      DeclarationAST *decl_ast = __AST__->value.declaration;
-      fprintf(out, "pop $%d\n", decl_ast->table_entry);
-    });
+    int i = 1;
+    AST_TRAVERSE_UNTIL(
+        root, AST_DECLARATION,
+        {
+          if (__AST__->type == AST_USER_FUNC) {
+            AST *key = list_peek(&__AST__->children, 0);
+            if (!strcmp(key->value.symref->symbol->name,
+                        current_context->name)) {
+              __FOUND__ = 1;
+            }
+          }
+        },
+        { fprintf(out, "pop $%d\n", current_context->t9n->temp - i++); });
   }
 
   LIST_FOR_EACH(params->value.params->value, {
@@ -133,5 +142,5 @@ void ast_userfunc_gen_code(AST *ast, FILE *out) {
 
   LIST_FREE(old_params_ref, { symbol_free(__IT__->data); });
 
-  fprintf(out, "\nfunc_%s_END:\n", name->value.symref->symbol->name);
+  fprintf(out, "\nfunc_%s_END:\n\n", name->value.symref->symbol->name);
 }

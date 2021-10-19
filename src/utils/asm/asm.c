@@ -119,18 +119,9 @@ static void asm_insert_str_literal_header(FILE *out) {
   if (i) fprintf(out, "\n");
 }
 
-static void asm_insert_globals_header(FILE *out) {
-  int i = 0;
-  AST_TRAVERSE(root, AST_DECLARATION, {
-    DeclarationAST *decl_ast = __AST__->value.declaration;
-    decl_ast->table_entry = i++;
-  });
-}
-
 void asm_generate_table_header(FILE *out) {
   fprintf(out, ".table\n");
   asm_insert_str_literal_header(out);
-  asm_insert_globals_header(out);
 }
 
 static void asm_cast(FILE *out) {
@@ -237,7 +228,7 @@ static void asm_writeln(FILE *out) {
   fprintf(out, "param #1\n");
   fprintf(out, "call write, 2\n");
   fprintf(out, "println\n");
-  fprintf(out, "return 0\n");
+  fprintf(out, "return 0\n\n");
 }
 
 static void asm_generate_builtin_funcs(FILE *out) {

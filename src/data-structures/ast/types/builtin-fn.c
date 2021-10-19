@@ -88,18 +88,9 @@ void ast_builtinfn_gen_code(AST *ast, FILE *out) {
   AST *args = list_peek(&ast->children, 0);
 
   ast_gen_code(args, out);
-  fprintf(out, "pop $%d\n", current_context->t9n->temp);
 
-  switch (builtinfn_ast->func_type) {
-    case BUILTIN_FN_READ:
-      fprintf(out, "param $%d\n", current_context->t9n->temp);
-      fprintf(out, "call %s, 1\n\n",
-              builtinfn_str_from_type(builtinfn_ast->func_type));
-      break;
-    default: {
-      fprintf(out, "param $%d\n", current_context->t9n->temp);
-      fprintf(out, "call %s, 1\n\n",
-              builtinfn_str_from_type(builtinfn_ast->func_type));
-    }
-  }
+  fprintf(out, "pop $%d\n", current_context->t9n->temp);
+  fprintf(out, "param $%d\n", current_context->t9n->temp);
+  fprintf(out, "call %s, 1\n\n",
+          builtinfn_str_from_type(builtinfn_ast->func_type));
 }
