@@ -13,3 +13,4 @@ void ast_uniop_print(AST *ast);
 void ast_uniop_print_pretty(AST *ast, int depth);
 
 CastInfo ast_uniop_type_check(AST *ast);
+void ast_uniop_gen_code(AST *ast, FILE *out);

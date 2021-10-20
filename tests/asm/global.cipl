@@ -24,7 +24,7 @@ int main() {
 
     int a;
     a = 2;
-    write("local a + global b: ");
+    write("local a=(2) + global b: ");
     writeln(a + b);
 
     return 0;

@@ -3,7 +3,7 @@ int readme(int a, float c) {
     read(a);
 
     int b;
-    b = a + 7/c * 2.5;
+    b = a + 7/c * -2.5;
 
     write("func a: ");
     writeln(a);
@@ -31,15 +31,15 @@ int main() {
     writeln(b);
 
     float c;
-    c = 1.5 - b * a;
+    c = 1.5 - -1 - -b * +a + -+-+--a;
 
     write("c: ");
     writeln(c);
 
     float d;
-    d = c;
+    d = -+c;
 
-    write("d = c: ");
+    write("d = -+c: ");
     writeln(d);
 
     return 0;

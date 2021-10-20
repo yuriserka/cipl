@@ -177,10 +177,38 @@ static void asm_get_var_val(FILE *out) {
   fprintf(out, "return $0\n\n");
 }
 
+static void asm_sign_flip(FILE *out) {
+  fprintf(out, "sign_change:\n");
+  fprintf(out, "mov $0, #0[1]\n");
+  fprintf(out, "mov $1, #0[0]\n");
+  fprintf(out, "seq $1, $1, 1\n");
+  fprintf(out, "brnz sign_change_INT, $1\n");
+  fprintf(out, "sign_change_FLOAT:\n");
+  fprintf(out, "seq $1, #1, '-'\n");
+  fprintf(out, "brnz sign_change_FLOAT_FLIP, $1\n");
+  fprintf(out, "slt $1, $0, 0.0\n");
+  fprintf(out, "brz sign_change_END, $1\n");
+  fprintf(out, "sign_change_FLOAT_FLIP:\n");
+  fprintf(out, "mul $0, $0, -1.0\n");
+  fprintf(out, "jump sign_change_END\n");
+  fprintf(out, "sign_change_INT:\n");
+  fprintf(out, "seq $1, #1, '-'\n");
+  fprintf(out, "brnz sign_change_INT_FLIP, $1\n");
+  fprintf(out, "slt $1, $0, 0\n");
+  fprintf(out, "brz sign_change_END, $1\n");
+  fprintf(out, "sign_change_INT_FLIP:\n");
+  fprintf(out, "mul $0, $0, -1\n");
+  fprintf(out, "jump sign_change_END\n");
+  fprintf(out, "sign_change_END:\n");
+  fprintf(out, "mov #0[1], $0\n");
+  fprintf(out, "return\n\n");
+}
+
 static void asm_generate_utils(FILE *out) {
   asm_cast(out);
   asm_set_var_val(out);
   asm_get_var_val(out);
+  asm_sign_flip(out);
 }
 
 static void asm_read(FILE *out) {
@@ -194,7 +222,7 @@ static void asm_read(FILE *out) {
   fprintf(out, "scani $1\n");
   fprintf(out, "read_END:\n");
   fprintf(out, "mov #0[1], $1\n");
-  fprintf(out, "return 0\n\n");
+  fprintf(out, "return\n\n");
 }
 
 static void asm_write(FILE *out) {
@@ -219,7 +247,7 @@ static void asm_write(FILE *out) {
   fprintf(out, "add $2, $2, 1\n");
   fprintf(out, "jump write_STR_LOOP\n");
   fprintf(out, "write_END:\n");
-  fprintf(out, "return 0\n\n");
+  fprintf(out, "return\n\n");
 }
 
 static void asm_writeln(FILE *out) {
@@ -228,7 +256,7 @@ static void asm_writeln(FILE *out) {
   fprintf(out, "param #1\n");
   fprintf(out, "call write, 2\n");
   fprintf(out, "println\n");
-  fprintf(out, "return 0\n\n");
+  fprintf(out, "return\n\n");
 }
 
 static void asm_generate_builtin_funcs(FILE *out) {

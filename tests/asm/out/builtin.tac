@@ -57,6 +57,31 @@ mov $0, #0[2]
 get_var_val_END:
 return $0
 
+sign_change:
+mov $0, #0[1]
+mov $1, #0[0]
+seq $1, $1, 1
+brnz sign_change_INT, $1
+sign_change_FLOAT:
+seq $1, #1, '-'
+brnz sign_change_FLOAT_FLIP, $1
+slt $1, $0, 0.0
+brz sign_change_END, $1
+sign_change_FLOAT_FLIP:
+mul $0, $0, -1.0
+jump sign_change_END
+sign_change_INT:
+seq $1, #1, '-'
+brnz sign_change_INT_FLIP, $1
+slt $1, $0, 0
+brz sign_change_END, $1
+sign_change_INT_FLIP:
+mul $0, $0, -1
+jump sign_change_END
+sign_change_END:
+mov #0[1], $0
+return
+
 read:
 mov $0, #0[0]
 seq $0, $0, 2
@@ -67,7 +92,7 @@ read_INT:
 scani $1
 read_END:
 mov #0[1], $1
-return 0
+return
 
 write:
 mov $0, #0[0]
@@ -90,14 +115,14 @@ print $3
 add $2, $2, 1
 jump write_STR_LOOP
 write_END:
-return 0
+return
 
 writeln:
 param #0
 param #1
 call write, 2
 println
-return 0
+return
 
 main:
 

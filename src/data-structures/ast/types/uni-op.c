@@ -96,3 +96,24 @@ CastInfo ast_uniop_type_check(AST *ast) {
 
   return cast_info_with_type(base_cast, rhs->cast_info.data_type);
 }
+
+void ast_uniop_gen_code(AST *ast, FILE *out) {
+  UniOpAST *uniop_ast = ast->value.uniop;
+  AST *rhs = list_peek(&ast->children, 0);
+
+  ast_gen_code(rhs, out);
+  fprintf(out, "pop $%d\n\n", current_context->t9n->temp);
+
+  switch (*uniop_ast->op) {
+    case '+':
+    case '-': {
+      fprintf(out, "param $%d\n", current_context->t9n->temp);
+      fprintf(out, "param '%c'\n", *uniop_ast->op);
+      fprintf(out, "call sign_change, 2\n\n");
+    } break;
+    default:
+      break;
+  }
+
+  fprintf(out, "push $%d\n\n", current_context->t9n->temp);
+}

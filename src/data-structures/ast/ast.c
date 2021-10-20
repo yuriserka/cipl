@@ -458,6 +458,9 @@ void ast_gen_code(AST *ast, FILE *out) {
     case AST_STR_LITERAL:
       ast_str_gen_code(ast, out);
       break;
+    case AST_UNI_OP:
+      ast_uniop_gen_code(ast, out);
+      break;
     case AST_PROG:
       LIST_FOR_EACH(ast->children, { ast_gen_code(__IT__->data, out); });
       break;

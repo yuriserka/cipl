@@ -10,7 +10,7 @@ char str_4[] = "b4 a: "
 char str_5[] = "after a: "
 char str_6[] = "b: "
 char str_7[] = "c: "
-char str_8[] = "d = c: "
+char str_8[] = "d = -+c: "
 
 .code
 cast:
@@ -60,6 +60,31 @@ mov $0, #0[2]
 get_var_val_END:
 return $0
 
+sign_change:
+mov $0, #0[1]
+mov $1, #0[0]
+seq $1, $1, 1
+brnz sign_change_INT, $1
+sign_change_FLOAT:
+seq $1, #1, '-'
+brnz sign_change_FLOAT_FLIP, $1
+slt $1, $0, 0.0
+brz sign_change_END, $1
+sign_change_FLOAT_FLIP:
+mul $0, $0, -1.0
+jump sign_change_END
+sign_change_INT:
+seq $1, #1, '-'
+brnz sign_change_INT_FLIP, $1
+slt $1, $0, 0
+brz sign_change_END, $1
+sign_change_INT_FLIP:
+mul $0, $0, -1
+jump sign_change_END
+sign_change_END:
+mov #0[1], $0
+return
+
 read:
 mov $0, #0[0]
 seq $0, $0, 2
@@ -70,7 +95,7 @@ read_INT:
 scani $1
 read_END:
 mov #0[1], $1
-return 0
+return
 
 write:
 mov $0, #0[0]
@@ -93,14 +118,14 @@ print $3
 add $2, $2, 1
 jump write_STR_LOOP
 write_END:
-return 0
+return
 
 writeln:
 param #0
 param #1
 call write, 2
 println
-return 0
+return
 
 main:
 
@@ -184,6 +209,14 @@ push $5
 mema $3, 2
 mov $3[0], 2
 mov $3[1], 2.500000
+push $3
+
+pop $3
+
+param $3
+param '-'
+call sign_change, 2
+
 push $3
 
 pop $4
@@ -374,9 +407,64 @@ mov $4[0], 2
 mov $4[1], 1.500000
 push $4
 
+mema $4, 2
+mov $4[0], 1
+mov $4[1], 1
+push $4
+
+pop $4
+
+param $4
+param '-'
+call sign_change, 2
+
+push $4
+
+pop $4
+param $4
+param 2
+call cast, 2
+pop $4
+push $4
+
+pop $5
+
+pop $4
+
+param $4
+call get_var_val, 1
+pop $6
+
+param $5
+call get_var_val, 1
+pop $7
+
+sub $7, $6, $7
+
+mema $6, 2
+mov $6[0], 2
+mov $6[1], $7
+push $6
+
 push $1
 
+pop $4
+
+param $4
+param '-'
+call sign_change, 2
+
+push $4
+
 push $0
+
+pop $4
+
+param $4
+param '+'
+call sign_change, 2
+
+push $4
 
 pop $5
 
@@ -423,6 +511,82 @@ mov $6[0], 2
 mov $6[1], $7
 push $6
 
+push $0
+
+pop $4
+
+param $4
+param '-'
+call sign_change, 2
+
+push $4
+
+pop $4
+
+param $4
+param '-'
+call sign_change, 2
+
+push $4
+
+pop $4
+
+param $4
+param '+'
+call sign_change, 2
+
+push $4
+
+pop $4
+
+param $4
+param '-'
+call sign_change, 2
+
+push $4
+
+pop $4
+
+param $4
+param '+'
+call sign_change, 2
+
+push $4
+
+pop $4
+
+param $4
+param '-'
+call sign_change, 2
+
+push $4
+
+pop $4
+param $4
+param 2
+call cast, 2
+pop $4
+push $4
+
+pop $5
+
+pop $4
+
+param $4
+call get_var_val, 1
+pop $6
+
+param $5
+call get_var_val, 1
+pop $7
+
+add $7, $6, $7
+
+mema $6, 2
+mov $6[0], 2
+mov $6[1], $7
+push $6
+
 pop $4
 param $2
 param $4
@@ -449,6 +613,22 @@ mov $3[0], 2
 mov $3[1], 0.000000
 
 push $2
+
+pop $4
+
+param $4
+param '+'
+call sign_change, 2
+
+push $4
+
+pop $4
+
+param $4
+param '-'
+call sign_change, 2
+
+push $4
 
 pop $4
 param $3
