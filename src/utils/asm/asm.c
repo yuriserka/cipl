@@ -17,7 +17,7 @@ void t9n_free(T9nUnit *t9n) { free(t9n); }
 
 char *t9n_prefix(SymbolKinds kind) { return kind == PARAM ? "#" : "$"; }
 
-void t9n_alloc_from_other_value(int to, SymbolTypes type, int from,
+void t9n_alloc_from_other_value(int to, int from, SymbolTypes type,
                                 SymbolKinds kind, FILE *out) {
   switch (type) {
     case SYM_INT:
@@ -36,7 +36,7 @@ void t9n_alloc_from_other_value(int to, SymbolTypes type, int from,
   }
 }
 
-void t9n_alloc_from_other_var(int to, SymbolTypes type, int from,
+void t9n_alloc_from_other_var(int to, int from, SymbolTypes type,
                               SymbolKinds kind, FILE *out) {
   switch (type) {
     case SYM_INT:

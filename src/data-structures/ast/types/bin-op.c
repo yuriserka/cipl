@@ -305,8 +305,59 @@ static void arith_gen_code(AST *lhs, AST *rhs, char *op, FILE *out) {
 
   fprintf(out, " $%d, $%d, $%d\n\n", temp + 3, temp + 2, temp + 3);
   t9n_alloc_from_other_value(
-      temp + 2, MAX(lhs->cast_info.data_type, rhs->cast_info.data_type),
-      temp + 3, VAR, out);
+      temp + 2, temp + 3,
+      MAX(lhs->cast_info.data_type, rhs->cast_info.data_type), VAR, out);
+}
+
+static void rel_gen_code(AST *lhs, AST *rhs, char *op, FILE *out) {
+  int temp = current_context->t9n->temp;
+
+  fprintf(out, "pop $%d\n\n", temp + 1);
+  fprintf(out, "pop $%d\n\n", temp);
+
+  fprintf(out, "param $%d\n", temp);
+  fprintf(out, "call get_var_val, 1\n");
+  fprintf(out, "pop $%d\n\n", temp + 2);
+  fprintf(out, "param $%d\n", temp + 1);
+  fprintf(out, "call get_var_val, 1\n");
+  fprintf(out, "pop $%d\n\n", temp + 3);
+
+  switch (op[0]) {
+    case '>': {
+      const int oplen = strlen(op);
+      fprintf(out, "%s $%d, $%d, $%d\n", oplen == 1 ? "sleq" : "slt", temp + 4,
+              temp + 2 + (oplen == 1), temp + 3 - (oplen == 1));
+      if (oplen == 1) {
+        fprintf(out, "seq $%d, $%d, $%d\n", temp + 5, temp + 3, temp + 2);
+        fprintf(out, "not $%d, $%d\n", temp + 5, temp + 5);
+        fprintf(out, "and $%d, $%d, $%d\n\n", temp + 3, temp + 4, temp + 5);
+      } else {
+        fprintf(out, "not $%d, $%d\n\n", temp + 3, temp + 4);
+      }
+      t9n_alloc_from_other_value(temp + 2, temp + 3, SYM_INT, VAR, out);
+      return;
+    };
+    case '<':
+      fprintf(out, "%s", strlen(op) == 1 ? "slt" : "sleq");
+      break;
+    case '=':
+      fprintf(out, "seq");
+      break;
+    case '!':
+      fprintf(out, "seq $%d, $%d, $%d\n", temp + 3, temp + 2, temp + 3);
+      fprintf(out, "not $%d, $%d\n", temp + 3, temp + 3);
+      t9n_alloc_from_other_value(temp + 2, temp + 3, SYM_INT, VAR, out);
+      return;
+    case '&':
+      fprintf(out, "and");
+      break;
+    case '|':
+      fprintf(out, "or");
+      break;
+  }
+
+  fprintf(out, " $%d, $%d, $%d\n\n", temp + 3, temp + 2, temp + 3);
+  t9n_alloc_from_other_value(temp + 2, temp + 3, SYM_INT, VAR, out);
 }
 
 void ast_binop_gen_code(AST *ast, FILE *out) {
@@ -326,18 +377,18 @@ void ast_binop_gen_code(AST *ast, FILE *out) {
       fprintf(out, "// list ctr\n");
       break;
     case '<':
-    case '>':
-      fprintf(out, "// can be slt/sleq or map/filter\n");
-      break;
+    case '>': {
+      if (is_relop(binop_ast->op)) {
+        rel_gen_code(lhs, rhs, binop_ast->op, out);
+      } else {
+        fprintf(out, "// map/filter op\n");
+      }
+    } break;
+    case '=':
+    case '!':
     case '&':
     case '|':
-      fprintf(out, "// boolean op\n");
-      break;
-    case '=':
-      fprintf(out, "// seq then next instruction\n");
-      break;
-    case '!':
-      fprintf(out, "// seq then next label\n");
+      rel_gen_code(lhs, rhs, binop_ast->op, out);
       break;
     default:
       arith_gen_code(lhs, rhs, binop_ast->op, out);

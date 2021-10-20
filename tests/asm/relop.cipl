@@ -1,0 +1,41 @@
+int main() {
+    write("computed: ");
+    write(1 > 1);
+    write(1 >= 1);
+    write(1 < 1);
+    write(1 <= 1);
+    write(1 > 0);
+    write(1 >= 0);
+    write(1 < 0);
+    write(1 <= 0);
+    write(0 > 0);
+    write(0 >= 0);
+    write(0 < 0);
+    write(0 <= 0);
+    write(0 > 1);
+    write(0 >= 1);
+    write(0 < 1);
+    write(0 <= 1);
+
+    write(1 == 1);
+    write(1 != 1);
+    write(1 == 0);
+    write(1 != 0);
+    write(0 == 1);
+    write(0 != 1);
+    write(0 == 0);
+    write(0 != 0);
+
+    write(1 && 1);
+    write(1 || 1);
+    write(1 && 0);
+    write(1 || 0);
+    write(0 && 1);
+    write(0 || 1);
+    write(0 && 0);
+    writeln(0 || 0);
+
+    writeln("answer:   01011100010100111001011011010100");
+
+    return 0;
+}
