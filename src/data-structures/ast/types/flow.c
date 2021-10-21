@@ -60,3 +60,32 @@ CastInfo ast_flow_type_check(AST *ast) {
 
   return cast_info_none();
 }
+
+void ast_flow_gen_code(AST *ast, FILE *out) {
+  AST *conditional = list_peek(&ast->children, 0);
+  AST *then_branch = list_peek(&ast->children, 1);
+  AST *else_branch = list_peek(&ast->children, 2);
+
+  ast_gen_code(conditional, out);
+
+  int curr_tmp = current_context->t9n->temp;
+
+  fprintf(out, "pop $%d\n\n", curr_tmp);
+  fprintf(out, "param $%d\n", curr_tmp);
+  fprintf(out, "call get_var_val, 1\n");
+  fprintf(out, "pop $%d\n\n", curr_tmp + 1);
+  fprintf(out, "seq $%d, $%d, 0\n", curr_tmp + 1, curr_tmp + 1);
+  fprintf(out, "brnz %s_L%d_ELSE, $%d\n", current_context->name,
+          current_context->t9n->label, curr_tmp + 1);
+  int label = current_context->t9n->label++;
+
+  ast_gen_code(then_branch, out);
+
+  fprintf(out, "jump %s_L%d_END\n", current_context->name, label);
+
+  fprintf(out, "%s_L%d_ELSE:\n", current_context->name, label);
+
+  ast_gen_code(else_branch, out);
+
+  fprintf(out, "%s_L%d_END:\n", current_context->name, label);
+}

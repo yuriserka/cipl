@@ -16,3 +16,4 @@ void ast_flow_print(AST *ast);
 void ast_flow_print_pretty(AST *ast, int depth);
 
 CastInfo ast_flow_type_check(AST *ast);
+void ast_flow_gen_code(AST *ast, FILE *out);

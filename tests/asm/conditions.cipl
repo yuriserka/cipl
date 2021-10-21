@@ -1,0 +1,29 @@
+int a;
+
+int main() {
+    write("digite o valor de \033[33m'a'\033[0m: ");
+    read(a);
+    if (1 > 1 || 123) {
+        writeln("it works!");
+        int a;
+        a = 1 + 2 - 3 * 0 /5 > (1 < 2 && 3 >= 4);
+        if (a) {
+            writeln("nested ifs");
+            write("a = ");
+            writeln(a);
+        }
+    }
+    else {
+        writeln("suspicious");
+    }
+
+    if (a < 10) {
+        writeln("no else");
+    }
+    else if (a >= 10 && a < 20) writeln("teenage");
+    else a = 100;
+
+    writeln(a);
+
+    return 0;
+}

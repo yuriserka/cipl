@@ -225,30 +225,66 @@ func_add:
 
     return $4
 
-main:
-    call func_var_decl, 0
-    
-    call func_add, 0
+func_condition:
+    mema $0, 2
+    mov $0[0], 1
+    mov $0[1], 1
+    push $0
+
+    mema $0, 2
+    mov $0[0], 1
+    mov $0[1], 1
+    push $0
+
+    pop $1
+
     pop $0
 
     param $0
-    param 2
-    call writeln, 2
+    call get_var_val, 1
+    pop $2
+
+    param $1
+    call get_var_val, 1
+    pop $3
+
+    // 1 > 1
+    sleq $4, $3, $2
+    seq $5, $3, $2
+    not $5, $5
+    and $3, $4, $5
+
+    mema $2, 2
+    mov $2[0], 1
+    mov $2[1], $3
+    push $2
+
+    pop $0 // &(1 > 1)
+
+    param $0
+    call get_var_val, 1
+    pop $1 // 0
+
+    seq $1, $1, 1
+    brz func_condition_L1_ELSE, $1
 
     mema $0, 2
-    mov $0[0], 2
-    mov $0[1], -23.1
+    mov $0[0], 1
+    mov $0[1], 1
+    push $0
 
-    param $0
-    param '+'
-    call sign_change, 2
-
-    param $0
-    param '-'
-    call sign_change, 2
-
+    pop $0
     param $0
     call writeln, 1
+
+    jump func_condition_L1_END
+func_condition_L1_ELSE:
+func_condition_L1_END:
+
+    return
+
+main:
+    call func_condition, 0
 
 EOF:
     nop
