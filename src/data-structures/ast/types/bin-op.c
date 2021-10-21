@@ -275,7 +275,7 @@ CastInfo ast_binop_type_check(AST *ast) {
       base_cast_info, MAX(lhs->cast_info.data_type, rhs->cast_info.data_type));
 }
 
-static void arith_gen_code(AST *lhs, AST *rhs, char *op, FILE *out) {
+static void arith_gen_code(AST *ast, char *op, FILE *out) {
   int temp = current_context->t9n->temp;
 
   fprintf(out, "pop $%d\n\n", temp + 1);
@@ -304,12 +304,11 @@ static void arith_gen_code(AST *lhs, AST *rhs, char *op, FILE *out) {
   }
 
   fprintf(out, " $%d, $%d, $%d\n\n", temp + 3, temp + 2, temp + 3);
-  t9n_alloc_from_other_value(
-      temp + 2, temp + 3,
-      MAX(lhs->cast_info.data_type, rhs->cast_info.data_type), VAR, out);
+  t9n_alloc_from_other_value(temp + 2, temp + 3, ast->cast_info.data_type, VAR,
+                             out);
 }
 
-static void rel_gen_code(AST *lhs, AST *rhs, char *op, FILE *out) {
+static void rel_gen_code(char *op, FILE *out) {
   int temp = current_context->t9n->temp;
 
   fprintf(out, "pop $%d\n\n", temp + 1);
@@ -360,6 +359,16 @@ static void rel_gen_code(AST *lhs, AST *rhs, char *op, FILE *out) {
   t9n_alloc_from_other_value(temp + 2, temp + 3, SYM_INT, VAR, out);
 }
 
+static void list_cons_gen_code(FILE *out) {
+  int temp = current_context->t9n->temp;
+  fprintf(out, "pop $%d\n\n", temp);
+  fprintf(out, "pop $%d\n\n", temp + 1);
+  fprintf(out, "param $%d\n", temp);
+  fprintf(out, "param $%d\n", temp + 1);
+  fprintf(out, "call list_insert, 2\n");
+  fprintf(out, "pop $%d\n", temp + 2);
+}
+
 void ast_binop_gen_code(AST *ast, FILE *out) {
   BinOpAST *binop_ast = ast->value.binop;
   AST *lhs = list_peek(&ast->children, 0), *rhs = list_peek(&ast->children, 1);
@@ -374,12 +383,12 @@ void ast_binop_gen_code(AST *ast, FILE *out) {
 
   switch (binop_ast->op[0]) {
     case ':':
-      fprintf(out, "// list ctr\n");
+      list_cons_gen_code(out);
       break;
     case '<':
     case '>': {
       if (is_relop(binop_ast->op)) {
-        rel_gen_code(lhs, rhs, binop_ast->op, out);
+        rel_gen_code(binop_ast->op, out);
       } else {
         fprintf(out, "// map/filter op\n");
       }
@@ -388,10 +397,10 @@ void ast_binop_gen_code(AST *ast, FILE *out) {
     case '!':
     case '&':
     case '|':
-      rel_gen_code(lhs, rhs, binop_ast->op, out);
+      rel_gen_code(binop_ast->op, out);
       break;
     default:
-      arith_gen_code(lhs, rhs, binop_ast->op, out);
+      arith_gen_code(ast, binop_ast->op, out);
   }
 
   fprintf(out, "push $%d\n\n", current_context->t9n->temp + 2);

@@ -124,6 +124,10 @@ void ast_uniop_gen_code(AST *ast, FILE *out) {
         return;
       }
     } break;
+    case '?':
+      fprintf(out, "param $%d\n", curr_tmp);
+      fprintf(out, "call list_head, 1\n");
+      fprintf(out, "pop $%d\n", curr_tmp);
     default:
       break;
   }

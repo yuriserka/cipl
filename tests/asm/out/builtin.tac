@@ -39,10 +39,8 @@ jump set_var_val_END
 set_var_val_LIST:
 mov $0, #1[1]
 mov #0[1], $0
-mov $0, 0
-set_var_val_LIST_LOOP:
-mov $1, #0[1]
-slt $1, $0, $1
+mov $0, #1[2]
+mov #0[2], $0
 set_var_val_END:
 return
 
@@ -65,16 +63,14 @@ brnz sign_change_INT, $1
 sign_change_FLOAT:
 seq $1, #1, '-'
 brnz sign_change_FLOAT_FLIP, $1
-slt $1, $0, 0.0
-brz sign_change_END, $1
+jump sign_change_END
 sign_change_FLOAT_FLIP:
 mul $0, $0, -1.0
 jump sign_change_END
 sign_change_INT:
 seq $1, #1, '-'
 brnz sign_change_INT_FLIP, $1
-slt $1, $0, 0
-brz sign_change_END, $1
+jump sign_change_END
 sign_change_INT_FLIP:
 mul $0, $0, -1
 jump sign_change_END
@@ -123,6 +119,46 @@ param #1
 call write, 2
 println
 return
+
+list_peek:
+mov $0, #0[2]
+mov $0, $0[#1]
+return $0
+
+list_insert:
+mema $0, 3
+mov $1, #0[0]
+mov $0[0], $1
+mov $1, #0[1]
+add $1, $1, 1
+mov $0[1], $1
+mov $2, $1
+mema $1, $2
+mov $1[0], #1
+list_insert_FOR:
+mov $2, 0
+list_insert_LOOP:
+mov $3, #0[1]
+slt $3, $2, $3
+brz list_insert_END, $3 
+param #0
+param $2
+call list_peek, 2
+pop $3
+add $4, $2, 1
+mov $1[$4], $3
+add $2, $2, 1
+jump list_insert_LOOP
+list_insert_END:
+mov $0[2], $1
+return $0
+
+list_head:
+param #0
+param 0
+call list_peek, 2
+pop $0
+return $0
 
 main:
 

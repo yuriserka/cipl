@@ -1,0 +1,7 @@
+int main() {
+    int list a;
+    a = 123 : 213 : a;
+    int i;
+    writeln(?a);
+    return 0;
+}

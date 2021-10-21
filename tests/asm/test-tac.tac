@@ -33,15 +33,13 @@ set_var_val:
 set_var_val_NUMBER:
     mov $0, #1[1]
     mov #0[1], $0
-jump set_var_val_END
-    set_var_val_LIST:
+    jump set_var_val_END
+set_var_val_LIST:
     mov $0, #1[1]
     mov #0[1], $0
-    mov $0, 0
-set_var_val_LIST_LOOP:
-    mov $1, #0[1]
-    slt $1, $0, $1
-    set_var_val_END:
+    mov $0, #1[2]
+    mov #0[2], $0
+set_var_val_END:
     return
 
 get_var_val:
@@ -63,16 +61,14 @@ sign_change:
 sign_change_FLOAT:
     seq $1, #1, '-'
     brnz sign_change_FLOAT_FLIP, $1
-    slt $1, $0, 0.0
-    brz sign_change_END, $1
+    jump sign_change_END
 sign_change_FLOAT_FLIP:
     mul $0, $0, -1.0
     jump sign_change_END
 sign_change_INT:
     seq $1, #1, '-'
     brnz sign_change_INT_FLIP, $1
-    slt $1, $0, 0
-    brz sign_change_END, $1
+    jump sign_change_END
 sign_change_INT_FLIP:
     mul $0, $0, -1
     jump sign_change_END
@@ -122,169 +118,148 @@ writeln:
     println
     return
 
-func_var_decl:
-    // int a
-    mema $0, 2
-    mov *$0, 1
-    mov $0[1], 0
+list_content:
+list_content_FOR:
+    mov $0, 0
+list_content_LOOP:
+    mov $1, #0[1]
+    slt $1, $0, $1
+    brz list_content_END, $1
 
+    param #0
     param $0
-    call read, 1
-
-    // float b
-    mema $1, 2
-    mov *$1, 2
-    mov $1[1], 0.000000
-
-    param $1
-    call read, 1
-
-    mema $2, 2
-    mov $2[0], 3
-    mov $2[1], &str_0
-
-    param $2
-    call write, 1
-
-    param $0
-    call writeln, 1
-
-    mema $2, 2
-    mov $2[0], 3
-    mov $2[1], &str_1
-
-    param $2
-    call write, 1
-
-    param $1
-    call writeln, 1
-
-    // assign a = b
-    param $0 // lhs
-    param $1 // rhs
-    call set_var_val, 2
-
-    mema $2, 2
-    mov $2[0], 3
-    mov $2[1], &str_2
-
-    param $2
-    call write, 1
-
-    param $0
-    call writeln, 1
-
-    mema $2, 2
-    mov $2[0], 3
-    mov $2[1], &str_3
-
-    param $2
-    call write, 1
-
-    param $1
-    call writeln, 1
-
-    return 0
-
-func_add:
-    // var int a
-    mema $0, 2
-    mov $0[1], 8.21
-    mov *$0, 2
-
-    // var int b
-    mema $1, 2
-    mov $1[1], 0.0
-    mov *$1, 2
-
-    // push a onto stack
-    push $0
-
-    // push b onto stack
-    push $1
-
-    // retrieve a/b from stack
-    pop $3
-    pop $2
-
-    param $2
-    call get_var_val, 1
-    pop $4
-
-    param $3
-    call get_var_val, 1
-    pop $5
-
-    and $5, $4, $5
-
-    // fake return from binary op
-    mema $4, 2
-    mov *$4, 1
-    mov $4[1], $5
-    push $4
-
-    return $4
-
-func_condition:
-    mema $0, 2
-    mov $0[0], 1
-    mov $0[1], 1
-    push $0
-
-    mema $0, 2
-    mov $0[0], 1
-    mov $0[1], 1
-    push $0
+    call list_peek, 2
 
     pop $1
-
-    pop $0
-
-    param $0
-    call get_var_val, 1
-    pop $2
-
     param $1
-    call get_var_val, 1
-    pop $3
-
-    // 1 > 1
-    sleq $4, $3, $2
-    seq $5, $3, $2
-    not $5, $5
-    and $3, $4, $5
-
-    mema $2, 2
-    mov $2[0], 1
-    mov $2[1], $3
-    push $2
-
-    pop $0 // &(1 > 1)
-
-    param $0
-    call get_var_val, 1
-    pop $1 // 0
-
-    seq $1, $1, 1
-    brz func_condition_L1_ELSE, $1
-
-    mema $0, 2
-    mov $0[0], 1
-    mov $0[1], 1
-    push $0
-
-    pop $0
-    param $0
     call writeln, 1
 
-    jump func_condition_L1_END
-func_condition_L1_ELSE:
-func_condition_L1_END:
+    add $0, $0, 1
+    jump list_content_LOOP
+list_content_END:
+    return
+
+debug_list_info:
+    mov $1, #0[0]
+    println $1
+    
+    mov $1, #0[1]
+    println $1
+
+    param #0
+    call list_content, 1
 
     return
 
+list_peek:
+    mov $0, #0[2]
+    mov $0, $0[#1]
+    return $0
+
+list_insert:
+    mema $0, 3
+    mov $1, #0[0]
+    mov $0[0], $1 // same type as old
+
+    mov $1, #0[1]
+    add $1, $1, 1
+    mov $0[1], $1 // new_size = old_size + 1
+
+    mov $2, $1
+    mema $1, $2 // new_list = Array(new_size)
+    mov $1[0], #1 // new_list[0] = new_elem
+
+list_insert_FOR:
+    mov $2, 0 // i = 0
+list_insert_LOOP:
+    mov $3, #0[1]
+    slt $3, $2, $3 // i < old_size ?
+    brz list_insert_END, $3 
+
+    param #0
+    param $2
+    call list_peek, 2
+    pop $3 // old[i]
+
+    add $4, $2, 1
+    mov $1[$4], $3 // new[i + 1] = old[i]
+
+    add $2, $2, 1
+    jump list_insert_LOOP
+list_insert_END:
+    mov $0[2], $1
+    return $0
+
+list_head:
+    param #0
+    param 0
+    call list_peek, 2
+    pop $0
+    return $0
+
 main:
-    call func_condition, 0
+
+jump func_main_END
+
+func_main:
+    // local var int list a
+    mema $0, 3
+    mov $0[0], 4
+    mov $0[1], 0
+    mema $1, 0
+    mov $0[2], $1
+
+    mema $2, 2
+    mov $2[0], 1
+    mov $2[1], 123
+    push $2
+
+    mema $2, 2
+    mov $2[0], 1
+    mov $2[1], 213
+    push $2
+
+    push $0
+
+    pop $2
+
+    pop $3
+
+    param $2
+    param $3
+    call list_insert, 2
+    pop $4
+    push $4
+
+    pop $2
+
+    pop $3
+
+    param $2
+    param $3
+    call list_insert, 2
+    pop $4
+    push $4
+
+    pop $2
+    param $0
+    param $2
+    call set_var_val, 2
+
+    param $0
+    call debug_list_info, 1
+
+    mema $1, 2
+    mov $1[0], 1
+    mov $1[1], 0
+    push $1
+
+    pop $1
+    jump EOF
+
+func_main_END:
+
+jump func_main
 
 EOF:
     nop

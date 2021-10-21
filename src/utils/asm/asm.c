@@ -85,7 +85,7 @@ void t9n_alloc_from_constant(int to, SymbolTypes type, NumberValue value,
       // $temp[1] = &list per say
       fprintf(out, "mema $%d, 3\n", to);
       fprintf(out, "mov $%d[0], %d\n", to, type);
-      fprintf(out, "mov $%d[1], $%d\n", to, 0);
+      fprintf(out, "mov $%d[1], 0\n", to);
       fprintf(out, "mema $%d, 0\n", to + 1);
       fprintf(out, "mov $%d[2], $%d\n", to, to + 1);
   }
@@ -156,10 +156,8 @@ static void asm_set_var_val(FILE *out) {
   fprintf(out, "set_var_val_LIST:\n");
   fprintf(out, "mov $0, #1[1]\n");
   fprintf(out, "mov #0[1], $0\n");
-  fprintf(out, "mov $0, 0\n");
-  fprintf(out, "set_var_val_LIST_LOOP:\n");
-  fprintf(out, "mov $1, #0[1]\n");
-  fprintf(out, "slt $1, $0, $1\n");
+  fprintf(out, "mov $0, #1[2]\n");
+  fprintf(out, "mov #0[2], $0\n");
   fprintf(out, "set_var_val_END:\n");
   fprintf(out, "return\n\n");
 }
@@ -186,16 +184,14 @@ static void asm_sign_flip(FILE *out) {
   fprintf(out, "sign_change_FLOAT:\n");
   fprintf(out, "seq $1, #1, '-'\n");
   fprintf(out, "brnz sign_change_FLOAT_FLIP, $1\n");
-  fprintf(out, "slt $1, $0, 0.0\n");
-  fprintf(out, "brz sign_change_END, $1\n");
+  fprintf(out, "jump sign_change_END\n");
   fprintf(out, "sign_change_FLOAT_FLIP:\n");
   fprintf(out, "mul $0, $0, -1.0\n");
   fprintf(out, "jump sign_change_END\n");
   fprintf(out, "sign_change_INT:\n");
   fprintf(out, "seq $1, #1, '-'\n");
   fprintf(out, "brnz sign_change_INT_FLIP, $1\n");
-  fprintf(out, "slt $1, $0, 0\n");
-  fprintf(out, "brz sign_change_END, $1\n");
+  fprintf(out, "jump sign_change_END\n");
   fprintf(out, "sign_change_INT_FLIP:\n");
   fprintf(out, "mul $0, $0, -1\n");
   fprintf(out, "jump sign_change_END\n");
@@ -265,10 +261,63 @@ static void asm_generate_builtin_funcs(FILE *out) {
   asm_writeln(out);
 }
 
+static void asm_list_peek(FILE *out) {
+  fprintf(out, "list_peek:\n");
+  fprintf(out, "mov $0, #0[2]\n");
+  fprintf(out, "mov $0, $0[#1]\n");
+  fprintf(out, "return $0\n\n");
+}
+
+static void asm_list_insert(FILE *out) {
+  fprintf(out, "list_insert:\n");
+  fprintf(out, "mema $0, 3\n");
+  fprintf(out, "mov $1, #0[0]\n");
+  fprintf(out, "mov $0[0], $1\n");
+  fprintf(out, "mov $1, #0[1]\n");
+  fprintf(out, "add $1, $1, 1\n");
+  fprintf(out, "mov $0[1], $1\n");
+  fprintf(out, "mov $2, $1\n");
+  fprintf(out, "mema $1, $2\n");
+  fprintf(out, "mov $1[0], #1\n");
+  fprintf(out, "list_insert_FOR:\n");
+  fprintf(out, "mov $2, 0\n");
+  fprintf(out, "list_insert_LOOP:\n");
+  fprintf(out, "mov $3, #0[1]\n");
+  fprintf(out, "slt $3, $2, $3\n");
+  fprintf(out, "brz list_insert_END, $3 \n");
+  fprintf(out, "param #0\n");
+  fprintf(out, "param $2\n");
+  fprintf(out, "call list_peek, 2\n");
+  fprintf(out, "pop $3\n");
+  fprintf(out, "add $4, $2, 1\n");
+  fprintf(out, "mov $1[$4], $3\n");
+  fprintf(out, "add $2, $2, 1\n");
+  fprintf(out, "jump list_insert_LOOP\n");
+  fprintf(out, "list_insert_END:\n");
+  fprintf(out, "mov $0[2], $1\n");
+  fprintf(out, "return $0\n\n");
+}
+
+static void asm_list_head(FILE *out) {
+  fprintf(out, "list_head:\n");
+  fprintf(out, "param #0\n");
+  fprintf(out, "param 0\n");
+  fprintf(out, "call list_peek, 2\n");
+  fprintf(out, "pop $0\n");
+  fprintf(out, "return $0\n\n");
+}
+
+static void asm_generate_list_utils(FILE *out) {
+  asm_list_peek(out);
+  asm_list_insert(out);
+  asm_list_head(out);
+}
+
 void asm_generate_code_header(FILE *out) {
   fprintf(out, ".code\n");
   asm_generate_utils(out);
   asm_generate_builtin_funcs(out);
+  asm_generate_list_utils(out);
   fprintf(out, "main:\n\n");
 }
 
