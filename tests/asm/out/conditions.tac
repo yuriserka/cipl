@@ -642,6 +642,7 @@ mov $2[0], 1
 mov $2[1], 0
 push $2
 
+pop $2
 jump EOF
 
 func_main_END:

@@ -68,3 +68,35 @@ CastInfo ast_iter_type_check(AST *ast) {
 
   return cast_info_none();
 }
+
+void ast_iter_gen_code(AST *ast, FILE *out) {
+  AST *b4_all = list_peek(&ast->children, 0);
+  AST *b4_each = list_peek(&ast->children, 1);
+  AST *after_each = list_peek(&ast->children, 2);
+  AST *stmts = list_peek(&ast->children, 3);
+  int curr_tmp = current_context->t9n->temp;
+
+  ast_gen_code(b4_all, out);
+
+  fprintf(out, "%s_L%d_LOOP:\n", current_context->name,
+          current_context->t9n->label);
+
+  ast_gen_code(b4_each, out);
+
+  fprintf(out, "pop $%d\n\n", curr_tmp);
+  fprintf(out, "param $%d\n", curr_tmp);
+  fprintf(out, "call get_var_val, 1\n");
+  fprintf(out, "pop $%d\n\n", curr_tmp + 1);
+  fprintf(out, "seq $%d, $%d, 0\n", curr_tmp + 1, curr_tmp + 1);
+  fprintf(out, "brnz %s_L%d_END, $%d\n", current_context->name,
+          current_context->t9n->label, curr_tmp + 1);
+  int label = current_context->t9n->label++;
+
+  ast_gen_code(stmts, out);
+
+  ast_gen_code(after_each, out);
+
+  fprintf(out, "jump %s_L%d_LOOP\n", current_context->name, label);
+
+  fprintf(out, "%s_L%d_END:\n", current_context->name, label);
+}

@@ -16,3 +16,4 @@ void ast_iter_print(AST *ast);
 void ast_iter_print_pretty(AST *ast, int depth);
 
 CastInfo ast_iter_type_check(AST *ast);
+void ast_iter_gen_code(AST *ast, FILE *out);

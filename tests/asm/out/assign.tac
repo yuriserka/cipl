@@ -650,6 +650,12 @@ pop $4
 param $4
 call writeln, 1
 
+mema $4, 2
+mov $4[0], 1
+mov $4[1], 0
+push $4
+
+pop $4
 jump EOF
 
 func_main_END:
