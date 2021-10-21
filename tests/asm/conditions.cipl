@@ -23,7 +23,10 @@ int main() {
     else if (a >= 10 && a < 20) writeln("teenage");
     else a = 100;
 
-    writeln(a);
+    if (!a) {
+        write("only when a = ");
+        writeln(a);
+    }
 
     return 0;
 }

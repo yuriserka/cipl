@@ -103,17 +103,30 @@ void ast_uniop_gen_code(AST *ast, FILE *out) {
 
   ast_gen_code(rhs, out);
   fprintf(out, "pop $%d\n\n", current_context->t9n->temp);
+  int curr_tmp = current_context->t9n->temp;
 
   switch (*uniop_ast->op) {
     case '+':
     case '-': {
-      fprintf(out, "param $%d\n", current_context->t9n->temp);
+      fprintf(out, "param $%d\n", curr_tmp);
       fprintf(out, "param '%c'\n", *uniop_ast->op);
       fprintf(out, "call sign_change, 2\n\n");
+    } break;
+    case '!': {
+      if (rhs->cast_info.data_type < SYM_PTR) {
+        fprintf(out, "param $%d\n", curr_tmp);
+        fprintf(out, "call get_var_val, 1\n");
+        fprintf(out, "pop $%d\n\n", curr_tmp);
+        fprintf(out, "not $%d, $%d\n", curr_tmp, curr_tmp);
+        t9n_alloc_from_other_value(curr_tmp + 1, curr_tmp,
+                                   rhs->cast_info.data_type, VAR, out);
+        fprintf(out, "push $%d\n\n", curr_tmp + 1);
+        return;
+      }
     } break;
     default:
       break;
   }
 
-  fprintf(out, "push $%d\n\n", current_context->t9n->temp);
+  fprintf(out, "push $%d\n\n", curr_tmp);
 }

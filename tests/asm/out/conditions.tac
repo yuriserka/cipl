@@ -7,8 +7,9 @@ char str_1[] = "it works!"
 char str_2[] = "suspicious"
 char str_3[] = "no else"
 char str_4[] = "teenage"
-char str_5[] = "nested ifs"
-char str_6[] = "a = "
+char str_5[] = "only when a = "
+char str_6[] = "nested ifs"
+char str_7[] = "a = "
 
 .code
 cast:
@@ -446,7 +447,7 @@ seq $3, $3, 0
 brnz main_L1_ELSE, $3
 mema $2, 2
 mov $2[0], 3
-mov $2[1], &str_5
+mov $2[1], &str_6
 push $2
 
 pop $2
@@ -455,7 +456,7 @@ call writeln, 1
 
 mema $2, 2
 mov $2[0], 3
-mov $2[1], &str_6
+mov $2[1], &str_7
 push $2
 
 pop $2
@@ -634,9 +635,43 @@ main_L2_END:
 push $0
 
 pop $2
+
+param $2
+call get_var_val, 1
+pop $2
+
+not $2, $2
+mema $3, 2
+mov $3[0], 1
+mov $3[1], $2
+push $3
+
+pop $2
+
+param $2
+call get_var_val, 1
+pop $3
+
+seq $3, $3, 0
+brnz main_L4_ELSE, $3
+mema $2, 2
+mov $2[0], 3
+mov $2[1], &str_5
+push $2
+
+pop $2
+param $2
+call write, 1
+
+push $0
+
+pop $2
 param $2
 call writeln, 1
 
+jump main_L4_END
+main_L4_ELSE:
+main_L4_END:
 mema $2, 2
 mov $2[0], 1
 mov $2[1], 0
