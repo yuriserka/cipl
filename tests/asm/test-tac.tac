@@ -197,6 +197,40 @@ list_head:
     pop $0
     return $0
 
+// [213]
+list_tail:
+    mema $0, 3
+    mov $1, #0[0]
+    mov $0[0], $1 // same type as old
+    mov $1, #0[1]
+    sub $1, $1, 1
+    mov $0[1], $1 // new_size = old_size - 1
+    // new size = 0
+
+    mov $2, $1
+    mema $1, $2 // new_list = Array(new_size)
+
+list_tail_FOR:
+    mov $2, 1 // i = 1
+list_tail_LOOP:
+    mov $3, #0[1]
+    slt $3, $2, $3 // 1 < 1 = 0
+    brz list_tail_END, $3 
+
+    param #0
+    param $2
+    call list_peek, 2
+    pop $3 // old[i]
+
+    sub $4, $2, 1
+    mov $1[$4], $3 // new[i - 1] = old[i]
+
+    add $2, $2, 1
+    jump list_tail_LOOP
+list_tail_END:
+    mov $0[2], $1
+    return $0
+
 main:
 
 jump func_main_END
@@ -246,15 +280,81 @@ func_main:
     param $2
     call set_var_val, 2
 
-    param $0
-    call debug_list_info, 1
+    // $0 = [123, 213]
 
+    // local var int i
     mema $1, 2
     mov $1[0], 1
     mov $1[1], 0
+
+    push $0
+
+    pop $2
+
+    param $2
+    call list_head, 1
+    pop $2
+    push $2
+
+    pop $2
+    param $1
+    param $2
+    call set_var_val, 2
+
+    // i = 123
+
     push $1
 
-    pop $1
+    pop $2
+    param $2
+    call writeln, 1
+
+    push $0
+
+    pop $2
+
+    param $2
+    call list_tail, 1
+    pop $2
+    push $2
+
+    param $2
+    call debug_list_info, 1
+
+    // $0 = [123, 213]
+    // $2 = [213]
+
+    pop $2
+
+    param $2
+    call list_tail, 1
+    pop $2
+    push $2
+
+    pop $2
+
+    param $2
+    call list_head, 1
+    pop $2
+    push $2
+
+    pop $2
+    param $1
+    param $2
+    call set_var_val, 2
+
+    push $1
+
+    pop $2
+    param $2
+    call writeln, 1
+
+    mema $2, 2
+    mov $2[0], 1
+    mov $2[1], 0
+    push $2
+
+    pop $2
     jump EOF
 
 func_main_END:

@@ -74,6 +74,15 @@ sign_change_END:
 mov #0[1], $0
 return
 
+set_bool:
+brnz set_bool_TRUE, #0
+mov $0, 0
+jump set_bool_END
+set_bool_TRUE:
+mov $0, 1
+set_bool_END:
+return $0
+
 read:
 mov $0, #0[0]
 seq $0, $0, 2
@@ -156,6 +165,33 @@ call list_peek, 2
 pop $0
 return $0
 
+list_tail:
+mema $0, 3
+mov $1, #0[0]
+mov $0[0], $1
+mov $1, #0[1]
+sub $1, $1, 1
+mov $0[1], $1
+mov $2, $1
+mema $1, $2
+list_tail_FOR:
+mov $2, 1
+list_tail_LOOP:
+mov $3, #0[1]
+slt $3, $2, $3
+brz list_tail_END, $3 
+param #0
+param $2
+call list_peek, 2
+pop $3
+sub $4, $2, 1
+mov $1[$4], $3
+add $2, $2, 1
+jump list_tail_LOOP
+list_tail_END:
+mov $0[2], $1
+return $0
+
 main:
 
 jump func_main_END
@@ -197,6 +233,10 @@ seq $5, $3, $2
 not $5, $5
 and $3, $4, $5
 
+param $3
+call set_bool, 1
+pop $3
+
 mema $2, 2
 mov $2[0], 1
 mov $2[1], $3
@@ -231,6 +271,10 @@ pop $3
 slt $4, $2, $3
 not $3, $4
 
+param $3
+call set_bool, 1
+pop $3
+
 mema $2, 2
 mov $2[0], 1
 mov $2[1], $3
@@ -264,6 +308,10 @@ pop $3
 
 slt $3, $2, $3
 
+param $3
+call set_bool, 1
+pop $3
+
 mema $2, 2
 mov $2[0], 1
 mov $2[1], $3
@@ -296,6 +344,10 @@ call get_var_val, 1
 pop $3
 
 sleq $3, $2, $3
+
+param $3
+call set_bool, 1
+pop $3
 
 mema $2, 2
 mov $2[0], 1
@@ -333,6 +385,10 @@ seq $5, $3, $2
 not $5, $5
 and $3, $4, $5
 
+param $3
+call set_bool, 1
+pop $3
+
 mema $2, 2
 mov $2[0], 1
 mov $2[1], $3
@@ -367,6 +423,10 @@ pop $3
 slt $4, $2, $3
 not $3, $4
 
+param $3
+call set_bool, 1
+pop $3
+
 mema $2, 2
 mov $2[0], 1
 mov $2[1], $3
@@ -400,6 +460,10 @@ pop $3
 
 slt $3, $2, $3
 
+param $3
+call set_bool, 1
+pop $3
+
 mema $2, 2
 mov $2[0], 1
 mov $2[1], $3
@@ -432,6 +496,10 @@ call get_var_val, 1
 pop $3
 
 sleq $3, $2, $3
+
+param $3
+call set_bool, 1
+pop $3
 
 mema $2, 2
 mov $2[0], 1
@@ -469,6 +537,10 @@ seq $5, $3, $2
 not $5, $5
 and $3, $4, $5
 
+param $3
+call set_bool, 1
+pop $3
+
 mema $2, 2
 mov $2[0], 1
 mov $2[1], $3
@@ -503,6 +575,10 @@ pop $3
 slt $4, $2, $3
 not $3, $4
 
+param $3
+call set_bool, 1
+pop $3
+
 mema $2, 2
 mov $2[0], 1
 mov $2[1], $3
@@ -536,6 +612,10 @@ pop $3
 
 slt $3, $2, $3
 
+param $3
+call set_bool, 1
+pop $3
+
 mema $2, 2
 mov $2[0], 1
 mov $2[1], $3
@@ -568,6 +648,10 @@ call get_var_val, 1
 pop $3
 
 sleq $3, $2, $3
+
+param $3
+call set_bool, 1
+pop $3
 
 mema $2, 2
 mov $2[0], 1
@@ -605,6 +689,10 @@ seq $5, $3, $2
 not $5, $5
 and $3, $4, $5
 
+param $3
+call set_bool, 1
+pop $3
+
 mema $2, 2
 mov $2[0], 1
 mov $2[1], $3
@@ -639,6 +727,10 @@ pop $3
 slt $4, $2, $3
 not $3, $4
 
+param $3
+call set_bool, 1
+pop $3
+
 mema $2, 2
 mov $2[0], 1
 mov $2[1], $3
@@ -671,6 +763,10 @@ call get_var_val, 1
 pop $3
 
 slt $3, $2, $3
+
+param $3
+call set_bool, 1
+pop $3
 
 mema $2, 2
 mov $2[0], 1
@@ -705,6 +801,10 @@ pop $3
 
 sleq $3, $2, $3
 
+param $3
+call set_bool, 1
+pop $3
+
 mema $2, 2
 mov $2[0], 1
 mov $2[1], $3
@@ -737,6 +837,10 @@ call get_var_val, 1
 pop $3
 
 seq $3, $2, $3
+
+param $3
+call set_bool, 1
+pop $3
 
 mema $2, 2
 mov $2[0], 1
@@ -771,6 +875,10 @@ pop $3
 
 seq $3, $2, $3
 not $3, $3
+param $3
+call set_bool, 1
+pop $3
+
 mema $2, 2
 mov $2[0], 1
 mov $2[1], $3
@@ -803,6 +911,10 @@ call get_var_val, 1
 pop $3
 
 seq $3, $2, $3
+
+param $3
+call set_bool, 1
+pop $3
 
 mema $2, 2
 mov $2[0], 1
@@ -837,6 +949,10 @@ pop $3
 
 seq $3, $2, $3
 not $3, $3
+param $3
+call set_bool, 1
+pop $3
+
 mema $2, 2
 mov $2[0], 1
 mov $2[1], $3
@@ -869,6 +985,10 @@ call get_var_val, 1
 pop $3
 
 seq $3, $2, $3
+
+param $3
+call set_bool, 1
+pop $3
 
 mema $2, 2
 mov $2[0], 1
@@ -903,6 +1023,10 @@ pop $3
 
 seq $3, $2, $3
 not $3, $3
+param $3
+call set_bool, 1
+pop $3
+
 mema $2, 2
 mov $2[0], 1
 mov $2[1], $3
@@ -935,6 +1059,10 @@ call get_var_val, 1
 pop $3
 
 seq $3, $2, $3
+
+param $3
+call set_bool, 1
+pop $3
 
 mema $2, 2
 mov $2[0], 1
@@ -969,6 +1097,10 @@ pop $3
 
 seq $3, $2, $3
 not $3, $3
+param $3
+call set_bool, 1
+pop $3
+
 mema $2, 2
 mov $2[0], 1
 mov $2[1], $3
@@ -1001,6 +1133,10 @@ call get_var_val, 1
 pop $3
 
 and $3, $2, $3
+
+param $3
+call set_bool, 1
+pop $3
 
 mema $2, 2
 mov $2[0], 1
@@ -1035,6 +1171,10 @@ pop $3
 
 or $3, $2, $3
 
+param $3
+call set_bool, 1
+pop $3
+
 mema $2, 2
 mov $2[0], 1
 mov $2[1], $3
@@ -1067,6 +1207,10 @@ call get_var_val, 1
 pop $3
 
 and $3, $2, $3
+
+param $3
+call set_bool, 1
+pop $3
 
 mema $2, 2
 mov $2[0], 1
@@ -1101,6 +1245,10 @@ pop $3
 
 or $3, $2, $3
 
+param $3
+call set_bool, 1
+pop $3
+
 mema $2, 2
 mov $2[0], 1
 mov $2[1], $3
@@ -1133,6 +1281,10 @@ call get_var_val, 1
 pop $3
 
 and $3, $2, $3
+
+param $3
+call set_bool, 1
+pop $3
 
 mema $2, 2
 mov $2[0], 1
@@ -1167,6 +1319,10 @@ pop $3
 
 or $3, $2, $3
 
+param $3
+call set_bool, 1
+pop $3
+
 mema $2, 2
 mov $2[0], 1
 mov $2[1], $3
@@ -1200,6 +1356,10 @@ pop $3
 
 and $3, $2, $3
 
+param $3
+call set_bool, 1
+pop $3
+
 mema $2, 2
 mov $2[0], 1
 mov $2[1], $3
@@ -1232,6 +1392,10 @@ call get_var_val, 1
 pop $3
 
 or $3, $2, $3
+
+param $3
+call set_bool, 1
+pop $3
 
 mema $2, 2
 mov $2[0], 1

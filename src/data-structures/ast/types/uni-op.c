@@ -123,6 +123,9 @@ void ast_uniop_gen_code(AST *ast, FILE *out) {
         fprintf(out, "push $%d\n\n", curr_tmp + 1);
         return;
       }
+      fprintf(out, "param $%d\n", curr_tmp);
+      fprintf(out, "call list_tail, 1\n");
+      fprintf(out, "pop $%d\n", curr_tmp);
     } break;
     case '?':
       fprintf(out, "param $%d\n", curr_tmp);

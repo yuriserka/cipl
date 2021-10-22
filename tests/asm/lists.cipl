@@ -1,7 +1,14 @@
 int main() {
     int list a;
-    a = 123 : 213 : a;
-    int i;
-    writeln(?a);
+    if (a == NIL) {
+        writeln("a is nil so initializing");
+        a = 3.45 : 12.2 : 1+2 : 4*4 : 7-!3 : a;
+        int i;
+        int list it;
+        it = a;
+        for (i = 0; it != NIL; it = !it) writeln(?it);
+    } else {
+        writeln("something is wrong");
+    }
     return 0;
 }

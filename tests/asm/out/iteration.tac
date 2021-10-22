@@ -75,6 +75,15 @@ sign_change_END:
 mov #0[1], $0
 return
 
+set_bool:
+brnz set_bool_TRUE, #0
+mov $0, 0
+jump set_bool_END
+set_bool_TRUE:
+mov $0, 1
+set_bool_END:
+return $0
+
 read:
 mov $0, #0[0]
 seq $0, $0, 2
@@ -157,6 +166,33 @@ call list_peek, 2
 pop $0
 return $0
 
+list_tail:
+mema $0, 3
+mov $1, #0[0]
+mov $0[0], $1
+mov $1, #0[1]
+sub $1, $1, 1
+mov $0[1], $1
+mov $2, $1
+mema $1, $2
+list_tail_FOR:
+mov $2, 1
+list_tail_LOOP:
+mov $3, #0[1]
+slt $3, $2, $3
+brz list_tail_END, $3 
+param #0
+param $2
+call list_peek, 2
+pop $3
+sub $4, $2, 1
+mov $1[$4], $3
+add $2, $2, 1
+jump list_tail_LOOP
+list_tail_END:
+mov $0[2], $1
+return $0
+
 main:
 
 jump func_printPrimes_END
@@ -216,6 +252,10 @@ call get_var_val, 1
 pop $7
 
 sleq $7, $6, $7
+
+param $7
+call set_bool, 1
+pop $7
 
 mema $6, 2
 mov $6[0], 1
@@ -278,6 +318,10 @@ call get_var_val, 1
 pop $7
 
 slt $7, $6, $7
+
+param $7
+call set_bool, 1
+pop $7
 
 mema $6, 2
 mov $6[0], 1
@@ -351,6 +395,10 @@ call get_var_val, 1
 pop $7
 
 seq $7, $6, $7
+
+param $7
+call set_bool, 1
+pop $7
 
 mema $6, 2
 mov $6[0], 1
@@ -452,6 +500,10 @@ call get_var_val, 1
 pop $7
 
 seq $7, $6, $7
+
+param $7
+call set_bool, 1
+pop $7
 
 mema $6, 2
 mov $6[0], 1
@@ -562,6 +614,10 @@ pop $4
 
 slt $5, $3, $4
 not $4, $5
+
+param $4
+call set_bool, 1
+pop $4
 
 mema $3, 2
 mov $3[0], 1

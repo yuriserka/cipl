@@ -333,6 +333,9 @@ static void rel_gen_code(char *op, FILE *out) {
       } else {
         fprintf(out, "not $%d, $%d\n\n", temp + 3, temp + 4);
       }
+      fprintf(out, "param $%d\n", temp + 3);
+      fprintf(out, "call set_bool, 1\n");
+      fprintf(out, "pop $%d\n\n", temp + 3);
       t9n_alloc_from_other_value(temp + 2, temp + 3, SYM_INT, VAR, out);
       return;
     };
@@ -345,6 +348,9 @@ static void rel_gen_code(char *op, FILE *out) {
     case '!':
       fprintf(out, "seq $%d, $%d, $%d\n", temp + 3, temp + 2, temp + 3);
       fprintf(out, "not $%d, $%d\n", temp + 3, temp + 3);
+      fprintf(out, "param $%d\n", temp + 3);
+      fprintf(out, "call set_bool, 1\n");
+      fprintf(out, "pop $%d\n\n", temp + 3);
       t9n_alloc_from_other_value(temp + 2, temp + 3, SYM_INT, VAR, out);
       return;
     case '&':
@@ -356,6 +362,9 @@ static void rel_gen_code(char *op, FILE *out) {
   }
 
   fprintf(out, " $%d, $%d, $%d\n\n", temp + 3, temp + 2, temp + 3);
+  fprintf(out, "param $%d\n", temp + 3);
+  fprintf(out, "call set_bool, 1\n");
+  fprintf(out, "pop $%d\n\n", temp + 3);
   t9n_alloc_from_other_value(temp + 2, temp + 3, SYM_INT, VAR, out);
 }
 

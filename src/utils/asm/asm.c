@@ -200,11 +200,23 @@ static void asm_sign_flip(FILE *out) {
   fprintf(out, "return\n\n");
 }
 
+static void asm_set_bool(FILE *out) {
+  fprintf(out, "set_bool:\n");
+  fprintf(out, "brnz set_bool_TRUE, #0\n");
+  fprintf(out, "mov $0, 0\n");
+  fprintf(out, "jump set_bool_END\n");
+  fprintf(out, "set_bool_TRUE:\n");
+  fprintf(out, "mov $0, 1\n");
+  fprintf(out, "set_bool_END:\n");
+  fprintf(out, "return $0\n\n");
+}
+
 static void asm_generate_utils(FILE *out) {
   asm_cast(out);
   asm_set_var_val(out);
   asm_get_var_val(out);
   asm_sign_flip(out);
+  asm_set_bool(out);
 }
 
 static void asm_read(FILE *out) {
@@ -307,10 +319,43 @@ static void asm_list_head(FILE *out) {
   fprintf(out, "return $0\n\n");
 }
 
+static void asm_list_tail(FILE *out) {
+  fprintf(out, "list_tail:\n");
+  fprintf(out, "mema $0, 3\n");
+  fprintf(out, "mov $1, #0[0]\n");
+  fprintf(out, "mov $0[0], $1\n");
+  fprintf(out, "mov $1, #0[1]\n");
+  fprintf(out, "sub $1, $1, 1\n");
+  fprintf(out, "mov $0[1], $1\n");
+  fprintf(out, "mov $2, $1\n");
+  fprintf(out, "mema $1, $2\n");
+  fprintf(out, "list_tail_FOR:\n");
+  fprintf(out, "mov $2, 1\n");
+  fprintf(out, "list_tail_LOOP:\n");
+  fprintf(out, "mov $3, #0[1]\n");
+  fprintf(out, "slt $3, $2, $3\n");
+  fprintf(out, "brz list_tail_END, $3 \n");
+  fprintf(out, "param #0\n");
+  fprintf(out, "param $2\n");
+  fprintf(out, "call list_peek, 2\n");
+  fprintf(out, "pop $3\n");
+  fprintf(out, "sub $4, $2, 1\n");
+  fprintf(out, "mov $1[$4], $3\n");
+  fprintf(out, "add $2, $2, 1\n");
+  fprintf(out, "jump list_tail_LOOP\n");
+  fprintf(out, "list_tail_END:\n");
+  fprintf(out, "mov $0[2], $1\n");
+  fprintf(out, "return $0\n\n");
+}
+
+static void asm_list_pop_tail(FILE *out) {}
+
 static void asm_generate_list_utils(FILE *out) {
   asm_list_peek(out);
   asm_list_insert(out);
   asm_list_head(out);
+  asm_list_tail(out);
+  asm_list_pop_tail(out);
 }
 
 void asm_generate_code_header(FILE *out) {
