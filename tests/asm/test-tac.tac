@@ -241,6 +241,40 @@ list_pop_tail:
 
 main:
 
+jump func_add1_END
+
+func_add1:
+    mema $1, 2
+    mov $1[0], 1
+    mov $1[1], 1
+    push $1
+
+    push #0
+
+    pop $1
+    
+    pop $2
+
+    param $1
+    call get_var_val, 1
+    pop $3
+
+    param $2
+    call get_var_val, 1
+    pop $4
+
+    add $3, $3, $4
+
+    mema $2, 2
+    mov $2[0], 1
+    mov $2[1], $3
+    push $2
+
+    pop $2
+    return $2
+
+func_add1_END:
+
 jump func_main_END
 
 func_main:
@@ -290,45 +324,44 @@ func_main:
 
     // $0 = [123, 213]
 
-    // local var int i
-    mema $1, 2
-    mov $1[0], 1
-    mov $1[1], 0
+func_main_list_for_each:
+    mema $2, 3
+    mov $3, $0[0]
+    mov $2[0], $3
+    mov $3, $0[1]
+    mov $2[1], $3
+    mov $5, $3
+    mema $3, $5
 
-    push $0
+func_main_list_for_each_L0_FOR:
+    mov $5, 0
+func_main_list_for_each_L0_LOOP:
+    mov $4, $0[1]
+    slt $4, $5, $4
+    brz func_main_list_for_each_L0_END, $4 
 
-    pop $2
+    param $0
+    param $5
+    call list_peek, 2
+    pop $4
 
-    param $2
-    call list_head, 1
-    pop $2
-    push $2
+    param $4
+    call func_add1, 1
+    pop $4
 
-    pop $2
-    param $1
+    mov $3[$5], $4
+
+    add $5, $5, 1
+    jump func_main_list_for_each_L0_LOOP
+func_main_list_for_each_L0_END:
+    mov $2[2], $3
+
+    param $0
     param $2
     call set_var_val, 2
 
-    push $0
-
-    pop $2
-
-    param $2
-    call list_pop_tail, 1
-    pop $2
-
-    param $2
+    param $0
     call debug_list_info, 1
-
-    param $2
-    call list_head, 1
-    pop $2
-    push $2
-
-    pop $2
-    param $1
-    param $2
-    call set_var_val, 2
 
     mema $2, 2
     mov $2[0], 1

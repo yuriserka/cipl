@@ -17,13 +17,23 @@ int print_list_it(int list l) {
     return it == NIL;
 }
 
-int print_list_rec(int list l) {
+int print_ilist_rec(int list l) {
     if (l == NIL) return 0;
     write(?l);
     if (!l != NIL) {
         write(", ");
     }
-    print_list_rec(!l);
+    print_ilist_rec(!l);
+    return 0;
+}
+
+int print_flist_rec(float list l) {
+    if (l == NIL) return 0;
+    write(?l);
+    if (!l != NIL) {
+        write(", ");
+    }
+    print_flist_rec(!l);
     return 0;
 }
 
@@ -39,7 +49,7 @@ int main() {
         a = 3.45 : 12.2 : 1+2 : 4*4 : 7-!3 : a;
 
         write("recursive_list_print: [");
-        print_list_rec(calc(3) : 33 : sum_list(a) : NIL);
+        print_ilist_rec(calc(3) : 33 : sum_list(a) : NIL);
         writeln("]");
 
         write("sum of list a = ");
@@ -51,5 +61,12 @@ int main() {
     } else {
         writeln("something is wrong");
     }
+
+    float list b;
+    b = calc >> a;
+    write("b: [");
+    print_flist_rec(b);
+    writeln("]");
+
     return 0;
 }

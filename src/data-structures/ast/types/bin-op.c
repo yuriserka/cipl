@@ -400,8 +400,12 @@ void ast_binop_gen_code(AST *ast, FILE *out) {
     case '>': {
       if (is_relop(binop_ast->op)) {
         rel_gen_code(binop_ast->op, out);
-      } else {
-        fprintf(out, "// map/filter op\n");
+      } else if (*binop_ast->op == '>') {
+        LIST_MAPFIL_TEMPLATE_GEN_CODE(current_context, {
+          fprintf(out, "param $%d\n", __TEMP__ + 4);
+          fprintf(out, "call func_%s, 1\n", lhs->value.symref->symbol->name);
+          fprintf(out, "pop $%d\n", __TEMP__ + 4);
+        });
       }
     } break;
     case '=':

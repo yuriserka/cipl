@@ -47,5 +47,6 @@ CastInfo ast_symref_type_check(AST *ast) {
 
 void ast_symref_gen_code(AST *ast, FILE *out) {
   Symbol *sym = ast->value.symref->symbol;
-  fprintf(out, "push %s%d\n\n", t9n_prefix(sym->kind), sym->temp);
+  if (sym->kind != FUNC)
+    fprintf(out, "push %s%d\n\n", t9n_prefix(sym->kind), sym->temp);
 }
