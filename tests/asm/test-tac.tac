@@ -231,6 +231,14 @@ list_tail_END:
     mov $0[2], $1
     return $0
 
+list_pop_tail:
+    param #0
+    call list_tail, 1
+    pop $0
+
+    mov #0[2], $0
+    return $0
+
 main:
 
 jump func_main_END
@@ -301,37 +309,16 @@ func_main:
     param $2
     call set_var_val, 2
 
-    // i = 123
-
-    push $1
-
-    pop $2
-    param $2
-    call writeln, 1
-
     push $0
 
     pop $2
 
     param $2
-    call list_tail, 1
+    call list_pop_tail, 1
     pop $2
-    push $2
 
     param $2
     call debug_list_info, 1
-
-    // $0 = [123, 213]
-    // $2 = [213]
-
-    pop $2
-
-    param $2
-    call list_tail, 1
-    pop $2
-    push $2
-
-    pop $2
 
     param $2
     call list_head, 1
@@ -342,12 +329,6 @@ func_main:
     param $1
     param $2
     call set_var_val, 2
-
-    push $1
-
-    pop $2
-    param $2
-    call writeln, 1
 
     mema $2, 2
     mov $2[0], 1

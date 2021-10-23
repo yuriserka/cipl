@@ -107,11 +107,11 @@ void ast_uniop_gen_code(AST *ast, FILE *out) {
 
   switch (*uniop_ast->op) {
     case '+':
-    case '-': {
+    case '-':
       fprintf(out, "param $%d\n", curr_tmp);
       fprintf(out, "param '%c'\n", *uniop_ast->op);
       fprintf(out, "call sign_change, 2\n\n");
-    } break;
+      break;
     case '!': {
       if (rhs->cast_info.data_type < SYM_PTR) {
         fprintf(out, "param $%d\n", curr_tmp);
@@ -131,7 +131,11 @@ void ast_uniop_gen_code(AST *ast, FILE *out) {
       fprintf(out, "param $%d\n", curr_tmp);
       fprintf(out, "call list_head, 1\n");
       fprintf(out, "pop $%d\n", curr_tmp);
-    default:
+      break;
+    case '%':
+      fprintf(out, "param $%d\n", curr_tmp);
+      fprintf(out, "call list_pop_tail, 1\n");
+      fprintf(out, "pop $%d\n", curr_tmp);
       break;
   }
 

@@ -194,6 +194,13 @@ list_tail_END:
 mov $0[2], $1
 return $0
 
+list_pop_tail:
+param #0
+call list_tail, 1
+pop $0
+mov #0[2], $0
+return $0
+
 main:
 
 // global var float a

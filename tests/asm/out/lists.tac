@@ -2,8 +2,17 @@
 
 char str_nil[] = "nil"
 int list_nil[] = {3, 0}
-char str_0[] = "a is nil so initializing"
-char str_1[] = "something is wrong"
+char str_0[] = "iterative_list_print: ["
+char str_1[] = "]"
+char str_2[] = ", "
+char str_3[] = "a is nil so initializing"
+char str_4[] = "recursive_list_print: ["
+char str_5[] = "]"
+char str_6[] = "sum of list a = "
+char str_7[] = "something is wrong"
+char str_8[] = "sounds bad!"
+char str_9[] = ", "
+char str_10[] = "internal it is nil as expected"
 
 .code
 cast:
@@ -192,7 +201,548 @@ list_tail_END:
 mov $0[2], $1
 return $0
 
+list_pop_tail:
+param #0
+call list_tail, 1
+pop $0
+mov #0[2], $0
+return $0
+
 main:
+
+jump func_calc_END
+
+func_calc:
+// param int a
+mema $0, 2
+mov $0[0], 1
+mov $1, #0[1]
+mov $0[1], $1
+
+push $0
+
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 2
+push $1
+
+pop $2
+
+pop $1
+
+param $1
+call get_var_val, 1
+pop $3
+
+param $2
+call get_var_val, 1
+pop $4
+
+mul $4, $3, $4
+
+mema $3, 2
+mov $3[0], 1
+mov $3[1], $4
+push $3
+
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 4
+push $1
+
+pop $2
+
+pop $1
+
+param $1
+call get_var_val, 1
+pop $3
+
+param $2
+call get_var_val, 1
+pop $4
+
+sub $4, $3, $4
+
+mema $3, 2
+mov $3[0], 1
+mov $3[1], $4
+push $3
+
+pop $1
+param $1
+param 2
+call cast, 2
+pop $1
+push $1
+
+pop $1
+return $1
+
+func_calc_END:
+
+jump func_print_list_it_END
+
+func_print_list_it:
+// local var int i
+mema $0, 2
+mov $0[0], 1
+mov $0[1], 0
+
+mema $2, 2
+mov $2[0], 3
+mov $2[1], &str_0
+push $2
+
+pop $2
+param $2
+call write, 1
+
+// local var int list it
+mema $1, 3
+mov $1[0], 4
+mov $1[1], 0
+mema $2, 0
+mov $1[2], $2
+
+push #0
+
+pop $2
+param $1
+param $2
+call set_var_val, 2
+
+mema $2, 2
+mov $2[0], 1
+mov $2[1], 0
+push $2
+
+pop $2
+param $0
+param $2
+call set_var_val, 2
+
+print_list_it_L0_LOOP:
+push $1
+
+mema $2, 3
+mov $2[0], 3
+mov $2[1], 0
+mema $3, 0
+mov $2[2], $3
+push $2
+
+pop $3
+
+pop $2
+
+param $2
+call get_var_val, 1
+pop $4
+
+param $3
+call get_var_val, 1
+pop $5
+
+seq $5, $4, $5
+not $5, $5
+param $5
+call set_bool, 1
+pop $5
+
+mema $4, 2
+mov $4[0], 1
+mov $4[1], $5
+push $4
+
+pop $2
+
+param $2
+call get_var_val, 1
+pop $3
+
+seq $3, $3, 0
+brnz print_list_it_L0_END, $3
+push $1
+
+pop $2
+
+param $2
+call list_head, 1
+pop $2
+push $2
+
+pop $2
+param $2
+call write, 1
+
+push $1
+
+pop $2
+
+param $2
+call list_tail, 1
+pop $2
+push $2
+
+mema $2, 3
+mov $2[0], 3
+mov $2[1], 0
+mema $3, 0
+mov $2[2], $3
+push $2
+
+pop $3
+
+pop $2
+
+param $2
+call get_var_val, 1
+pop $4
+
+param $3
+call get_var_val, 1
+pop $5
+
+seq $5, $4, $5
+not $5, $5
+param $5
+call set_bool, 1
+pop $5
+
+mema $4, 2
+mov $4[0], 1
+mov $4[1], $5
+push $4
+
+pop $2
+
+param $2
+call get_var_val, 1
+pop $3
+
+seq $3, $3, 0
+brnz print_list_it_L1_ELSE, $3
+mema $2, 2
+mov $2[0], 3
+mov $2[1], &str_9
+push $2
+
+pop $2
+param $2
+call write, 1
+
+jump print_list_it_L1_END
+print_list_it_L1_ELSE:
+print_list_it_L1_END:
+push $1
+
+pop $2
+
+param $2
+call list_pop_tail, 1
+pop $2
+push $2
+
+pop $2
+param $1
+param $2
+call set_var_val, 2
+
+jump print_list_it_L0_LOOP
+print_list_it_L0_END:
+mema $2, 2
+mov $2[0], 3
+mov $2[1], &str_1
+push $2
+
+pop $2
+param $2
+call writeln, 1
+
+push $1
+
+mema $2, 3
+mov $2[0], 3
+mov $2[1], 0
+mema $3, 0
+mov $2[2], $3
+push $2
+
+pop $3
+
+pop $2
+
+param $2
+call get_var_val, 1
+pop $4
+
+param $3
+call get_var_val, 1
+pop $5
+
+seq $5, $4, $5
+
+param $5
+call set_bool, 1
+pop $5
+
+mema $4, 2
+mov $4[0], 1
+mov $4[1], $5
+push $4
+
+pop $2
+return $2
+
+func_print_list_it_END:
+
+jump func_print_list_rec_END
+
+func_print_list_rec:
+push #0
+
+mema $0, 3
+mov $0[0], 3
+mov $0[1], 0
+mema $1, 0
+mov $0[2], $1
+push $0
+
+pop $1
+
+pop $0
+
+param $0
+call get_var_val, 1
+pop $2
+
+param $1
+call get_var_val, 1
+pop $3
+
+seq $3, $2, $3
+
+param $3
+call set_bool, 1
+pop $3
+
+mema $2, 2
+mov $2[0], 1
+mov $2[1], $3
+push $2
+
+pop $0
+
+param $0
+call get_var_val, 1
+pop $1
+
+seq $1, $1, 0
+brnz print_list_rec_L0_ELSE, $1
+mema $0, 2
+mov $0[0], 1
+mov $0[1], 0
+push $0
+
+pop $0
+return $0
+jump print_list_rec_L0_END
+print_list_rec_L0_ELSE:
+print_list_rec_L0_END:
+push #0
+
+pop $0
+
+param $0
+call list_head, 1
+pop $0
+push $0
+
+pop $0
+param $0
+call write, 1
+
+push #0
+
+pop $0
+
+param $0
+call list_tail, 1
+pop $0
+push $0
+
+mema $0, 3
+mov $0[0], 3
+mov $0[1], 0
+mema $1, 0
+mov $0[2], $1
+push $0
+
+pop $1
+
+pop $0
+
+param $0
+call get_var_val, 1
+pop $2
+
+param $1
+call get_var_val, 1
+pop $3
+
+seq $3, $2, $3
+not $3, $3
+param $3
+call set_bool, 1
+pop $3
+
+mema $2, 2
+mov $2[0], 1
+mov $2[1], $3
+push $2
+
+pop $0
+
+param $0
+call get_var_val, 1
+pop $1
+
+seq $1, $1, 0
+brnz print_list_rec_L1_ELSE, $1
+mema $0, 2
+mov $0[0], 3
+mov $0[1], &str_2
+push $0
+
+pop $0
+param $0
+call write, 1
+
+jump print_list_rec_L1_END
+print_list_rec_L1_ELSE:
+print_list_rec_L1_END:
+push #0
+
+pop $0
+
+param $0
+call list_tail, 1
+pop $0
+push $0
+
+pop $0
+param $0
+call func_print_list_rec, 1
+
+mema $0, 2
+mov $0[0], 1
+mov $0[1], 0
+push $0
+
+pop $0
+return $0
+
+func_print_list_rec_END:
+
+jump func_sum_list_END
+
+func_sum_list:
+push #0
+
+mema $0, 3
+mov $0[0], 3
+mov $0[1], 0
+mema $1, 0
+mov $0[2], $1
+push $0
+
+pop $1
+
+pop $0
+
+param $0
+call get_var_val, 1
+pop $2
+
+param $1
+call get_var_val, 1
+pop $3
+
+seq $3, $2, $3
+
+param $3
+call set_bool, 1
+pop $3
+
+mema $2, 2
+mov $2[0], 1
+mov $2[1], $3
+push $2
+
+pop $0
+
+param $0
+call get_var_val, 1
+pop $1
+
+seq $1, $1, 0
+brnz sum_list_L0_ELSE, $1
+mema $0, 2
+mov $0[0], 1
+mov $0[1], 0
+push $0
+
+pop $0
+return $0
+jump sum_list_L0_END
+sum_list_L0_ELSE:
+sum_list_L0_END:
+push #0
+
+pop $0
+
+param $0
+call list_head, 1
+pop $0
+push $0
+
+push #0
+
+pop $0
+
+param $0
+call list_tail, 1
+pop $0
+push $0
+
+pop $0
+param $0
+call func_sum_list, 1
+
+pop $1
+
+pop $0
+
+param $0
+call get_var_val, 1
+pop $2
+
+param $1
+call get_var_val, 1
+pop $3
+
+add $3, $2, $3
+
+mema $2, 2
+mov $2[0], 1
+mov $2[1], $3
+push $2
+
+pop $0
+return $0
+
+func_sum_list_END:
 
 jump func_main_END
 
@@ -206,350 +756,532 @@ mov $0[2], $1
 
 push $0
 
-mema $3, 3
-mov $3[0], 3
-mov $3[1], 0
-mema $4, 0
-mov $3[2], $4
-push $3
+mema $1, 3
+mov $1[0], 3
+mov $1[1], 0
+mema $2, 0
+mov $1[2], $2
+push $1
 
-pop $4
+pop $2
 
+pop $1
+
+param $1
+call get_var_val, 1
 pop $3
 
-param $3
+param $2
 call get_var_val, 1
-pop $5
+pop $4
+
+seq $4, $3, $4
 
 param $4
-call get_var_val, 1
-pop $6
-
-seq $6, $5, $6
-
-param $6
 call set_bool, 1
-pop $6
-
-mema $5, 2
-mov $5[0], 1
-mov $5[1], $6
-push $5
-
-pop $3
-
-param $3
-call get_var_val, 1
 pop $4
 
-seq $4, $4, 0
-brnz main_L0_ELSE, $4
 mema $3, 2
-mov $3[0], 3
-mov $3[1], &str_0
+mov $3[0], 1
+mov $3[1], $4
 push $3
 
-pop $3
-param $3
+pop $1
+
+param $1
+call get_var_val, 1
+pop $2
+
+seq $2, $2, 0
+brnz main_L0_ELSE, $2
+mema $1, 2
+mov $1[0], 3
+mov $1[1], &str_3
+push $1
+
+pop $1
+param $1
 call writeln, 1
 
-mema $3, 2
-mov $3[0], 2
-mov $3[1], 3.450000
-push $3
+mema $1, 2
+mov $1[0], 2
+mov $1[1], 3.450000
+push $1
 
-pop $3
-param $3
+pop $1
+param $1
 param 1
 call cast, 2
-pop $3
-push $3
+pop $1
+push $1
 
-mema $3, 2
-mov $3[0], 2
-mov $3[1], 12.200000
-push $3
+mema $1, 2
+mov $1[0], 2
+mov $1[1], 12.200000
+push $1
 
-pop $3
-param $3
+pop $1
+param $1
 param 1
 call cast, 2
-pop $3
-push $3
+pop $1
+push $1
 
-mema $3, 2
-mov $3[0], 1
-mov $3[1], 1
-push $3
-
-mema $3, 2
-mov $3[0], 1
-mov $3[1], 2
-push $3
-
-pop $4
-
-pop $3
-
-param $3
-call get_var_val, 1
-pop $5
-
-param $4
-call get_var_val, 1
-pop $6
-
-add $6, $5, $6
-
-mema $5, 2
-mov $5[0], 1
-mov $5[1], $6
-push $5
-
-mema $3, 2
-mov $3[0], 1
-mov $3[1], 4
-push $3
-
-mema $3, 2
-mov $3[0], 1
-mov $3[1], 4
-push $3
-
-pop $4
-
-pop $3
-
-param $3
-call get_var_val, 1
-pop $5
-
-param $4
-call get_var_val, 1
-pop $6
-
-mul $6, $5, $6
-
-mema $5, 2
-mov $5[0], 1
-mov $5[1], $6
-push $5
-
-mema $3, 2
-mov $3[0], 1
-mov $3[1], 7
-push $3
-
-mema $3, 2
-mov $3[0], 1
-mov $3[1], 3
-push $3
-
-pop $3
-
-param $3
-call get_var_val, 1
-pop $3
-
-not $3, $3
-mema $4, 2
-mov $4[0], 1
-mov $4[1], $3
-push $4
-
-pop $4
-
-pop $3
-
-param $3
-call get_var_val, 1
-pop $5
-
-param $4
-call get_var_val, 1
-pop $6
-
-sub $6, $5, $6
-
-mema $5, 2
-mov $5[0], 1
-mov $5[1], $6
-push $5
-
-push $0
-
-pop $3
-
-pop $4
-
-param $3
-param $4
-call list_insert, 2
-pop $5
-push $5
-
-pop $3
-
-pop $4
-
-param $3
-param $4
-call list_insert, 2
-pop $5
-push $5
-
-pop $3
-
-pop $4
-
-param $3
-param $4
-call list_insert, 2
-pop $5
-push $5
-
-pop $3
-
-pop $4
-
-param $3
-param $4
-call list_insert, 2
-pop $5
-push $5
-
-pop $3
-
-pop $4
-
-param $3
-param $4
-call list_insert, 2
-pop $5
-push $5
-
-pop $3
-param $0
-param $3
-call set_var_val, 2
-
-// local var int i
 mema $1, 2
 mov $1[0], 1
-mov $1[1], 0
+mov $1[1], 1
+push $1
 
-// local var int list it
-mema $2, 3
-mov $2[0], 4
-mov $2[1], 0
-mema $3, 0
-mov $2[2], $3
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 2
+push $1
 
-push $0
+pop $2
 
+pop $1
+
+param $1
+call get_var_val, 1
 pop $3
+
 param $2
-param $3
-call set_var_val, 2
+call get_var_val, 1
+pop $4
+
+add $4, $3, $4
 
 mema $3, 2
 mov $3[0], 1
-mov $3[1], 0
+mov $3[1], $4
 push $3
 
-pop $3
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 4
+push $1
+
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 4
+push $1
+
+pop $2
+
+pop $1
+
 param $1
-param $3
+call get_var_val, 1
+pop $3
+
+param $2
+call get_var_val, 1
+pop $4
+
+mul $4, $3, $4
+
+mema $3, 2
+mov $3[0], 1
+mov $3[1], $4
+push $3
+
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 7
+push $1
+
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 3
+push $1
+
+pop $1
+
+param $1
+call get_var_val, 1
+pop $1
+
+not $1, $1
+mema $2, 2
+mov $2[0], 1
+mov $2[1], $1
+push $2
+
+pop $2
+
+pop $1
+
+param $1
+call get_var_val, 1
+pop $3
+
+param $2
+call get_var_val, 1
+pop $4
+
+sub $4, $3, $4
+
+mema $3, 2
+mov $3[0], 1
+mov $3[1], $4
+push $3
+
+push $0
+
+pop $1
+
+pop $2
+
+param $1
+param $2
+call list_insert, 2
+pop $3
+push $3
+
+pop $1
+
+pop $2
+
+param $1
+param $2
+call list_insert, 2
+pop $3
+push $3
+
+pop $1
+
+pop $2
+
+param $1
+param $2
+call list_insert, 2
+pop $3
+push $3
+
+pop $1
+
+pop $2
+
+param $1
+param $2
+call list_insert, 2
+pop $3
+push $3
+
+pop $1
+
+pop $2
+
+param $1
+param $2
+call list_insert, 2
+pop $3
+push $3
+
+pop $1
+param $0
+param $1
 call set_var_val, 2
 
-main_L1_LOOP:
-push $2
+mema $1, 2
+mov $1[0], 3
+mov $1[1], &str_4
+push $1
 
-mema $3, 3
-mov $3[0], 3
-mov $3[1], 0
-mema $4, 0
-mov $3[2], $4
+pop $1
+param $1
+call write, 1
+
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 3
+push $1
+
+pop $1
+param $1
+call func_calc, 1
+
+pop $1
+param $1
+param 1
+call cast, 2
+pop $1
+push $1
+
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 33
+push $1
+
+push $0
+
+pop $1
+param $1
+call func_sum_list, 1
+
+mema $1, 3
+mov $1[0], 3
+mov $1[1], 0
+mema $2, 0
+mov $1[2], $2
+push $1
+
+pop $1
+
+pop $2
+
+param $1
+param $2
+call list_insert, 2
+pop $3
 push $3
 
-pop $4
+pop $1
 
-pop $3
+pop $2
 
-param $3
-call get_var_val, 1
-pop $5
-
-param $4
-call get_var_val, 1
-pop $6
-
-seq $6, $5, $6
-not $6, $6
-param $6
-call set_bool, 1
-pop $6
-
-mema $5, 2
-mov $5[0], 1
-mov $5[1], $6
-push $5
-
-pop $3
-
-param $3
-call get_var_val, 1
-pop $4
-
-seq $4, $4, 0
-brnz main_L1_END, $4
-push $2
-
-pop $3
-
-param $3
-call list_head, 1
+param $1
+param $2
+call list_insert, 2
 pop $3
 push $3
 
+pop $1
+
+pop $2
+
+param $1
+param $2
+call list_insert, 2
 pop $3
-param $3
+push $3
+
+pop $1
+param $1
+call func_print_list_rec, 1
+
+mema $1, 2
+mov $1[0], 3
+mov $1[1], &str_5
+push $1
+
+pop $1
+param $1
 call writeln, 1
 
-push $2
+mema $1, 2
+mov $1[0], 3
+mov $1[1], &str_6
+push $1
 
+pop $1
+param $1
+call write, 1
+
+push $0
+
+pop $1
+param $1
+call func_sum_list, 1
+
+pop $1
+param $1
+call writeln, 1
+
+push $0
+
+mema $1, 3
+mov $1[0], 3
+mov $1[1], 0
+mema $2, 0
+mov $1[2], $2
+push $1
+
+pop $2
+
+pop $1
+
+param $1
+call get_var_val, 1
 pop $3
 
-param $3
-call list_tail, 1
+param $2
+call get_var_val, 1
+pop $4
+
+seq $4, $3, $4
+
+param $4
+call set_bool, 1
+pop $4
+
+mema $3, 2
+mov $3[0], 1
+mov $3[1], $4
+push $3
+
+pop $1
+
+param $1
+call get_var_val, 1
+pop $2
+
+seq $2, $2, 0
+brnz main_L1_ELSE, $2
+mema $1, 2
+mov $1[0], 3
+mov $1[1], &str_8
+push $1
+
+pop $1
+param $1
+call writeln, 1
+
+jump main_L1_END
+main_L1_ELSE:
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 1
+push $1
+
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 2
+push $1
+
+pop $2
+
+pop $1
+
+param $1
+call get_var_val, 1
+pop $3
+
+param $2
+call get_var_val, 1
+pop $4
+
+sleq $5, $4, $3
+seq $6, $4, $3
+not $6, $6
+and $4, $5, $6
+
+param $4
+call set_bool, 1
+pop $4
+
+mema $3, 2
+mov $3[0], 1
+mov $3[1], $4
+push $3
+
+mema $1, 2
+mov $1[0], 2
+mov $1[1], 4.320000
+push $1
+
+pop $1
+param $1
+param 1
+call cast, 2
+pop $1
+push $1
+
+push $0
+
+pop $1
+
+param $1
+call list_head, 1
+pop $1
+push $1
+
+pop $1
+param $1
+call func_calc, 1
+
+pop $1
+param $1
+param 1
+call cast, 2
+pop $1
+push $1
+
+push $0
+
+pop $1
+
+pop $2
+
+param $1
+param $2
+call list_insert, 2
 pop $3
 push $3
 
-pop $3
-param $2
-param $3
-call set_var_val, 2
+pop $1
 
-jump main_L1_LOOP
+pop $2
+
+param $1
+param $2
+call list_insert, 2
+pop $3
+push $3
+
+pop $1
+
+pop $2
+
+param $1
+param $2
+call list_insert, 2
+pop $3
+push $3
+
+pop $1
+param $1
+call func_print_list_it, 1
+
+pop $1
+
+param $1
+call get_var_val, 1
+pop $2
+
+seq $2, $2, 0
+brnz main_L2_ELSE, $2
+mema $1, 2
+mov $1[0], 3
+mov $1[1], &str_10
+push $1
+
+pop $1
+param $1
+call writeln, 1
+
+jump main_L2_END
+main_L2_ELSE:
+main_L2_END:
 main_L1_END:
 jump main_L0_END
 main_L0_ELSE:
-mema $3, 2
-mov $3[0], 3
-mov $3[1], &str_1
-push $3
+mema $1, 2
+mov $1[0], 3
+mov $1[1], &str_7
+push $1
 
-pop $3
-param $3
+pop $1
+param $1
 call writeln, 1
 
 main_L0_END:
-mema $3, 2
-mov $3[0], 1
-mov $3[1], 0
-push $3
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 0
+push $1
 
-pop $3
+pop $1
 jump EOF
 
 func_main_END:

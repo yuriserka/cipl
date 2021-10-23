@@ -1,12 +1,53 @@
+float calc(int a) {
+    return a * 2 - 4;
+}
+
+int print_list_it(int list l) {
+    int i;
+    write("iterative_list_print: [");
+    int list it;
+    it = l;
+    for (i = 0; it != NIL; it = %it) {
+        write(?it);
+        if (!it != NIL) {
+            write(", ");
+        }
+    }
+    writeln("]");
+    return it == NIL;
+}
+
+int print_list_rec(int list l) {
+    if (l == NIL) return 0;
+    write(?l);
+    if (!l != NIL) {
+        write(", ");
+    }
+    print_list_rec(!l);
+    return 0;
+}
+
+int sum_list(int list l) {
+    if (l == NIL) return 0;
+    return ?l + sum_list(!l);
+}
+
 int main() {
     int list a;
     if (a == NIL) {
         writeln("a is nil so initializing");
         a = 3.45 : 12.2 : 1+2 : 4*4 : 7-!3 : a;
-        int i;
-        int list it;
-        it = a;
-        for (i = 0; it != NIL; it = !it) writeln(?it);
+
+        write("recursive_list_print: [");
+        print_list_rec(calc(3) : 33 : sum_list(a) : NIL);
+        writeln("]");
+
+        write("sum of list a = ");
+        writeln(sum_list(a));
+
+        if (a == NIL) writeln("sounds bad!");
+        else if (print_list_it((1>2) : 4.32 : calc(?a) : a))
+            writeln("internal it is nil as expected");
     } else {
         writeln("something is wrong");
     }

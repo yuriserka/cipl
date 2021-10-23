@@ -229,10 +229,12 @@ CastInfo ast_binop_type_check(AST *ast) {
       if (!can_cons_list(lhs->cast_info.data_type, rhs->cast_info.data_type)) {
         handle_mismatch_cons(lhs, rhs, binop_ast->op);
       }
-      return cast_info_with_type(base_cast_info,
-                                 rhs->cast_info.data_type == SYM_PTR
-                                     ? lhs->cast_info.data_type + SYM_PTR
-                                     : MAX(rhs->cast_info.data_type, SYM_PTR));
+      return cast_info_with_type(
+          base_cast_info,
+          rhs->cast_info.data_type == SYM_PTR
+              ? MAX((MIN(lhs->cast_info.data_type, SYM_PTR) + SYM_PTR) % 6,
+                    SYM_PTR)
+              : MAX(rhs->cast_info.data_type, SYM_PTR));
     case '<':
     case '>': {
       if (is_relop(binop_ast->op)) {
