@@ -273,16 +273,56 @@ mov $3[1], $4
 push $3
 
 pop $1
+return $1
+
+func_calc_END:
+
+jump func_add1f_END
+
+func_add1f:
+// param int x
+mema $0, 2
+mov $0[0], 1
+mov $1, #0[1]
+mov $0[1], $1
+
+push $0
+
+pop $1
 param $1
 param 2
 call cast, 2
 pop $1
 push $1
 
+mema $1, 2
+mov $1[0], 2
+mov $1[1], 1.500000
+push $1
+
+pop $2
+
+pop $1
+
+param $1
+call get_var_val, 1
+pop $3
+
+param $2
+call get_var_val, 1
+pop $4
+
+add $4, $3, $4
+
+mema $3, 2
+mov $3[0], 2
+mov $3[1], $4
+push $3
+
 pop $1
 return $1
 
-func_calc_END:
+func_add1f_END:
 
 jump func_print_list_it_END
 
@@ -1152,13 +1192,6 @@ pop $2
 param $2
 call func_calc, 1
 
-pop $2
-param $2
-param 1
-call cast, 2
-pop $2
-push $2
-
 mema $2, 2
 mov $2[0], 1
 mov $2[1], 33
@@ -1351,13 +1384,6 @@ pop $2
 param $2
 call func_calc, 1
 
-pop $2
-param $2
-param 1
-call cast, 2
-pop $2
-push $2
-
 push $0
 
 pop $2
@@ -1437,10 +1463,8 @@ mov $1[2], $2
 push $0
 
 pop $2
-func_main_list_for_each:
 mema $4, 3
-mov $3, $2[0]
-mov $4[0], $3
+mov $4[0], 4
 mov $5, $2[1]
 mema $3, $5
 func_main_list_for_each_L3_FOR:
@@ -1453,6 +1477,8 @@ param $2
 param $5
 call list_peek, 2
 pop $6
+push $6
+pop $6
 param $6
 call func_calc, 1
 pop $6
@@ -1460,6 +1486,97 @@ mov $3[$5], $6
 add $5, $5, 1
 jump func_main_list_for_each_L3_LOOP
 func_main_list_for_each_L3_END:
+mov $4[1], $5
+mov $4[2], $3
+push $4
+
+pop $2
+mema $4, 3
+mov $4[0], 5
+mov $5, $2[1]
+mema $3, $5
+func_main_list_for_each_L4_FOR:
+mov $5, 0
+func_main_list_for_each_L4_LOOP:
+mov $6, $2[1]
+slt $6, $5, $6
+brz func_main_list_for_each_L4_END, $6 
+param $2
+param $5
+call list_peek, 2
+pop $6
+push $6
+pop $6
+param $6
+call func_add1f, 1
+pop $6
+mov $3[$5], $6
+add $5, $5, 1
+jump func_main_list_for_each_L4_LOOP
+func_main_list_for_each_L4_END:
+mov $4[1], $5
+mov $4[2], $3
+push $4
+
+pop $2
+mema $4, 3
+mov $4[0], 4
+mov $5, $2[1]
+mema $3, $5
+func_main_list_for_each_L5_FOR:
+mov $5, 0
+func_main_list_for_each_L5_LOOP:
+mov $6, $2[1]
+slt $6, $5, $6
+brz func_main_list_for_each_L5_END, $6 
+param $2
+param $5
+call list_peek, 2
+pop $6
+push $6
+pop $6
+param $6
+param 1
+call cast, 2
+pop $6
+push $6
+
+pop $6
+param $6
+call func_calc, 1
+pop $6
+mov $3[$5], $6
+add $5, $5, 1
+jump func_main_list_for_each_L5_LOOP
+func_main_list_for_each_L5_END:
+mov $4[1], $5
+mov $4[2], $3
+push $4
+
+pop $2
+mema $4, 3
+mov $4[0], 5
+mov $5, $2[1]
+mema $3, $5
+func_main_list_for_each_L6_FOR:
+mov $5, 0
+func_main_list_for_each_L6_LOOP:
+mov $6, $2[1]
+slt $6, $5, $6
+brz func_main_list_for_each_L6_END, $6 
+param $2
+param $5
+call list_peek, 2
+pop $6
+push $6
+pop $6
+param $6
+call func_add1f, 1
+pop $6
+mov $3[$5], $6
+add $5, $5, 1
+jump func_main_list_for_each_L6_LOOP
+func_main_list_for_each_L6_END:
 mov $4[1], $5
 mov $4[2], $3
 push $4

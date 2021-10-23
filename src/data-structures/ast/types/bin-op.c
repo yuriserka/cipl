@@ -380,6 +380,51 @@ static void list_cons_gen_code(FILE *out) {
   fprintf(out, "pop $%d\n", temp + 2);
 }
 
+static AST *get_mapfil_param_type(AST *fn_symref) {
+  AST *func_decl;
+  AST_FIND_NODE(
+      root, AST_USER_FUNC,
+      {
+        if (__AST__) {
+          AST *key = list_peek(&__AST__->children, 0);
+          if (current_context->name && key &&
+              !strcmp(key->value.symref->symbol->name,
+                      fn_symref->value.symref->symbol->name)) {
+            func_decl = __AST__;
+            __FOUND__ = 1;
+          }
+        }
+      },
+      { return NULL; });
+  AST *params = list_peek(&func_decl->children, 1);
+  return list_peek(&params->value.params->value, 0);
+}
+
+static void mapfil_gen_code(AST *ast, AST *lhs, AST *rhs, char *op, FILE *out) {
+  AST *lhs_param = get_mapfil_param_type(lhs);
+  CastInfo ctx_cast_info = cast_info_mapfil(lhs_param->cast_info.data_type,
+                                            rhs->cast_info.data_type);
+  switch (*op) {
+    case '>': {
+      LIST_MAPFIL_TEMPLATE_GEN_CODE(
+          current_context,
+          {
+            fprintf(out, "mov $%d[0], %d\n", __TEMP__ + 2,
+                    ast->cast_info.data_type);
+          },
+          {
+            fprintf(out, "push $%d\n", __TEMP__ + 4);
+            cast_gen_code(ctx_cast_info, __TEMP__ + 4, out);
+            fprintf(out, "pop $%d\n", __TEMP__ + 4);
+            fprintf(out, "param $%d\n", __TEMP__ + 4);
+            fprintf(out, "call func_%s, 1\n", lhs->value.symref->symbol->name);
+          });
+    } break;
+    case '<': {
+    } break;
+  }
+}
+
 void ast_binop_gen_code(AST *ast, FILE *out) {
   BinOpAST *binop_ast = ast->value.binop;
   AST *lhs = list_peek(&ast->children, 0), *rhs = list_peek(&ast->children, 1);
@@ -397,17 +442,11 @@ void ast_binop_gen_code(AST *ast, FILE *out) {
       list_cons_gen_code(out);
       break;
     case '<':
-    case '>': {
-      if (is_relop(binop_ast->op)) {
-        rel_gen_code(binop_ast->op, out);
-      } else if (*binop_ast->op == '>') {
-        LIST_MAPFIL_TEMPLATE_GEN_CODE(current_context, {
-          fprintf(out, "param $%d\n", __TEMP__ + 4);
-          fprintf(out, "call func_%s, 1\n", lhs->value.symref->symbol->name);
-          fprintf(out, "pop $%d\n", __TEMP__ + 4);
-        });
-      }
-    } break;
+    case '>':
+      is_relop(binop_ast->op)
+          ? rel_gen_code(binop_ast->op, out)
+          : mapfil_gen_code(ast, lhs, rhs, binop_ast->op, out);
+      break;
     case '=':
     case '!':
     case '&':

@@ -324,40 +324,64 @@ func_main:
 
     // $0 = [123, 213]
 
-func_main_list_for_each:
-    mema $2, 3
-    mov $3, $0[0]
-    mov $2[0], $3
-    mov $3, $0[1]
-    mov $2[1], $3
-    mov $5, $3
+    push $0
+
+    pop $2
+    mema $4, 3
+    mov $3, $2[0]
+    mov $4[0], $3
+    mov $5, $2[1]
     mema $3, $5
-
-func_main_list_for_each_L0_FOR:
+    func_main_list_for_each_L3_FOR:
     mov $5, 0
-func_main_list_for_each_L0_LOOP:
-    mov $4, $0[1]
-    slt $4, $5, $4
-    brz func_main_list_for_each_L0_END, $4 
-
-    param $0
+    func_main_list_for_each_L3_LOOP:
+    mov $6, $2[1]
+    slt $6, $5, $6
+    brz func_main_list_for_each_L3_END, $6 
+    param $2
     param $5
     call list_peek, 2
-    pop $4
-
-    param $4
+    pop $6
+    param $6
     call func_add1, 1
-    pop $4
-
-    mov $3[$5], $4
-
+    pop $6
+    mov $3[$5], $6
     add $5, $5, 1
-    jump func_main_list_for_each_L0_LOOP
-func_main_list_for_each_L0_END:
-    mov $2[2], $3
+    jump func_main_list_for_each_L3_LOOP
+    func_main_list_for_each_L3_END:
+    mov $4[1], $5
+    mov $4[2], $3
+    push $4
+
+    pop $2
+    mema $4, 3
+    mov $3, $2[0]
+    mov $4[0], $3
+    mov $5, $2[1]
+    mema $3, $5
+    func_main_list_for_each_L4_FOR:
+    mov $5, 0
+    func_main_list_for_each_L4_LOOP:
+    mov $6, $2[1]
+    slt $6, $5, $6
+    brz func_main_list_for_each_L4_END, $6 
+    param $2
+    param $5
+    call list_peek, 2
+    pop $6
+    param $6
+    call func_add1, 1
+    pop $6
+    mov $3[$5], $6
+    add $5, $5, 1
+    jump func_main_list_for_each_L4_LOOP
+    func_main_list_for_each_L4_END:
+    mov $4[1], $5
+    mov $4[2], $3
+    push $4
 
     param $0
-    param $2
+    param $4
     call set_var_val, 2
 
     param $0

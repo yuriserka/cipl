@@ -21,6 +21,7 @@ typedef struct cipl_casting_info {
 CastInfo cast_info_none();
 CastInfo cast_info_binop(SymbolTypes t1, SymbolTypes t2);
 CastInfo cast_info_assign(SymbolTypes t1, SymbolTypes t2);
+CastInfo cast_info_mapfil(SymbolTypes t1, SymbolTypes t2);
 CastInfo cast_info_with_type(CastInfo info, SymbolTypes type);
 
 void print_cast(CastInfo info, int depth);

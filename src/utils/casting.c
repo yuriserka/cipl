@@ -50,6 +50,15 @@ CastInfo cast_info_assign(SymbolTypes t1, SymbolTypes t2) {
   return cast_info_none();
 }
 
+CastInfo cast_info_mapfil(SymbolTypes t1, SymbolTypes t2) {
+  if (!should_cast(t1, t2)) return cast_info_none();
+
+  if (t1 > t2 - SYM_PTR) return CAST(INT_TO_FLOAT, R_CAST);
+  if (t1 < t2 - SYM_PTR) return CAST(FLOAT_TO_INT, R_CAST);
+
+  return cast_info_none();
+}
+
 void print_cast(CastInfo info, int depth) {
   if (info.kind != NONE)
     printf("%*.s" BMAG "<%s>" RESET "\n", (depth + 1) * 4, "",
