@@ -301,6 +301,10 @@ call get_var_val, 1
 pop $3
 
 seq $3, $3, 0
+param $3
+call set_bool, 1
+pop $3
+
 brnz main_L0_ELSE, $3
 mema $2, 2
 mov $2[0], 3
@@ -547,6 +551,10 @@ call get_var_val, 1
 pop $3
 
 seq $3, $3, 0
+param $3
+call set_bool, 1
+pop $3
+
 brnz main_L1_ELSE, $3
 mema $2, 2
 mov $2[0], 3
@@ -624,6 +632,10 @@ call get_var_val, 1
 pop $3
 
 seq $3, $3, 0
+param $3
+call set_bool, 1
+pop $3
+
 brnz main_L2_ELSE, $3
 mema $2, 2
 mov $2[0], 3
@@ -727,6 +739,10 @@ call get_var_val, 1
 pop $3
 
 seq $3, $3, 0
+param $3
+call set_bool, 1
+pop $3
+
 brnz main_L3_ELSE, $3
 mema $2, 2
 mov $2[0], 3
@@ -772,6 +788,10 @@ call get_var_val, 1
 pop $3
 
 seq $3, $3, 0
+param $3
+call set_bool, 1
+pop $3
+
 brnz main_L4_ELSE, $3
 mema $2, 2
 mov $2[0], 3

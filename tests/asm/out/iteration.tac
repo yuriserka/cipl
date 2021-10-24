@@ -276,6 +276,10 @@ call get_var_val, 1
 pop $5
 
 seq $5, $5, 0
+param $5
+call set_bool, 1
+pop $5
+
 brnz printPrimes_L0_END, $5
 // local var int r
 mema $1, 2
@@ -342,6 +346,10 @@ call get_var_val, 1
 pop $5
 
 seq $5, $5, 0
+param $5
+call set_bool, 1
+pop $5
+
 brnz printPrimes_L1_END, $5
 push $0
 
@@ -419,6 +427,10 @@ call get_var_val, 1
 pop $5
 
 seq $5, $5, 0
+param $5
+call set_bool, 1
+pop $5
+
 brnz printPrimes_L2_ELSE, $5
 push $1
 
@@ -524,6 +536,10 @@ call get_var_val, 1
 pop $5
 
 seq $5, $5, 0
+param $5
+call set_bool, 1
+pop $5
+
 brnz printPrimes_L3_ELSE, $5
 push $0
 
@@ -638,6 +654,10 @@ call get_var_val, 1
 pop $2
 
 seq $2, $2, 0
+param $2
+call set_bool, 1
+pop $2
+
 brnz main_L0_ELSE, $2
 push $0
 

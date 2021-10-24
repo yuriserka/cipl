@@ -46,6 +46,10 @@ int sum_list(int list l) {
     return ?l + sum_list(!l);
 }
 
+int not_3dot5(float x) {
+    return x - 3.5;
+}
+
 int main() {
     int list a;
     if (a == NIL) {
@@ -67,12 +71,13 @@ int main() {
     }
 
     float list b;
-    b = add1f >> calc >> add1f >> calc >> a;
+    b = not_3dot5 << add1f >> calc >> add1f >> calc >> a;
     // a = [3 : 12 : 3 : 16 : 7]
     // t1 = calc >> a = [2 : 20 : 2 : 28 : 10]
     // t2 = add1f >> (t1 {cast_tofl}) = [3.5 : 21.5 : 3.5 : 29.5 : 11.5]
     // t3 = calc >> (t2 {cast_toint}) = [2 : 38 : 2 : 54 : 18]
     // b = add1f >> (t3 {cast_tofl}) = [3.5 : 39.5 : 3.5 : 55.5 : 19.5]
+    // b = not_3dot5 << (t3) = [39.5 : 55.5 : 19.5]
     write("b: [");
     print_flist_rec(b);
     writeln("]");

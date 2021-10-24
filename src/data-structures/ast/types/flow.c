@@ -75,6 +75,9 @@ void ast_flow_gen_code(AST *ast, FILE *out) {
   fprintf(out, "call get_var_val, 1\n");
   fprintf(out, "pop $%d\n\n", curr_tmp + 1);
   fprintf(out, "seq $%d, $%d, 0\n", curr_tmp + 1, curr_tmp + 1);
+  fprintf(out, "param $%d\n", curr_tmp + 1);
+  fprintf(out, "call set_bool, 1\n");
+  fprintf(out, "pop $%d\n\n", curr_tmp + 1);
   fprintf(out, "brnz %s_L%d_ELSE, $%d\n", current_context->name,
           current_context->t9n->label, curr_tmp + 1);
   int label = current_context->t9n->label++;

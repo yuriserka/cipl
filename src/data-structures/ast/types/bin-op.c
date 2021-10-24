@@ -421,6 +421,30 @@ static void mapfil_gen_code(AST *ast, AST *lhs, AST *rhs, char *op, FILE *out) {
           });
     } break;
     case '<': {
+      LIST_MAPFIL_TEMPLATE_GEN_CODE(
+          current_context,
+          {
+            fprintf(out, "mov $%d[0], %d\n", __TEMP__ + 2,
+                    ast->cast_info.data_type);
+          },
+          {
+            fprintf(out, "push $%d\n", __TEMP__ + 4);
+            cast_gen_code(ctx_cast_info, __TEMP__ + 4, out);
+            fprintf(out, "pop $%d\n", __TEMP__ + 4);
+            fprintf(out, "param $%d\n", __TEMP__ + 4);
+            fprintf(out, "call func_%s, 1\n", lhs->value.symref->symbol->name);
+            fprintf(out, "pop $%d\n", __TEMP__ + 6);
+            fprintf(out, "param $%d\n", __TEMP__ + 6);
+            fprintf(out, "call get_var_val, 1\n");
+            fprintf(out, "pop $%d\n", __TEMP__ + 6);
+            fprintf(out, "param $%d\n", __TEMP__ + 6);
+            fprintf(out, "call set_bool, 1\n");
+            fprintf(out, "pop $%d\n", __TEMP__ + 6);
+            fprintf(out, "brz func_%s_list_for_each_L%d_CONTINUE, $%d\n",
+                    current_context->name, current_context->t9n->label,
+                    __TEMP__ + 6);
+            fprintf(out, "push $%d\n", __TEMP__ + 4);
+          });
     } break;
   }
 }
