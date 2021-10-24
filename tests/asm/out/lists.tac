@@ -1765,6 +1765,9 @@ func_main_list_for_each_L3_CONTINUE:
 add $6, $6, 1
 jump func_main_list_for_each_L3_LOOP
 func_main_list_for_each_L3_END:
+brnz func_main_list_for_each_L3_NOT_NIL, $8
+mema $4, 0
+func_main_list_for_each_L3_NOT_NIL:
 mov $5[1], $8
 mov $5[2], $4
 push $5
@@ -1797,6 +1800,9 @@ func_main_list_for_each_L4_CONTINUE:
 add $6, $6, 1
 jump func_main_list_for_each_L4_LOOP
 func_main_list_for_each_L4_END:
+brnz func_main_list_for_each_L4_NOT_NIL, $8
+mema $4, 0
+func_main_list_for_each_L4_NOT_NIL:
 mov $5[1], $8
 mov $5[2], $4
 push $5
@@ -1836,6 +1842,9 @@ func_main_list_for_each_L5_CONTINUE:
 add $6, $6, 1
 jump func_main_list_for_each_L5_LOOP
 func_main_list_for_each_L5_END:
+brnz func_main_list_for_each_L5_NOT_NIL, $8
+mema $4, 0
+func_main_list_for_each_L5_NOT_NIL:
 mov $5[1], $8
 mov $5[2], $4
 push $5
@@ -1868,6 +1877,9 @@ func_main_list_for_each_L6_CONTINUE:
 add $6, $6, 1
 jump func_main_list_for_each_L6_LOOP
 func_main_list_for_each_L6_END:
+brnz func_main_list_for_each_L6_NOT_NIL, $8
+mema $4, 0
+func_main_list_for_each_L6_NOT_NIL:
 mov $5[1], $8
 mov $5[2], $4
 push $5
@@ -1909,6 +1921,9 @@ func_main_list_for_each_L7_CONTINUE:
 add $6, $6, 1
 jump func_main_list_for_each_L7_LOOP
 func_main_list_for_each_L7_END:
+brnz func_main_list_for_each_L7_NOT_NIL, $8
+mema $4, 0
+func_main_list_for_each_L7_NOT_NIL:
 mov $5[1], $8
 mov $5[2], $4
 push $5

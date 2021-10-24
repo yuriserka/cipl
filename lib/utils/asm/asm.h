@@ -67,6 +67,11 @@ void asm_generate_code_end(FILE *out);
     fprintf(out, "jump func_%s_list_for_each_L%d_LOOP\n", __CTX__->name,       \
             __CTX__->t9n->label);                                              \
     fprintf(out, "func_%s_list_for_each_L%d_END:\n", __CTX__->name,            \
+            __CTX__->t9n->label);                                              \
+    fprintf(out, "brnz func_%s_list_for_each_L%d_NOT_NIL, $%d\n",              \
+            __CTX__->name, __CTX__->t9n->label, __TEMP__ + 5);                 \
+    fprintf(out, "mema $%d, 0\n", __TEMP__ + 1);                               \
+    fprintf(out, "func_%s_list_for_each_L%d_NOT_NIL:\n", __CTX__->name,        \
             __CTX__->t9n->label++);                                            \
     fprintf(out, "mov $%d[1], $%d\n", __TEMP__ + 2, __TEMP__ + 5);             \
     fprintf(out, "mov $%d[2], $%d\n", __TEMP__ + 2, __TEMP__ + 1);             \
