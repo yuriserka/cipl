@@ -390,21 +390,20 @@ void ast_validate_types(AST *ast) {
         AST *child = __IT__->data;
         ast_validate_types(child);
       });
-      AST_FIND_NODE(
-          root, AST_USER_FUNC,
-          {
-            AST *declarator = list_peek(&__AST__->children, 0);
-            if (!strcmp(declarator->value.symref->symbol->name, "main")) {
-              handle_main_constraints(__AST__);
-              __FOUND__ = 1;
-            }
-          },
-          {
-            CIPL_PRINTF(BRED "error:" RESET
-                             " undefined reference to function " BBLU
-                             "'main'" RESET "\n");
-            ++errors_count;
-          });
+      bool is_main_defined = false;
+      AST_TRAVERSE(root, AST_USER_FUNC, {
+        AST *declarator = list_peek(&__AST__->children, 0);
+        if (!strcmp(declarator->value.symref->symbol->name, "main")) {
+          handle_main_constraints(__AST__);
+          __FOUND__ = 1;
+          is_main_defined = true;
+        }
+      });
+      if (!is_main_defined) {
+        CIPL_PRINTF(BRED "error:" RESET " undefined reference to function " BBLU
+                         "'main'" RESET "\n");
+        ++errors_count;
+      }
     } break;
     default:
       printf("AST type: %d type_check not implemented yet\n", ast->type);

@@ -31,16 +31,14 @@ void ast_funcall_print(AST *ast) {
 
 static AST *get_func_called(AST *fn_declarator) {
   AST *func_decl;
-  AST_FIND_NODE(root, AST_USER_FUNC,
-                {
-                  AST *key = list_peek(&__AST__->children, 0);
-                  if (!strcmp(key->value.symref->symbol->name,
-                              fn_declarator->value.symref->symbol->name)) {
-                    func_decl = __AST__;
-                    __FOUND__ = 1;
-                  }
-                },
-                {});
+  AST_TRAVERSE(root, AST_USER_FUNC, {
+    AST *key = list_peek(&__AST__->children, 0);
+    if (!strcmp(key->value.symref->symbol->name,
+                fn_declarator->value.symref->symbol->name)) {
+      func_decl = __AST__;
+      __FOUND__ = 1;
+    }
+  });
   return func_decl;
 }
 
@@ -148,6 +146,7 @@ void ast_funcall_gen_code(AST *ast, FILE *out) {
     fprintf(out, "param $%d\n", current_context->t9n->temp + __K__);
   });
 
+  int qtd_globals = 0;
   AST_TRAVERSE_UNTIL(
       root, AST_DECLARATION,
       {
@@ -162,6 +161,8 @@ void ast_funcall_gen_code(AST *ast, FILE *out) {
         AST *var_ast = list_peek(&__AST__->children, 0);
         Symbol *var_sym = var_ast->value.symref->symbol;
         fprintf(out, "push $%d\n", var_sym->temp);
+        ++qtd_globals;
       });
-  fprintf(out, "call func_%s, %d\n\n", fn_name->name, args->value.params->size);
+  fprintf(out, "call func_%s, %d\n\n", fn_name->name,
+          args->value.params->size + qtd_globals);
 }

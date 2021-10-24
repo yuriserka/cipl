@@ -28,21 +28,18 @@ void ast_jmp_print(AST *ast) {
 }
 
 static AST *get_curr_func_value_type() {
-  AST *func_decl;
-  AST_FIND_NODE(
-      root, AST_USER_FUNC,
-      {
-        if (__AST__) {
-          AST *key = list_peek(&__AST__->children, 0);
-          if (current_context->name && key &&
-              !strcmp(key->value.symref->symbol->name, current_context->name)) {
-            func_decl = __AST__;
-            __FOUND__ = 1;
-          }
-        }
-      },
-      { return NULL; });
-  return list_peek(&func_decl->children, 0);
+  AST *func_decl = NULL;
+  AST_TRAVERSE(root, AST_USER_FUNC, {
+    if (__AST__) {
+      AST *key = list_peek(&__AST__->children, 0);
+      if (current_context->name && key &&
+          !strcmp(key->value.symref->symbol->name, current_context->name)) {
+        func_decl = __AST__;
+        __FOUND__ = 1;
+      }
+    }
+  });
+  return func_decl ? list_peek(&func_decl->children, 0) : NULL;
 }
 
 void ast_jmp_print_pretty(AST *ast, int depth) {

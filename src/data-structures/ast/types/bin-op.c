@@ -134,16 +134,14 @@ static void handle_mapfil_mismatch_params(AST *fn, SymbolTypes list_type) {
   Cursor end = cursor_init_yylloc_end(fn->rule_pos);
   LineInfo *li = list_peek(&lines, beg.line - 1);
   AST *func_decl;
-  AST_FIND_NODE(root, AST_USER_FUNC,
-                {
-                  AST *key = list_peek(&__AST__->children, 0);
-                  if (!strcmp(key->value.symref->symbol->name,
-                              fn->value.symref->symbol->name)) {
-                    func_decl = __AST__;
-                    __FOUND__ = 1;
-                  }
-                },
-                {});
+  AST_TRAVERSE(root, AST_USER_FUNC, {
+    AST *key = list_peek(&__AST__->children, 0);
+    if (!strcmp(key->value.symref->symbol->name,
+                fn->value.symref->symbol->name)) {
+      func_decl = __AST__;
+      __FOUND__ = 1;
+    }
+  });
   AST *func_decl_params = list_peek(&func_decl->children, 1);
   ParamsAST *params_l = func_decl_params->value.params;
   if (params_l->size > 1 || !params_l->size) {
@@ -400,6 +398,27 @@ static AST *get_mapfil_param_type(AST *fn_symref) {
   return list_peek(&params->value.params->value, 0);
 }
 
+static int push_globals_for_mapfil(Symbol *fn_name, FILE *out) {
+  int qtd_globals = 0;
+  AST_TRAVERSE_UNTIL(
+      root, AST_DECLARATION,
+      {
+        if (__AST__->type == AST_USER_FUNC) {
+          AST *key = list_peek(&__AST__->children, 0);
+          if (!strcmp(key->value.symref->symbol->name, fn_name->name)) {
+            __FOUND__ = true;
+          }
+        }
+      },
+      {
+        AST *var_ast = list_peek(&__AST__->children, 0);
+        Symbol *var_sym = var_ast->value.symref->symbol;
+        fprintf(out, "push $%d\n", var_sym->temp);
+        ++qtd_globals;
+      });
+  return qtd_globals;
+}
+
 static void mapfil_gen_code(AST *ast, AST *lhs, AST *rhs, char *op, FILE *out) {
   AST *lhs_param = get_mapfil_param_type(lhs);
   CastInfo ctx_cast_info = cast_info_mapfil(lhs_param->cast_info.data_type,
@@ -417,7 +436,9 @@ static void mapfil_gen_code(AST *ast, AST *lhs, AST *rhs, char *op, FILE *out) {
             cast_gen_code(ctx_cast_info, __TEMP__ + 4, out);
             fprintf(out, "pop $%d\n", __TEMP__ + 4);
             fprintf(out, "param $%d\n", __TEMP__ + 4);
-            fprintf(out, "call func_%s, 1\n", lhs->value.symref->symbol->name);
+            fprintf(
+                out, "call func_%s, %d\n", lhs->value.symref->symbol->name,
+                1 + push_globals_for_mapfil(lhs->value.symref->symbol, out));
           });
     } break;
     case '<': {
@@ -432,7 +453,9 @@ static void mapfil_gen_code(AST *ast, AST *lhs, AST *rhs, char *op, FILE *out) {
             cast_gen_code(ctx_cast_info, __TEMP__ + 4, out);
             fprintf(out, "pop $%d\n", __TEMP__ + 4);
             fprintf(out, "param $%d\n", __TEMP__ + 4);
-            fprintf(out, "call func_%s, 1\n", lhs->value.symref->symbol->name);
+            fprintf(
+                out, "call func_%s, %d\n", lhs->value.symref->symbol->name,
+                1 + push_globals_for_mapfil(lhs->value.symref->symbol, out));
             fprintf(out, "pop $%d\n", __TEMP__ + 6);
             fprintf(out, "param $%d\n", __TEMP__ + 6);
             fprintf(out, "call get_var_val, 1\n");

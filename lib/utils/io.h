@@ -59,16 +59,3 @@
                   '^');                                                    \
     }                                                                      \
   }
-
-#define CIPL_PWARN(__FMT__, ...) \
-  { CIPL_PWARN_CURSOR(__FMT__, cursor, ##__VA_ARGS__); }
-
-#define CIPL_PWARN_CURSOR(__FMT__, __CURSOR__, ...)               \
-  {                                                               \
-    Cursor __B4__ = cursor;                                       \
-    cursor = __CURSOR__;                                          \
-    CIPL_PRINTF("%s:%d:%d: ", filename, cursor.line, cursor.col); \
-    CIPL_PRINTF_COLOR(BMAG, "warning: ");                         \
-    CIPL_PRINTF(__FMT__, ##__VA_ARGS__);                          \
-    cursor = __B4__;                                              \
-  }

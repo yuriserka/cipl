@@ -4,7 +4,7 @@
 #include "data-structures/scope.h"
 #include "data-structures/stack.h"
 #include "data-structures/symbol-table/symbol.h"
-#include "utils/asm/asm.h"
+#include "utils/asm/t9n.h"
 
 typedef struct cipl_context {
   StackNode *scopes;

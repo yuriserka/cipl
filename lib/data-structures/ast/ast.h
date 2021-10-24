@@ -9,6 +9,7 @@
 typedef struct cipl_ast AST;
 
 #include <data-structures/symbol-table/symbol.h>
+#include <utils/asm/asm.h>
 #include <utils/casting.h>
 
 #include "data-structures/ast/types/assign.h"
@@ -125,25 +126,6 @@ void ast_fake_stack_pop(ListNode *node);
     }                                                        \
   }
 
-#define AST_TRAVERSE(__ROOT__, __TYPE__, __FOUND_ACTION__) \
-  {                                                        \
-    bool __FOUND__ = false;                                \
-    ListNode *__DFS_L__ = NULL;                            \
-    LIST_FOR_EACH(__ROOT__->children, {                    \
-      AST *__CHILD__ = __IT__->data;                       \
-      if (__CHILD__) list_push(&__DFS_L__, __CHILD__);     \
-    });                                                    \
-    AST *__AST__ = NULL;                                   \
-    while ((__AST__ = list_peek(&__DFS_L__, 0))) {         \
-      list_pop_front(&__DFS_L__, ast_fake_stack_pop);      \
-      if (__AST__->type == __TYPE__) {                     \
-        __FOUND_ACTION__;                                  \
-      }                                                    \
-      if (__FOUND__) break;                                \
-    }                                                      \
-    LIST_FREE(__DFS_L__, {});                              \
-  }
-
 #define AST_TRAVERSE_UNTIL(__ROOT__, __TYPE__, __CONDITION__, \
                            __FOUND_ACTION__)                  \
   {                                                           \
@@ -165,3 +147,6 @@ void ast_fake_stack_pop(ListNode *node);
     }                                                         \
     LIST_FREE(__DFS_L__, {});                                 \
   }
+
+#define AST_TRAVERSE(__ROOT__, __TYPE__, __FOUND_ACTION__) \
+  { AST_TRAVERSE_UNTIL(__ROOT__, __TYPE__, {}, __FOUND_ACTION__); }
