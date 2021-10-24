@@ -3,6 +3,7 @@ float y(int x) {
 }
 
 int x(float j) {
+    if (x > 10) return 3;
     return x(1 + 2 - y(3 * 1.0)) + 2.0;
 }
 
@@ -11,6 +12,7 @@ int list caster() {
 }
 
 float caster2(int list l) {
+    if (!l == NIL) return 0.0;
     return
         ?%!%(x >> x << !x(1) : x(2) : 32 : NIL)
         * ?(1.1 + 1.1/2 - 3.3 : x(?l) : 2.2 : NIL)

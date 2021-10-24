@@ -154,7 +154,7 @@ void ast_funcall_gen_code(AST *ast, FILE *out) {
         if (__AST__->type == AST_USER_FUNC) {
           AST *key = list_peek(&__AST__->children, 0);
           if (!strcmp(key->value.symref->symbol->name, fn_name->name)) {
-            __FOUND__ = 1;
+            __FOUND__ = true;
           }
         }
       },

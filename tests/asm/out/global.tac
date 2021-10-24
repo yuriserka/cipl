@@ -198,8 +198,11 @@ list_pop_tail:
 param #0
 call list_tail, 1
 pop $0
-mov #0[2], $0
-return $0
+mov $1, $0[1]
+mov #0[1], $1
+mov $1, $0[2]
+mov #0[2], $1
+return #0
 
 main:
 
@@ -245,8 +248,8 @@ mov $1[1], 0
 jump func_readb_END
 
 func_readb:
-pop $1
 pop $0
+pop $1
 mema $2, 2
 mov $2[0], 3
 mov $2[1], &str_1

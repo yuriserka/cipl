@@ -1,9 +1,7 @@
 .table
 
-char str_0[] = "'a' antes do assign = "
-char str_1[] = "'b' antes do assign = "
-char str_2[] = "'a' depois do assign = "
-char str_3[] = "'b' depois do assign = "
+char str_0[] = ""
+char str_1[] = ", "
 char snil[] = "nil"
 
 .code
@@ -75,6 +73,15 @@ sign_change_INT_FLIP:
 sign_change_END:
     mov #0[1], $0
     return
+
+set_bool:
+    brnz set_bool_TRUE, #0
+    mov $0, 0
+    jump set_bool_END
+set_bool_TRUE:
+    mov $0, 1
+set_bool_END:
+    return $0
 
 read:
     mov $0, #0[0]
@@ -236,44 +243,179 @@ list_pop_tail:
     call list_tail, 1
     pop $0
 
-    mov #0[2], $0
+    mov $1, $0[1]
+    mov #0[1], $1
+    mov $1, $0[2]
+    mov #0[2], $1
+
     return $0
 
 main:
 
-jump func_add1_END
+jump func_print_ilist_rec_END
 
-func_add1:
-    mema $1, 2
-    mov $1[0], 1
-    mov $1[1], 1
-    push $1
-
+func_print_ilist_rec:
     push #0
 
+    mema $0, 3
+    mov $0[0], 3
+    mov $0[1], 0
+    mema $1, 0
+    mov $0[2], $1
+    push $0
+
     pop $1
-    
+
+    pop $0
+
+    param $0
+    call get_var_val, 1
     pop $2
 
     param $1
     call get_var_val, 1
     pop $3
 
-    param $2
-    call get_var_val, 1
-    pop $4
+    seq $3, $2, $3
 
-    add $3, $3, $4
+    param $3
+    call set_bool, 1
+    pop $3
 
     mema $2, 2
     mov $2[0], 1
     mov $2[1], $3
     push $2
 
-    pop $2
-    return $2
+    pop $0
 
-func_add1_END:
+    param $0
+    call get_var_val, 1
+    pop $1
+
+    seq $1, $1, 0
+    param $1
+    call set_bool, 1
+    pop $1
+
+    brnz print_ilist_rec_L0_ELSE, $1
+    mema $0, 2
+    mov $0[0], 3
+    mov $0[1], &str_0
+    push $0
+
+    pop $0
+    param $0
+    call writeln, 1
+
+    mema $0, 2
+    mov $0[0], 1
+    mov $0[1], 0
+    push $0
+
+    pop $0
+    return $0
+    jump print_ilist_rec_L0_END
+    print_ilist_rec_L0_ELSE:
+    print_ilist_rec_L0_END:
+    push #0
+
+    pop $0
+
+    param $0
+    call list_head, 1
+    pop $0
+    push $0
+
+    pop $0
+    param $0
+    call write, 1
+
+    push #0
+
+    pop $0
+
+    param $0
+    call list_tail, 1
+    pop $0
+    push $0
+
+    mema $0, 3
+    mov $0[0], 3
+    mov $0[1], 0
+    mema $1, 0
+    mov $0[2], $1
+    push $0
+
+    pop $1
+
+    pop $0
+
+    param $0
+    call get_var_val, 1
+    pop $2
+
+    param $1
+    call get_var_val, 1
+    pop $3
+
+    seq $3, $2, $3
+    not $3, $3
+    param $3
+    call set_bool, 1
+    pop $3
+
+    mema $2, 2
+    mov $2[0], 1
+    mov $2[1], $3
+    push $2
+
+    pop $0
+
+    param $0
+    call get_var_val, 1
+    pop $1
+
+    seq $1, $1, 0
+    param $1
+    call set_bool, 1
+    pop $1
+
+    brnz print_ilist_rec_L1_ELSE, $1
+    mema $0, 2
+    mov $0[0], 3
+    mov $0[1], &str_1
+    push $0
+
+    pop $0
+    param $0
+    call write, 1
+
+    jump print_ilist_rec_L1_END
+    print_ilist_rec_L1_ELSE:
+    print_ilist_rec_L1_END:
+    push #0
+
+    pop $0
+
+    param $0
+    call list_tail, 1
+    pop $0
+    push $0
+
+    pop $0
+    param $0
+    call func_print_ilist_rec, 1
+
+    mema $0, 2
+    mov $0[0], 1
+    mov $0[1], 0
+    push $0
+
+    pop $0
+    return $0
+
+func_print_ilist_rec_END:
 
 jump func_main_END
 
@@ -285,114 +427,73 @@ func_main:
     mema $1, 0
     mov $0[2], $1
 
-    mema $2, 2
-    mov $2[0], 1
-    mov $2[1], 123
-    push $2
+    mema $1, 2
+    mov $1[0], 1
+    mov $1[1], 1
+    push $1
 
-    mema $2, 2
-    mov $2[0], 1
-    mov $2[1], 213
-    push $2
+    mema $1, 2
+    mov $1[0], 1
+    mov $1[1], 2
+    push $1
+
+    mema $1, 3
+    mov $1[0], 3
+    mov $1[1], 0
+    mema $2, 0
+    mov $1[2], $2
+    push $1
+
+    pop $1
+
+    pop $2
+
+    param $1
+    param $2
+    call list_insert, 2
+    pop $3
+    push $3
+
+    pop $1
+
+    pop $2
+
+    param $1
+    param $2
+    call list_insert, 2
+    pop $3
+    push $3
+
+    pop $1
+    param $0
+    param $1
+    call set_var_val, 2
 
     push $0
 
-    pop $2
+    pop $1
 
-    pop $3
+    param $1
+    call list_pop_tail, 1
+    pop $1
+    push $1
 
-    param $2
-    param $3
-    call list_insert, 2
-    pop $4
-    push $4
-
-    pop $2
-
-    pop $3
-
-    param $2
-    param $3
-    call list_insert, 2
-    pop $4
-    push $4
-
-    pop $2
-    param $0
-    param $2
-    call set_var_val, 2
-
-    // $0 = [123, 213]
+    pop $1
+    param $1
+    call func_print_ilist_rec, 1
 
     push $0
 
-    pop $2
-    mema $4, 3
-    mov $3, $2[0]
-    mov $4[0], $3
-    mov $5, $2[1]
-    mema $3, $5
-    func_main_list_for_each_L3_FOR:
-    mov $5, 0
-    func_main_list_for_each_L3_LOOP:
-    mov $6, $2[1]
-    slt $6, $5, $6
-    brz func_main_list_for_each_L3_END, $6 
-    param $2
-    param $5
-    call list_peek, 2
-    pop $6
-    param $6
-    call func_add1, 1
-    pop $6
-    mov $3[$5], $6
-    add $5, $5, 1
-    jump func_main_list_for_each_L3_LOOP
-    func_main_list_for_each_L3_END:
-    mov $4[1], $5
-    mov $4[2], $3
-    push $4
+    pop $1
+    param $1
+    call func_print_ilist_rec, 1
 
-    pop $2
-    mema $4, 3
-    mov $3, $2[0]
-    mov $4[0], $3
-    mov $5, $2[1]
-    mema $3, $5
-    func_main_list_for_each_L4_FOR:
-    mov $5, 0
-    func_main_list_for_each_L4_LOOP:
-    mov $6, $2[1]
-    slt $6, $5, $6
-    brz func_main_list_for_each_L4_END, $6 
-    param $2
-    param $5
-    call list_peek, 2
-    pop $6
-    param $6
-    call func_add1, 1
-    pop $6
-    mov $3[$5], $6
-    add $5, $5, 1
-    jump func_main_list_for_each_L4_LOOP
-    func_main_list_for_each_L4_END:
-    mov $4[1], $5
-    mov $4[2], $3
-    push $4
+    mema $1, 2
+    mov $1[0], 1
+    mov $1[1], 0
+    push $1
 
-    param $0
-    param $4
-    call set_var_val, 2
-
-    param $0
-    call debug_list_info, 1
-
-    mema $2, 2
-    mov $2[0], 1
-    mov $2[1], 0
-    push $2
-
-    pop $2
+    pop $1
     jump EOF
 
 func_main_END:

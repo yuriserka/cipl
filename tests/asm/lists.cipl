@@ -50,6 +50,16 @@ int not_3dot5(float x) {
     return x - 3.5;
 }
 
+int list b;
+
+int list pop_ttesting() {
+    int list a;
+    b = %%(1 : 2 : 3 : 4 : NIL);
+    a = 7 : 8 : b;
+    a = %a;
+    return a;
+}
+
 int main() {
     int list a;
     if (a == NIL) {
@@ -70,15 +80,19 @@ int main() {
         writeln("something is wrong");
     }
 
+    print_list_it(pop_ttesting());
+    write("global b -> ");
+    print_list_it(b);
+
     float list b;
     b = not_3dot5 << add1f >> calc >> add1f >> calc >> a;
     // a = [3 : 12 : 3 : 16 : 7]
     // t1 = calc >> a = [2 : 20 : 2 : 28 : 10]
     // t2 = add1f >> (t1 {cast_tofl}) = [3.5 : 21.5 : 3.5 : 29.5 : 11.5]
     // t3 = calc >> (t2 {cast_toint}) = [2 : 38 : 2 : 54 : 18]
-    // b = add1f >> (t3 {cast_tofl}) = [3.5 : 39.5 : 3.5 : 55.5 : 19.5]
-    // b = not_3dot5 << (t3) = [39.5 : 55.5 : 19.5]
-    write("b: [");
+    // t4 = add1f >> (t3 {cast_tofl}) = [3.5 : 39.5 : 3.5 : 55.5 : 19.5]
+    // b = not_3dot5 << (t4) = [39.5 : 55.5 : 19.5]
+    write("local b: [");
     print_flist_rec(b);
     writeln("]");
 

@@ -203,8 +203,11 @@ list_pop_tail:
 param #0
 call list_tail, 1
 pop $0
-mov #0[2], $0
-return $0
+mov $1, $0[1]
+mov #0[1], $1
+mov $1, $0[2]
+mov #0[2], $1
+return #0
 
 main:
 

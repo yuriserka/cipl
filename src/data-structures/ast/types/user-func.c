@@ -94,7 +94,6 @@ void ast_userfunc_gen_code(AST *ast, FILE *out) {
   ListNode *old_params_ref = NULL;
 
   if (strcmp(name->value.symref->symbol->name, "main")) {
-    int i = 1;
     AST_TRAVERSE_UNTIL(
         root, AST_DECLARATION,
         {
@@ -102,11 +101,15 @@ void ast_userfunc_gen_code(AST *ast, FILE *out) {
             AST *key = list_peek(&__AST__->children, 0);
             if (!strcmp(key->value.symref->symbol->name,
                         current_context->name)) {
-              __FOUND__ = 1;
+              __FOUND__ = true;
             }
           }
         },
-        { fprintf(out, "pop $%d\n", current_context->t9n->temp - i++); });
+        {
+          AST *decl_symref = list_peek(&__AST__->children, 0);
+          Symbol *declared = decl_symref->value.symref->symbol;
+          fprintf(out, "pop $%d\n", declared->temp);
+        });
   }
 
   LIST_FOR_EACH(params->value.params->value, {

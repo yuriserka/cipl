@@ -353,8 +353,11 @@ static void asm_list_pop_tail(FILE *out) {
   fprintf(out, "param #0\n");
   fprintf(out, "call list_tail, 1\n");
   fprintf(out, "pop $0\n");
-  fprintf(out, "mov #0[2], $0\n");
-  fprintf(out, "return $0\n\n");
+  fprintf(out, "mov $1, $0[1]\n");
+  fprintf(out, "mov #0[1], $1\n");
+  fprintf(out, "mov $1, $0[2]\n");
+  fprintf(out, "mov #0[2], $1\n");
+  fprintf(out, "return #0\n\n");
 }
 
 static void asm_generate_list_utils(FILE *out) {
