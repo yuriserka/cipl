@@ -87,9 +87,7 @@ void ast_jmp_gen_code(AST *ast, FILE *out) {
   cast_gen_code(ast->cast_info, current_context->t9n->temp, out);
 
   fprintf(out, "pop $%d\n", current_context->t9n->temp);
-  if (!strcmp(current_context->name, "main")) {
-    fprintf(out, "jump EOF\n");
-  } else {
+  if (strcmp(current_context->name, "main")) {
     fprintf(out, "return $%d\n", current_context->t9n->temp);
   }
 }

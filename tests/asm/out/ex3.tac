@@ -2,10 +2,7 @@
 
 char str_nil[] = "nil"
 int list_nil[] = {3, 0}
-char str_0[] = "insider other function a: "
-char str_1[] = "enter value for the meta-parameter B: "
-char str_2[] = "global a: "
-char str_3[] = "local a=(2) + global b: "
+char str_0[] = "this is a literal... string? (maybe the val is 0xFF)"
 
 .code
 cast:
@@ -206,15 +203,176 @@ return #0
 
 main:
 
-// global var float a
+jump func_sum_END
+
+func_sum:
+// param int a
 mema $0, 2
-mov $0[0], 2
-mov $0[1], 0.000000
+mov $0[0], 1
+mov $1, #0[1]
+mov $0[1], $1
 
-jump func_writeglobal_END
+// param int b
+mema $1, 2
+mov $1[0], 1
+mov $2, #1[1]
+mov $1[1], $2
 
-func_writeglobal:
-pop $0
+// param int c
+mema $2, 2
+mov $2[0], 1
+mov $3, #2[1]
+mov $2[1], $3
+
+// param int d
+mema $3, 2
+mov $3[0], 1
+mov $4, #3[1]
+mov $3[1], $4
+
+push $0
+
+push $1
+
+pop $5
+
+pop $4
+
+param $4
+call get_var_val, 1
+pop $6
+
+param $5
+call get_var_val, 1
+pop $7
+
+add $7, $6, $7
+
+mema $6, 2
+mov $6[0], 1
+mov $6[1], $7
+push $6
+
+push $2
+
+pop $5
+
+pop $4
+
+param $4
+call get_var_val, 1
+pop $6
+
+param $5
+call get_var_val, 1
+pop $7
+
+add $7, $6, $7
+
+mema $6, 2
+mov $6[0], 1
+mov $6[1], $7
+push $6
+
+push $3
+
+pop $5
+
+pop $4
+
+param $4
+call get_var_val, 1
+pop $6
+
+param $5
+call get_var_val, 1
+pop $7
+
+add $7, $6, $7
+
+mema $6, 2
+mov $6[0], 1
+mov $6[1], $7
+push $6
+
+pop $4
+return $4
+
+func_sum_END:
+
+jump func_main_END
+
+func_main:
+// local var int x
+mema $0, 2
+mov $0[0], 1
+mov $0[1], 0
+
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 1
+push $1
+
+pop $1
+param $1
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 2
+push $1
+
+pop $2
+param $2
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 3
+push $1
+
+pop $3
+param $3
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 4
+push $1
+
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 5
+push $1
+
+pop $2
+
+pop $1
+
+param $1
+call get_var_val, 1
+pop $3
+
+param $2
+call get_var_val, 1
+pop $4
+
+add $4, $3, $4
+
+mema $3, 2
+mov $3[0], 1
+mov $3[1], $4
+push $3
+
+pop $4
+param $4
+call func_sum, 4
+
+pop $1
+param $0
+param $1
+call set_var_val, 2
+
+push $0
+
+pop $1
+param $1
+call writeln, 1
+
 mema $1, 2
 mov $1[0], 3
 mov $1[1], &str_0
@@ -222,12 +380,6 @@ push $1
 
 pop $1
 param $1
-call write, 1
-
-push $0
-
-pop $1
-param $1
 call writeln, 1
 
 mema $1, 2
@@ -236,137 +388,6 @@ mov $1[1], 0
 push $1
 
 pop $1
-return $1
-
-func_writeglobal_END:
-
-// global var int b
-mema $1, 2
-mov $1[0], 1
-mov $1[1], 0
-
-jump func_readb_END
-
-func_readb:
-pop $1
-pop $0
-mema $2, 2
-mov $2[0], 3
-mov $2[1], &str_1
-push $2
-
-pop $2
-param $2
-call write, 1
-
-push $1
-
-pop $2
-param $2
-call read, 1
-
-mema $2, 2
-mov $2[0], 1
-mov $2[1], 0
-push $2
-
-pop $2
-return $2
-
-func_readb_END:
-
-jump func_main_END
-
-func_main:
-mema $3, 2
-mov $3[0], 2
-mov $3[1], 77.234700
-push $3
-
-pop $3
-param $0
-param $3
-call set_var_val, 2
-
-mema $3, 2
-mov $3[0], 3
-mov $3[1], &str_2
-push $3
-
-pop $3
-param $3
-call write, 1
-
-push $0
-
-pop $3
-param $3
-call writeln, 1
-
-push $0
-push $1
-call func_readb, 2
-
-push $0
-call func_writeglobal, 1
-
-// local var int a
-mema $2, 2
-mov $2[0], 1
-mov $2[1], 0
-
-mema $3, 2
-mov $3[0], 1
-mov $3[1], 2
-push $3
-
-pop $3
-param $2
-param $3
-call set_var_val, 2
-
-mema $3, 2
-mov $3[0], 3
-mov $3[1], &str_3
-push $3
-
-pop $3
-param $3
-call write, 1
-
-push $2
-
-push $1
-
-pop $4
-
-pop $3
-
-param $3
-call get_var_val, 1
-pop $5
-
-param $4
-call get_var_val, 1
-pop $6
-
-add $6, $5, $6
-
-mema $5, 2
-mov $5[0], 1
-mov $5[1], $6
-push $5
-
-pop $3
-param $3
-call writeln, 1
-
-mema $3, 2
-mov $3[0], 1
-mov $3[1], 0
-push $3
-
-pop $3
 jump EOF
 
 func_main_END:

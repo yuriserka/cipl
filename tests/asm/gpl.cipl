@@ -1,0 +1,33 @@
+int x; // $0
+float y; // $1
+int list il; // $2
+float list fl; // $3
+
+int f(int a, float b, int c, int list d, float list e) {
+    // a = #0 -> $8
+    // b = #1 -> $9
+    // c = #2 -> $10
+    // d = #3
+    // e = #4
+    int h; // $4
+    float j; // $5
+    int list k; // $6
+    float list l; // $7
+
+    x = a + 1;
+    y = b + 3.4;
+
+    d = 1 : 2 : 3 : d;
+    il = d;
+
+    return h;
+}
+
+int main() {
+    x = 213;
+    f(1 , 2, 4.65, NIL, 1 : 4.6 : NIL);
+    writeln(x + y);
+
+    int list it;
+    for (it = il; it != NIL; it = !it) writeln(?it);
+}

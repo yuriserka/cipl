@@ -349,8 +349,8 @@ call write, 1
 mema $1, 3
 mov $1[0], 4
 mov $1[1], 0
-mema $2, 0
-mov $1[2], $2
+mema $3, 0
+mov $1[2], $3
 
 push #0
 
@@ -1018,8 +1018,8 @@ func_not_3dot5_END:
 mema $0, 3
 mov $0[0], 4
 mov $0[1], 0
-mema $1, 0
-mov $0[2], $1
+mema $2, 0
+mov $0[2], $2
 
 jump func_pop_ttesting_END
 
@@ -1029,8 +1029,8 @@ pop $0
 mema $1, 3
 mov $1[0], 4
 mov $1[1], 0
-mema $2, 0
-mov $1[2], $2
+mema $3, 0
+mov $1[2], $3
 
 mema $2, 2
 mov $2[0], 1
@@ -1183,8 +1183,8 @@ func_main:
 mema $1, 3
 mov $1[0], 4
 mov $1[1], 0
-mema $2, 0
-mov $1[2], $2
+mema $4, 0
+mov $1[2], $4
 
 push $1
 
@@ -1707,7 +1707,7 @@ call writeln, 1
 
 main_L0_END:
 push $0
-call func_pop_ttesting, 0
+call func_pop_ttesting, 1
 
 pop $3
 param $3
@@ -1732,8 +1732,8 @@ call func_print_list_it, 1
 mema $2, 3
 mov $2[0], 5
 mov $2[1], 0
-mema $3, 0
-mov $2[2], $3
+mema $4, 0
+mov $2[2], $4
 
 push $1
 

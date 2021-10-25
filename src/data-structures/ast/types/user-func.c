@@ -52,21 +52,25 @@ void ast_userfunc_print_pretty(AST *ast, int depth) {
   ast_print_pretty(statements, depth + 1);
 
   int qtd_ret = 0;
-  AST_TRAVERSE(statements, AST_JMP, { ++qtd_ret; });
-  if (!qtd_ret) {
-    printf("%*.s" BMAG "<implicit-return>" RESET "\n", (depth + 2) * 4, "");
-    switch (ast->cast_info.data_type) {
-      case SYM_REAL:
-        printf("%*.s" BYEL "0.0" RESET "\n", (depth + 3) * 4, "");
-        break;
-      case SYM_INT:
-        printf("%*.s" BYEL "0" RESET "\n", (depth + 3) * 4, "");
-        break;
-      default:
-        printf("%*.s" BYEL "NIL" RESET "\n", (depth + 3) * 4, "");
-        break;
-    }
-  }
+  AST_FIND_NODE(
+      statements, AST_JMP, { ++qtd_ret; },
+      {
+        if (!qtd_ret) {
+          printf("%*.s" BMAG "<implicit-return>" RESET "\n", (depth + 2) * 4,
+                 "");
+          switch (ast->cast_info.data_type) {
+            case SYM_REAL:
+              printf("%*.s" BYEL "0.0" RESET "\n", (depth + 3) * 4, "");
+              break;
+            case SYM_INT:
+              printf("%*.s" BYEL "0" RESET "\n", (depth + 3) * 4, "");
+              break;
+            default:
+              printf("%*.s" BYEL "NIL" RESET "\n", (depth + 3) * 4, "");
+              break;
+          }
+        }
+      });
 }
 
 CastInfo ast_userfunc_type_check(AST *ast) {
@@ -94,7 +98,22 @@ void ast_userfunc_gen_code(AST *ast, FILE *out) {
   fprintf(out, "\nfunc_%s:\n", name->value.symref->symbol->name);
   ListNode *old_params_ref = NULL;
 
-  if (strcmp(name->value.symref->symbol->name, "main")) {
+  bool is_main = !strcmp(name->value.symref->symbol->name, "main");
+
+  int qtd_globals = 0;
+  AST_TRAVERSE_UNTIL(
+      root, AST_DECLARATION,
+      {
+        if (__AST__->type == AST_USER_FUNC) {
+          AST *key = list_peek(&__AST__->children, 0);
+          if (!strcmp(key->value.symref->symbol->name, current_context->name)) {
+            __FOUND__ = true;
+          }
+        }
+      },
+      { ++qtd_globals; });
+
+  if (!is_main) {
     AST_TRAVERSE_UNTIL(
         root, AST_DECLARATION,
         {
@@ -106,11 +125,7 @@ void ast_userfunc_gen_code(AST *ast, FILE *out) {
             }
           }
         },
-        {
-          AST *decl_symref = list_peek(&__AST__->children, 0);
-          Symbol *declared = decl_symref->value.symref->symbol;
-          fprintf(out, "pop $%d\n", declared->temp);
-        });
+        { fprintf(out, "pop $%d\n", --qtd_globals); });
   }
 
   LIST_FOR_EACH(params->value.params->value, {
@@ -134,11 +149,12 @@ void ast_userfunc_gen_code(AST *ast, FILE *out) {
   ast_gen_code(statements, out);
 
   // recover #param number
+  int i = 0;
   LIST_FOR_EACH(params->value.params->value, {
     AST *param = __IT__->data;
     Symbol *par_sym = param->value.symref->symbol;
     if (par_sym->type < SYM_PTR) {
-      Symbol *old_par_sym = list_peek(&old_params_ref, __K__);
+      Symbol *old_par_sym = list_peek(&old_params_ref, i++);
       par_sym->temp = old_par_sym->temp;
       par_sym->kind = PARAM;
     }
@@ -147,14 +163,20 @@ void ast_userfunc_gen_code(AST *ast, FILE *out) {
   LIST_FREE(old_params_ref, { symbol_free(__IT__->data); });
 
   int qtd_ret = 0;
-  AST_TRAVERSE(statements, AST_JMP, { ++qtd_ret; });
-
-  if (!qtd_ret) {
-    t9n_alloc_from_constant(current_context->t9n->temp,
-                            ast->cast_info.data_type,
-                            (NumberValue){.integer = 0, .real = 0.0}, out);
-    fprintf(out, "return $%d\n", current_context->t9n->temp);
-  }
+  AST_FIND_NODE(
+      statements, AST_JMP, { ++qtd_ret; },
+      {
+        if (!is_main) {
+          if (!qtd_ret) {
+            t9n_alloc_from_constant(
+                current_context->t9n->temp, ast->cast_info.data_type,
+                (NumberValue){.integer = 0, .real = 0.0}, out);
+            fprintf(out, "return $%d\n", current_context->t9n->temp);
+          }
+        } else {
+          fprintf(out, "jump EOF\n");
+        }
+      });
 
   fprintf(out, "\nfunc_%s_END:\n\n", name->value.symref->symbol->name);
 }

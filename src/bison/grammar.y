@@ -121,8 +121,8 @@
 
 %type<sym> id
 
-%nonassoc THEN
-%nonassoc ELSE
+%precedence THEN
+%precedence ELSE
 
 %start prog
 
@@ -540,14 +540,24 @@ iter_stmt: FOR '(' expression.opt ';' expression.opt ';' expression.opt ')' stat
     ;
 
 expression: logical_or_expr
-    | unary_expr '=' logical_or_expr { $$ = ast_assign_init(@$, $1, $3); }
-    | unary_expr '=' error {
+    | id '=' logical_or_expr {
+        Symbol *sym = context_search_symbol_scopes(current_context, $1);
+        if (!sym) {
+            show_error_range(@1, BCYN "'%s'" RESET " undeclared (first use in this function)\n", $1->name);
+            $$ = NULL;
+            ast_free($3);
+        } else {
+            $$ = ast_assign_init(@$, ast_symref_init(@1, sym), $3);
+        }
+        symbol_free($1);
+    }
+    | id '=' error {
         show_error_range(@3, "expected expression before " WHT "'%c'" RESET " token\n", yychar);
-        ast_free($1);
+        symbol_free($1);
         $$ = NULL;
     }
     | error '=' logical_or_expr {
-        show_error_range(@1, "expected expression before " WHT "'='" RESET " token\n");
+        show_error_range(@1, "expected identifier before " WHT "'='" RESET " token\n");
         ast_free($3);
         $$ = NULL;
     }

@@ -26,10 +26,10 @@ void t9n_alloc_from_other_value(int to, int from, SymbolTypes type,
     default:
       fprintf(out, "mema $%d, 3\n", to);
       fprintf(out, "mov $%d[0], %d\n", to, type);
-      fprintf(out, "mov $%d, $%d[1]\n", to + 1, from);
-      fprintf(out, "mov $%d[1], $%d\n", to, to + 1);
-      fprintf(out, "mov $%d, $%d[2]\n", to + 1, from);
-      fprintf(out, "mov $%d[2], $%d\n", to, to + 1);
+      fprintf(out, "mov $%d, $%d[1]\n", current_context->t9n->temp, from);
+      fprintf(out, "mov $%d[1], $%d\n", to, current_context->t9n->temp);
+      fprintf(out, "mov $%d, $%d[2]\n", current_context->t9n->temp, from);
+      fprintf(out, "mov $%d[2], $%d\n", to, current_context->t9n->temp);
   }
 }
 
@@ -83,8 +83,8 @@ void t9n_alloc_from_constant(int to, SymbolTypes type, NumberValue value,
       fprintf(out, "mema $%d, 3\n", to);
       fprintf(out, "mov $%d[0], %d\n", to, type);
       fprintf(out, "mov $%d[1], 0\n", to);
-      fprintf(out, "mema $%d, 0\n", to + 1);
-      fprintf(out, "mov $%d[2], $%d\n", to, to + 1);
+      fprintf(out, "mema $%d, 0\n", current_context->t9n->temp + 1);
+      fprintf(out, "mov $%d[2], $%d\n", to, current_context->t9n->temp + 1);
   }
 }
 

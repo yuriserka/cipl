@@ -1,0 +1,57 @@
+int printf(int list arg){
+    if(arg == NIL){
+        return 0;
+    }
+    write(?arg);
+    if (!arg != NIL) write(", ");
+    return printf(!arg);
+}
+
+int size(int list lista){
+    if (lista == NIL) return 0;
+    return size(!lista) + 1;
+}
+
+int peek(int list l, int pos) {
+    int i;
+    int list it;
+    it = l;
+    for (i = 0; i < pos; i = i + 1) { it = !it; }
+    return ?it;
+}
+
+int list twoSum(int list nums, int target) {
+    int list a;
+    int i;
+    int j;
+    for(i = 0; i < size(nums); i = i + 1){
+        for(j = 0; j < size(nums); j = j + 1){
+            int l;
+            l = peek(nums, i);
+            int r;
+            r = peek(nums, j);
+            if(i != j && (l + r == target)) {
+                a = i : j : a;
+                return a;
+            }
+        }
+    }
+    return a;
+}
+
+int print_ans(int list ans) {
+    write("[");
+    printf(ans);
+    writeln("]");
+}
+
+int run_tests() {
+    print_ans(twoSum(2 : 7 : 11 : 15 : NIL, 9));
+    print_ans(twoSum(3 : 2 : 4 : NIL, 6));
+    print_ans(twoSum(3 : 3 : NIL, 6));
+}
+
+int main() {
+    run_tests();
+    return 0;
+}

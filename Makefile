@@ -30,7 +30,7 @@ all: clean runbison runflex $(EXEC)
 
 runbison:
 	@echo Running bison
-	@bison -Wcounterexamples -Wother --defines="lib/bison/grammar.h" --output="src/bison/grammar.c" src/bison/grammar.y
+	@bison -Wcounterexamples -Wother -Wall --defines="lib/bison/grammar.h" --output="src/bison/grammar.c" src/bison/grammar.y
 
 runflex:
 	@echo Running flex
