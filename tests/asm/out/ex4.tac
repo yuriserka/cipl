@@ -598,394 +598,381 @@ jump func_twoSum_END
 
 func_twoSum:
 // param int target
-mema $5, 2
-mov $5[0], 1
-mov $6, #1[1]
-mov $5[1], $6
-
-// local var int list a
-mema $0, 3
-mov $0[0], 4
-mov $0[1], 0
-mema $7, 0
-mov $0[2], $7
+mema $4, 2
+mov $4[0], 1
+mov $5, #1[1]
+mov $4[1], $5
 
 // local var int i
+mema $0, 2
+mov $0[0], 1
+mov $0[1], 0
+
+// local var int j
 mema $1, 2
 mov $1[0], 1
 mov $1[1], 0
 
-// local var int j
-mema $2, 2
-mov $2[0], 1
-mov $2[1], 0
+mema $5, 2
+mov $5[0], 1
+mov $5[1], 0
+push $5
 
-mema $6, 2
-mov $6[0], 1
-mov $6[1], 0
-push $6
-
-pop $6
-param $1
-param $6
+pop $5
+param $0
+param $5
 call set_var_val, 2
 
 twoSum_L0_LOOP:
+push $0
+
+push #0
+
+pop $5
+param $5
+call func_size, 1
+
+pop $6
+
+pop $5
+
+param $5
+call get_var_val, 1
+pop $7
+
+param $6
+call get_var_val, 1
+pop $8
+
+slt $8, $7, $8
+
+param $8
+call set_bool, 1
+pop $8
+
+mema $7, 2
+mov $7[0], 1
+mov $7[1], $8
+push $7
+
+pop $5
+
+param $5
+call get_var_val, 1
+pop $6
+
+seq $6, $6, 0
+param $6
+call set_bool, 1
+pop $6
+
+brnz twoSum_L0_END, $6
+mema $5, 2
+mov $5[0], 1
+mov $5[1], 0
+push $5
+
+pop $5
+param $1
+param $5
+call set_var_val, 2
+
+twoSum_L1_LOOP:
 push $1
 
 push #0
 
-pop $6
-param $6
+pop $5
+param $5
 call func_size, 1
 
-pop $7
-
 pop $6
+
+pop $5
+
+param $5
+call get_var_val, 1
+pop $7
 
 param $6
 call get_var_val, 1
 pop $8
 
-param $7
-call get_var_val, 1
-pop $9
+slt $8, $7, $8
 
-slt $9, $8, $9
-
-param $9
+param $8
 call set_bool, 1
-pop $9
+pop $8
 
-mema $8, 2
-mov $8[0], 1
-mov $8[1], $9
-push $8
+mema $7, 2
+mov $7[0], 1
+mov $7[1], $8
+push $7
 
+pop $5
+
+param $5
+call get_var_val, 1
 pop $6
 
+seq $6, $6, 0
 param $6
-call get_var_val, 1
-pop $7
-
-seq $7, $7, 0
-param $7
 call set_bool, 1
-pop $7
-
-brnz twoSum_L0_END, $7
-mema $6, 2
-mov $6[0], 1
-mov $6[1], 0
-push $6
-
 pop $6
-param $2
-param $6
-call set_var_val, 2
 
-twoSum_L1_LOOP:
-push $2
+brnz twoSum_L1_END, $6
+// local var int l
+mema $2, 2
+mov $2[0], 1
+mov $2[1], 0
 
 push #0
 
-pop $6
-param $6
-call func_size, 1
-
-pop $7
+pop $5
+param $5
+push $0
 
 pop $6
-
 param $6
-call get_var_val, 1
-pop $8
+call func_peek, 2
 
-param $7
-call get_var_val, 1
-pop $9
+pop $5
+param $2
+param $5
+call set_var_val, 2
 
-slt $9, $8, $9
-
-param $9
-call set_bool, 1
-pop $9
-
-mema $8, 2
-mov $8[0], 1
-mov $8[1], $9
-push $8
-
-pop $6
-
-param $6
-call get_var_val, 1
-pop $7
-
-seq $7, $7, 0
-param $7
-call set_bool, 1
-pop $7
-
-brnz twoSum_L1_END, $7
-// local var int l
+// local var int r
 mema $3, 2
 mov $3[0], 1
 mov $3[1], 0
 
 push #0
 
-pop $6
-param $6
+pop $5
+param $5
 push $1
 
-pop $7
-param $7
+pop $6
+param $6
 call func_peek, 2
 
-pop $6
+pop $5
 param $3
-param $6
+param $5
 call set_var_val, 2
 
-// local var int r
-mema $4, 2
-mov $4[0], 1
-mov $4[1], 0
-
-push #0
-
-pop $6
-param $6
-push $2
-
-pop $7
-param $7
-call func_peek, 2
-
-pop $6
-param $4
-param $6
-call set_var_val, 2
+push $0
 
 push $1
 
-push $2
-
-pop $7
-
 pop $6
+
+pop $5
+
+param $5
+call get_var_val, 1
+pop $7
 
 param $6
 call get_var_val, 1
 pop $8
 
-param $7
-call get_var_val, 1
-pop $9
-
-seq $9, $8, $9
-not $9, $9
-param $9
+seq $8, $7, $8
+not $8, $8
+param $8
 call set_bool, 1
-pop $9
+pop $8
 
-mema $8, 2
-mov $8[0], 1
-mov $8[1], $9
-push $8
+mema $7, 2
+mov $7[0], 1
+mov $7[1], $8
+push $7
+
+push $2
 
 push $3
 
+pop $6
+
+pop $5
+
+param $5
+call get_var_val, 1
+pop $7
+
+param $6
+call get_var_val, 1
+pop $8
+
+add $8, $7, $8
+
+mema $7, 2
+mov $7[0], 1
+mov $7[1], $8
+push $7
+
 push $4
 
-pop $7
-
 pop $6
+
+pop $5
+
+param $5
+call get_var_val, 1
+pop $7
 
 param $6
 call get_var_val, 1
 pop $8
 
-param $7
-call get_var_val, 1
-pop $9
+seq $8, $7, $8
 
-add $9, $8, $9
+param $8
+call set_bool, 1
+pop $8
 
-mema $8, 2
-mov $8[0], 1
-mov $8[1], $9
-push $8
-
-push $5
-
-pop $7
+mema $7, 2
+mov $7[0], 1
+mov $7[1], $8
+push $7
 
 pop $6
+
+pop $5
+
+param $5
+call get_var_val, 1
+pop $7
 
 param $6
 call get_var_val, 1
 pop $8
 
-param $7
-call get_var_val, 1
-pop $9
+and $8, $7, $8
 
-seq $9, $8, $9
-
-param $9
+param $8
 call set_bool, 1
-pop $9
-
-mema $8, 2
-mov $8[0], 1
-mov $8[1], $9
-push $8
-
-pop $7
-
-pop $6
-
-param $6
-call get_var_val, 1
 pop $8
 
-param $7
+mema $7, 2
+mov $7[0], 1
+mov $7[1], $8
+push $7
+
+pop $5
+
+param $5
 call get_var_val, 1
-pop $9
-
-and $9, $8, $9
-
-param $9
-call set_bool, 1
-pop $9
-
-mema $8, 2
-mov $8[0], 1
-mov $8[1], $9
-push $8
-
 pop $6
 
+seq $6, $6, 0
 param $6
-call get_var_val, 1
-pop $7
-
-seq $7, $7, 0
-param $7
 call set_bool, 1
-pop $7
+pop $6
 
-brnz twoSum_L2_ELSE, $7
+brnz twoSum_L2_ELSE, $6
+push $0
+
 push $1
 
-push $2
+mema $5, 3
+mov $5[0], 3
+mov $5[1], 0
+mema $6, 0
+mov $5[2], $6
+push $5
 
-push $0
+pop $5
 
 pop $6
 
-pop $7
-
+param $5
 param $6
-param $7
 call list_insert, 2
-pop $8
-push $8
-
-pop $6
-
 pop $7
+push $7
 
+pop $5
+
+pop $6
+
+param $5
 param $6
-param $7
 call list_insert, 2
-pop $8
-push $8
+pop $7
+push $7
 
-pop $6
-param $0
-param $6
-call set_var_val, 2
-
-push $0
-
-pop $6
-return $6
+pop $5
+return $5
 jump twoSum_L2_END
 twoSum_L2_ELSE:
 twoSum_L2_END:
-push $2
+push $1
 
-mema $6, 2
-mov $6[0], 1
-mov $6[1], 1
-push $6
-
-pop $7
+mema $5, 2
+mov $5[0], 1
+mov $5[1], 1
+push $5
 
 pop $6
+
+pop $5
+
+param $5
+call get_var_val, 1
+pop $7
 
 param $6
 call get_var_val, 1
 pop $8
 
-param $7
-call get_var_val, 1
-pop $9
+add $8, $7, $8
 
-add $9, $8, $9
+mema $7, 2
+mov $7[0], 1
+mov $7[1], $8
+push $7
 
-mema $8, 2
-mov $8[0], 1
-mov $8[1], $9
-push $8
-
-pop $6
-param $2
-param $6
+pop $5
+param $1
+param $5
 call set_var_val, 2
 
 jump twoSum_L1_LOOP
 twoSum_L1_END:
-push $1
+push $0
 
-mema $6, 2
-mov $6[0], 1
-mov $6[1], 1
-push $6
-
-pop $7
+mema $5, 2
+mov $5[0], 1
+mov $5[1], 1
+push $5
 
 pop $6
+
+pop $5
+
+param $5
+call get_var_val, 1
+pop $7
 
 param $6
 call get_var_val, 1
 pop $8
 
-param $7
-call get_var_val, 1
-pop $9
+add $8, $7, $8
 
-add $9, $8, $9
+mema $7, 2
+mov $7[0], 1
+mov $7[1], $8
+push $7
 
-mema $8, 2
-mov $8[0], 1
-mov $8[1], $9
-push $8
-
-pop $6
-param $1
-param $6
+pop $5
+param $0
+param $5
 call set_var_val, 2
 
 jump twoSum_L0_LOOP
 twoSum_L0_END:
-push $0
-
-pop $6
-return $6
 
 func_twoSum_END:
 

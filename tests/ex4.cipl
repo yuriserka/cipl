@@ -21,7 +21,6 @@ int peek(int list l, int pos) {
 }
 
 int list twoSum(int list nums, int target) {
-    int list a;
     int i;
     int j;
     for(i = 0; i < size(nums); i = i + 1){
@@ -31,12 +30,10 @@ int list twoSum(int list nums, int target) {
             int r;
             r = peek(nums, j);
             if(i != j && (l + r == target)) {
-                a = i : j : a;
-                return a;
+                return i : j : NIL;
             }
         }
     }
-    return a;
 }
 
 int print_ans(int list ans) {
