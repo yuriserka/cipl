@@ -50,15 +50,23 @@ void ast_userfunc_print_pretty(AST *ast, int depth) {
   ast_print_pretty(name, depth + 1);
   ast_print_pretty(params, depth + 1);
   ast_print_pretty(statements, depth + 1);
-}
 
-static void handle_no_return(AST *func_declarator) {
-  Cursor beg = cursor_init_yylloc_begin(func_declarator->rule_pos);
-  Cursor end = cursor_init_yylloc_end(func_declarator->rule_pos);
-  LineInfo *li = list_peek(&lines, beg.line - 1);
-  CIPL_PERROR_CURSOR_RANGE("missing return at end of function\n", li->text, beg,
-                           end);
-  ++errors_count;
+  int qtd_ret = 0;
+  AST_TRAVERSE(statements, AST_JMP, { ++qtd_ret; });
+  if (!qtd_ret) {
+    printf("%*.s" BMAG "<implicit-return>" RESET "\n", (depth + 2) * 4, "");
+    switch (ast->cast_info.data_type) {
+      case SYM_REAL:
+        printf("%*.s" BYEL "0.0" RESET "\n", (depth + 3) * 4, "");
+        break;
+      case SYM_INT:
+        printf("%*.s" BYEL "0" RESET "\n", (depth + 3) * 4, "");
+        break;
+      default:
+        printf("%*.s" BYEL "NIL" RESET "\n", (depth + 3) * 4, "");
+        break;
+    }
+  }
 }
 
 CastInfo ast_userfunc_type_check(AST *ast) {
@@ -72,13 +80,6 @@ CastInfo ast_userfunc_type_check(AST *ast) {
   ast_validate_types(declarator);
   ast_validate_types(params);
   ast_validate_types(statements);
-
-  int qtd_ret = 0;
-  AST_FIND_NODE(
-      statements, AST_JMP, { ++qtd_ret; },
-      {
-        if (!qtd_ret) handle_no_return(declarator);
-      });
 
   return cast_info_with_type(cast_info_none(), declarator->cast_info.data_type);
 }
@@ -144,6 +145,16 @@ void ast_userfunc_gen_code(AST *ast, FILE *out) {
   });
 
   LIST_FREE(old_params_ref, { symbol_free(__IT__->data); });
+
+  int qtd_ret = 0;
+  AST_TRAVERSE(statements, AST_JMP, { ++qtd_ret; });
+
+  if (!qtd_ret) {
+    t9n_alloc_from_constant(current_context->t9n->temp,
+                            ast->cast_info.data_type,
+                            (NumberValue){.integer = 0, .real = 0.0}, out);
+    fprintf(out, "return $%d\n", current_context->t9n->temp);
+  }
 
   fprintf(out, "\nfunc_%s_END:\n\n", name->value.symref->symbol->name);
 }
