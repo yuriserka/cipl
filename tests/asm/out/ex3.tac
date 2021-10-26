@@ -1,7 +1,6 @@
 .table
 
 char str_nil[] = "nil"
-int list_nil[] = {3, 0}
 char str_0[] = "this is a literal... string? (maybe the val is 0xFF)"
 
 .code
@@ -138,7 +137,12 @@ add $1, $1, 1
 mov $0[1], $1
 mov $2, $1
 mema $1, $2
-mov $1[0], #1
+mema $2, 2
+mov $3, #1[0]
+mov $2[0], $3
+mov $3, #1[1]
+mov $2[1], $3
+mov $1[0], $2
 list_insert_FOR:
 mov $2, 0
 list_insert_LOOP:

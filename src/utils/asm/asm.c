@@ -7,7 +7,6 @@
 static void asm_insert_str_literal_header(FILE *out) {
   int i = 0;
   fprintf(out, "\nchar str_nil[] = \"nil\"\n");
-  fprintf(out, "int list_nil[] = {%d, 0}\n", SYM_PTR);
   AST_FIND_NODE(root, AST_STR_LITERAL,
                 {
                   StringLiteralAST *str_ast = __AST__->value.str;
@@ -189,7 +188,12 @@ static void asm_list_insert(FILE *out) {
   fprintf(out, "mov $0[1], $1\n");
   fprintf(out, "mov $2, $1\n");
   fprintf(out, "mema $1, $2\n");
-  fprintf(out, "mov $1[0], #1\n");
+  fprintf(out, "mema $2, 2\n");
+  fprintf(out, "mov $3, #1[0]\n");
+  fprintf(out, "mov $2[0], $3\n");
+  fprintf(out, "mov $3, #1[1]\n");
+  fprintf(out, "mov $2[1], $3\n");
+  fprintf(out, "mov $1[0], $2\n");
   fprintf(out, "list_insert_FOR:\n");
   fprintf(out, "mov $2, 0\n");
   fprintf(out, "list_insert_LOOP:\n");

@@ -129,12 +129,27 @@ void ast_fake_stack_pop(ListNode *node);
 #define AST_TRAVERSE_UNTIL(__ROOT__, __TYPE__, __CONDITION__, \
                            __FOUND_ACTION__)                  \
   {                                                           \
-    bool __FOUND__ = false;                                   \
     ListNode *__DFS_L__ = NULL;                               \
-    LIST_FOR_EACH(__ROOT__->children, {                       \
-      AST *__CHILD__ = __IT__->data;                          \
-      if (__CHILD__) list_push(&__DFS_L__, __CHILD__);        \
-    });                                                       \
+    switch (__ROOT__->type) {                                 \
+      case AST_BLOCK_ITEM_LIST:                               \
+        LIST_FOR_EACH(__ROOT__->value.blockitems->value, {    \
+          AST *__CHILD__ = __IT__->data;                      \
+          if (__CHILD__) list_push(&__DFS_L__, __CHILD__);    \
+        });                                                   \
+        break;                                                \
+      case AST_PARAM_LIST:                                    \
+        LIST_FOR_EACH(__ROOT__->value.params->value, {        \
+          AST *__CHILD__ = __IT__->data;                      \
+          if (__CHILD__) list_push(&__DFS_L__, __CHILD__);    \
+        });                                                   \
+        break;                                                \
+      default:                                                \
+        LIST_FOR_EACH(__ROOT__->children, {                   \
+          AST *__CHILD__ = __IT__->data;                      \
+          if (__CHILD__) list_push(&__DFS_L__, __CHILD__);    \
+        });                                                   \
+    }                                                         \
+    bool __FOUND__ = false;                                   \
     AST *__AST__ = NULL;                                      \
     while ((__AST__ = list_peek(&__DFS_L__, 0))) {            \
       list_pop_front(&__DFS_L__, ast_fake_stack_pop);         \
