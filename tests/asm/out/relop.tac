@@ -1129,21 +1129,41 @@ mov $0[0], 1
 mov $0[1], 1
 push $0
 
+pop $0
+param $0
+call get_var_val, 1
+pop $1
+param $1
+call set_bool, 1
+pop $1
+
+brz main_LAZY_EVAL_L0, $1
 mema $0, 2
 mov $0[0], 1
 mov $0[1], 1
 push $0
 
+jump main_LAZY_EVAL_L0_END
+main_LAZY_EVAL_L0:
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 0
+push $1
+main_LAZY_EVAL_L0_END:
 pop $1
-
-pop $0
 
 param $0
 call get_var_val, 1
 pop $2
+param $2
+call set_bool, 1
+pop $2
 
 param $1
 call get_var_val, 1
+pop $3
+param $3
+call set_bool, 1
 pop $3
 
 and $3, $2, $3
@@ -1166,21 +1186,41 @@ mov $0[0], 1
 mov $0[1], 1
 push $0
 
+pop $0
+param $0
+call get_var_val, 1
+pop $1
+param $1
+call set_bool, 1
+pop $1
+
+brnz main_LAZY_EVAL_L1, $1
 mema $0, 2
 mov $0[0], 1
 mov $0[1], 1
 push $0
 
+jump main_LAZY_EVAL_L1_END
+main_LAZY_EVAL_L1:
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 1
+push $1
+main_LAZY_EVAL_L1_END:
 pop $1
-
-pop $0
 
 param $0
 call get_var_val, 1
 pop $2
+param $2
+call set_bool, 1
+pop $2
 
 param $1
 call get_var_val, 1
+pop $3
+param $3
+call set_bool, 1
 pop $3
 
 or $3, $2, $3
@@ -1203,21 +1243,41 @@ mov $0[0], 1
 mov $0[1], 1
 push $0
 
+pop $0
+param $0
+call get_var_val, 1
+pop $1
+param $1
+call set_bool, 1
+pop $1
+
+brz main_LAZY_EVAL_L2, $1
 mema $0, 2
 mov $0[0], 1
 mov $0[1], 0
 push $0
 
+jump main_LAZY_EVAL_L2_END
+main_LAZY_EVAL_L2:
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 0
+push $1
+main_LAZY_EVAL_L2_END:
 pop $1
-
-pop $0
 
 param $0
 call get_var_val, 1
 pop $2
+param $2
+call set_bool, 1
+pop $2
 
 param $1
 call get_var_val, 1
+pop $3
+param $3
+call set_bool, 1
 pop $3
 
 and $3, $2, $3
@@ -1240,21 +1300,41 @@ mov $0[0], 1
 mov $0[1], 1
 push $0
 
+pop $0
+param $0
+call get_var_val, 1
+pop $1
+param $1
+call set_bool, 1
+pop $1
+
+brnz main_LAZY_EVAL_L3, $1
 mema $0, 2
 mov $0[0], 1
 mov $0[1], 0
 push $0
 
+jump main_LAZY_EVAL_L3_END
+main_LAZY_EVAL_L3:
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 1
+push $1
+main_LAZY_EVAL_L3_END:
 pop $1
-
-pop $0
 
 param $0
 call get_var_val, 1
 pop $2
+param $2
+call set_bool, 1
+pop $2
 
 param $1
 call get_var_val, 1
+pop $3
+param $3
+call set_bool, 1
 pop $3
 
 or $3, $2, $3
@@ -1277,21 +1357,41 @@ mov $0[0], 1
 mov $0[1], 0
 push $0
 
+pop $0
+param $0
+call get_var_val, 1
+pop $1
+param $1
+call set_bool, 1
+pop $1
+
+brz main_LAZY_EVAL_L4, $1
 mema $0, 2
 mov $0[0], 1
 mov $0[1], 1
 push $0
 
+jump main_LAZY_EVAL_L4_END
+main_LAZY_EVAL_L4:
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 0
+push $1
+main_LAZY_EVAL_L4_END:
 pop $1
-
-pop $0
 
 param $0
 call get_var_val, 1
 pop $2
+param $2
+call set_bool, 1
+pop $2
 
 param $1
 call get_var_val, 1
+pop $3
+param $3
+call set_bool, 1
 pop $3
 
 and $3, $2, $3
@@ -1314,21 +1414,41 @@ mov $0[0], 1
 mov $0[1], 0
 push $0
 
+pop $0
+param $0
+call get_var_val, 1
+pop $1
+param $1
+call set_bool, 1
+pop $1
+
+brnz main_LAZY_EVAL_L5, $1
 mema $0, 2
 mov $0[0], 1
 mov $0[1], 1
 push $0
 
+jump main_LAZY_EVAL_L5_END
+main_LAZY_EVAL_L5:
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 1
+push $1
+main_LAZY_EVAL_L5_END:
 pop $1
-
-pop $0
 
 param $0
 call get_var_val, 1
 pop $2
+param $2
+call set_bool, 1
+pop $2
 
 param $1
 call get_var_val, 1
+pop $3
+param $3
+call set_bool, 1
 pop $3
 
 or $3, $2, $3
@@ -1351,21 +1471,41 @@ mov $0[0], 1
 mov $0[1], 0
 push $0
 
+pop $0
+param $0
+call get_var_val, 1
+pop $1
+param $1
+call set_bool, 1
+pop $1
+
+brz main_LAZY_EVAL_L6, $1
 mema $0, 2
 mov $0[0], 1
 mov $0[1], 0
 push $0
 
+jump main_LAZY_EVAL_L6_END
+main_LAZY_EVAL_L6:
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 0
+push $1
+main_LAZY_EVAL_L6_END:
 pop $1
-
-pop $0
 
 param $0
 call get_var_val, 1
 pop $2
+param $2
+call set_bool, 1
+pop $2
 
 param $1
 call get_var_val, 1
+pop $3
+param $3
+call set_bool, 1
 pop $3
 
 and $3, $2, $3
@@ -1388,21 +1528,41 @@ mov $0[0], 1
 mov $0[1], 0
 push $0
 
+pop $0
+param $0
+call get_var_val, 1
+pop $1
+param $1
+call set_bool, 1
+pop $1
+
+brnz main_LAZY_EVAL_L7, $1
 mema $0, 2
 mov $0[0], 1
 mov $0[1], 0
 push $0
 
+jump main_LAZY_EVAL_L7_END
+main_LAZY_EVAL_L7:
+mema $1, 2
+mov $1[0], 1
+mov $1[1], 1
+push $1
+main_LAZY_EVAL_L7_END:
 pop $1
-
-pop $0
 
 param $0
 call get_var_val, 1
 pop $2
+param $2
+call set_bool, 1
+pop $2
 
 param $1
 call get_var_val, 1
+pop $3
+param $3
+call set_bool, 1
 pop $3
 
 or $3, $2, $3

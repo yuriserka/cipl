@@ -273,21 +273,41 @@ mov $4[0], 1
 mov $4[1], $5
 push $4
 
+pop $2
+param $2
+call get_var_val, 1
+pop $3
+param $3
+call set_bool, 1
+pop $3
+
+brnz main_LAZY_EVAL_L0, $3
 mema $2, 2
 mov $2[0], 1
 mov $2[1], 123
 push $2
 
+jump main_LAZY_EVAL_L0_END
+main_LAZY_EVAL_L0:
+mema $3, 2
+mov $3[0], 1
+mov $3[1], 1
+push $3
+main_LAZY_EVAL_L0_END:
 pop $3
-
-pop $2
 
 param $2
 call get_var_val, 1
 pop $4
+param $4
+call set_bool, 1
+pop $4
 
 param $3
 call get_var_val, 1
+pop $5
+param $5
+call set_bool, 1
 pop $5
 
 or $5, $4, $5
@@ -312,7 +332,7 @@ param $3
 call set_bool, 1
 pop $3
 
-brnz main_L0_ELSE, $3
+brnz main_L1_ELSE, $3
 mema $2, 2
 mov $2[0], 3
 mov $2[1], &str_1
@@ -461,6 +481,15 @@ mov $4[0], 1
 mov $4[1], $5
 push $4
 
+pop $2
+param $2
+call get_var_val, 1
+pop $3
+param $3
+call set_bool, 1
+pop $3
+
+brz main_LAZY_EVAL_L2, $3
 mema $2, 2
 mov $2[0], 1
 mov $2[1], 3
@@ -495,16 +524,27 @@ mov $4[0], 1
 mov $4[1], $5
 push $4
 
+jump main_LAZY_EVAL_L2_END
+main_LAZY_EVAL_L2:
+mema $3, 2
+mov $3[0], 1
+mov $3[1], 0
+push $3
+main_LAZY_EVAL_L2_END:
 pop $3
-
-pop $2
 
 param $2
 call get_var_val, 1
 pop $4
+param $4
+call set_bool, 1
+pop $4
 
 param $3
 call get_var_val, 1
+pop $5
+param $5
+call set_bool, 1
 pop $5
 
 and $5, $4, $5
@@ -562,7 +602,7 @@ param $3
 call set_bool, 1
 pop $3
 
-brnz main_L1_ELSE, $3
+brnz main_L3_ELSE, $3
 mema $2, 2
 mov $2[0], 3
 mov $2[1], &str_6
@@ -587,11 +627,11 @@ pop $2
 param $2
 call writeln, 1
 
+jump main_L3_END
+main_L3_ELSE:
+main_L3_END:
 jump main_L1_END
 main_L1_ELSE:
-main_L1_END:
-jump main_L0_END
-main_L0_ELSE:
 mema $2, 2
 mov $2[0], 3
 mov $2[1], &str_2
@@ -601,7 +641,7 @@ pop $2
 param $2
 call writeln, 1
 
-main_L0_END:
+main_L1_END:
 push $0
 
 mema $2, 2
@@ -643,7 +683,7 @@ param $3
 call set_bool, 1
 pop $3
 
-brnz main_L2_ELSE, $3
+brnz main_L4_ELSE, $3
 mema $2, 2
 mov $2[0], 3
 mov $2[1], &str_3
@@ -653,8 +693,8 @@ pop $2
 param $2
 call writeln, 1
 
-jump main_L2_END
-main_L2_ELSE:
+jump main_L4_END
+main_L4_ELSE:
 push $0
 
 mema $2, 2
@@ -686,6 +726,15 @@ mov $4[0], 1
 mov $4[1], $5
 push $4
 
+pop $2
+param $2
+call get_var_val, 1
+pop $3
+param $3
+call set_bool, 1
+pop $3
+
+brz main_LAZY_EVAL_L5, $3
 push $0
 
 mema $2, 2
@@ -716,16 +765,27 @@ mov $4[0], 1
 mov $4[1], $5
 push $4
 
+jump main_LAZY_EVAL_L5_END
+main_LAZY_EVAL_L5:
+mema $3, 2
+mov $3[0], 1
+mov $3[1], 0
+push $3
+main_LAZY_EVAL_L5_END:
 pop $3
-
-pop $2
 
 param $2
 call get_var_val, 1
 pop $4
+param $4
+call set_bool, 1
+pop $4
 
 param $3
 call get_var_val, 1
+pop $5
+param $5
+call set_bool, 1
 pop $5
 
 and $5, $4, $5
@@ -750,7 +810,7 @@ param $3
 call set_bool, 1
 pop $3
 
-brnz main_L3_ELSE, $3
+brnz main_L6_ELSE, $3
 mema $2, 2
 mov $2[0], 3
 mov $2[1], &str_4
@@ -760,8 +820,8 @@ pop $2
 param $2
 call writeln, 1
 
-jump main_L3_END
-main_L3_ELSE:
+jump main_L6_END
+main_L6_ELSE:
 mema $2, 2
 mov $2[0], 1
 mov $2[1], 100
@@ -772,8 +832,8 @@ param $0
 param $2
 call set_var_val, 2
 
-main_L3_END:
-main_L2_END:
+main_L6_END:
+main_L4_END:
 push $0
 
 pop $2
@@ -799,7 +859,7 @@ param $3
 call set_bool, 1
 pop $3
 
-brnz main_L4_ELSE, $3
+brnz main_L7_ELSE, $3
 mema $2, 2
 mov $2[0], 3
 mov $2[1], &str_5
@@ -815,9 +875,9 @@ pop $2
 param $2
 call writeln, 1
 
-jump main_L4_END
-main_L4_ELSE:
-main_L4_END:
+jump main_L7_END
+main_L7_ELSE:
+main_L7_END:
 mema $2, 2
 mov $2[0], 1
 mov $2[1], 0

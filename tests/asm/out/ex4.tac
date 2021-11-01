@@ -792,6 +792,15 @@ mov $7[0], 1
 mov $7[1], $8
 push $7
 
+pop $5
+param $5
+call get_var_val, 1
+pop $6
+param $6
+call set_bool, 1
+pop $6
+
+brz twoSum_LAZY_EVAL_L2, $6
 push $2
 
 push $3
@@ -840,16 +849,27 @@ mov $7[0], 1
 mov $7[1], $8
 push $7
 
+jump twoSum_LAZY_EVAL_L2_END
+twoSum_LAZY_EVAL_L2:
+mema $6, 2
+mov $6[0], 1
+mov $6[1], 0
+push $6
+twoSum_LAZY_EVAL_L2_END:
 pop $6
-
-pop $5
 
 param $5
 call get_var_val, 1
 pop $7
+param $7
+call set_bool, 1
+pop $7
 
 param $6
 call get_var_val, 1
+pop $8
+param $8
+call set_bool, 1
 pop $8
 
 and $8, $7, $8
@@ -874,7 +894,7 @@ param $6
 call set_bool, 1
 pop $6
 
-brnz twoSum_L2_ELSE, $6
+brnz twoSum_L3_ELSE, $6
 push $0
 
 push $1
@@ -908,9 +928,9 @@ push $7
 
 pop $5
 return $5
-jump twoSum_L2_END
-twoSum_L2_ELSE:
-twoSum_L2_END:
+jump twoSum_L3_END
+twoSum_L3_ELSE:
+twoSum_L3_END:
 push $1
 
 mema $5, 2

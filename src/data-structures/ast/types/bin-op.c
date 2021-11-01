@@ -353,12 +353,6 @@ static void rel_gen_code(char *op, FILE *out) {
       fprintf(out, "pop $%d\n\n", temp + 3);
       t9n_alloc_from_other_value(temp + 2, temp + 3, SYM_INT, VAR, out);
       return;
-    case '&':
-      fprintf(out, "and");
-      break;
-    case '|':
-      fprintf(out, "or");
-      break;
   }
 
   fprintf(out, " $%d, $%d, $%d\n\n", temp + 3, temp + 2, temp + 3);
@@ -472,17 +466,89 @@ static void mapfil_gen_code(AST *ast, AST *lhs, AST *rhs, char *op, FILE *out) {
   }
 }
 
+void bool_gen_code(AST *ast, AST *lhs, AST *rhs, char *op, FILE *out) {
+  int tmp = current_context->t9n->temp;
+
+  ast_gen_code(lhs, out);
+  if (ast->cast_info.direction == L_CAST)
+    cast_gen_code(ast->cast_info, tmp, out);
+
+  fprintf(out, "pop $%d\n", tmp);
+
+  fprintf(out, "param $%d\n", tmp);
+  fprintf(out, "call get_var_val, 1\n");
+  fprintf(out, "pop $%d\n", tmp + 1);
+  fprintf(out, "param $%d\n", tmp + 1);
+  fprintf(out, "call set_bool, 1\n");
+  fprintf(out, "pop $%d\n\n", tmp + 1);
+
+  int label = current_context->t9n->label;
+
+  fprintf(out, "%s %s_LAZY_EVAL_L%d, $%d\n", *op == '&' ? "brz" : "brnz",
+          current_context->name, label, tmp + 1);
+
+  current_context->t9n->label++;
+  ast_gen_code(rhs, out);
+  if (ast->cast_info.direction == R_CAST)
+    cast_gen_code(ast->cast_info, current_context->t9n->temp, out);
+
+  fprintf(out, "jump %s_LAZY_EVAL_L%d_END\n", current_context->name, label);
+
+  fprintf(out, "%s_LAZY_EVAL_L%d:\n", current_context->name, label);
+  t9n_alloc_from_constant(tmp + 1, SYM_INT,
+                          (NumberValue){
+                              .integer = *op != '&',
+                          },
+                          out);
+  fprintf(out, "push $%d\n", tmp + 1);
+
+  fprintf(out, "%s_LAZY_EVAL_L%d_END:\n", current_context->name, label);
+  fprintf(out, "pop $%d\n\n", tmp + 1);
+  // fprintf(out, "pop $%d\n\n", tmp);
+
+  fprintf(out, "param $%d\n", tmp);
+  fprintf(out, "call get_var_val, 1\n");
+  fprintf(out, "pop $%d\n", tmp + 2);
+  fprintf(out, "param $%d\n", tmp + 2);
+  fprintf(out, "call set_bool, 1\n");
+  fprintf(out, "pop $%d\n\n", tmp + 2);
+
+  fprintf(out, "param $%d\n", tmp + 1);
+  fprintf(out, "call get_var_val, 1\n");
+  fprintf(out, "pop $%d\n", tmp + 3);
+  fprintf(out, "param $%d\n", tmp + 3);
+  fprintf(out, "call set_bool, 1\n");
+  fprintf(out, "pop $%d\n\n", tmp + 3);
+
+  switch (*op) {
+    case '&':
+      fprintf(out, "and");
+      break;
+    case '|':
+      fprintf(out, "or");
+      break;
+  }
+
+  fprintf(out, " $%d, $%d, $%d\n\n", tmp + 3, tmp + 2, tmp + 3);
+  fprintf(out, "param $%d\n", tmp + 3);
+  fprintf(out, "call set_bool, 1\n");
+  fprintf(out, "pop $%d\n\n", tmp + 3);
+  t9n_alloc_from_other_value(tmp + 2, tmp + 3, SYM_INT, VAR, out);
+}
+
 void ast_binop_gen_code(AST *ast, FILE *out) {
   BinOpAST *binop_ast = ast->value.binop;
   AST *lhs = list_peek(&ast->children, 0), *rhs = list_peek(&ast->children, 1);
 
-  ast_gen_code(lhs, out);
-  if (ast->cast_info.direction == L_CAST)
-    cast_gen_code(ast->cast_info, current_context->t9n->temp, out);
+  if (*binop_ast->op != '&' && *binop_ast->op != '|') {
+    ast_gen_code(lhs, out);
+    if (ast->cast_info.direction == L_CAST)
+      cast_gen_code(ast->cast_info, current_context->t9n->temp, out);
 
-  ast_gen_code(rhs, out);
-  if (ast->cast_info.direction == R_CAST)
-    cast_gen_code(ast->cast_info, current_context->t9n->temp, out);
+    ast_gen_code(rhs, out);
+    if (ast->cast_info.direction == R_CAST)
+      cast_gen_code(ast->cast_info, current_context->t9n->temp, out);
+  }
 
   switch (binop_ast->op[0]) {
     case ':':
@@ -496,9 +562,11 @@ void ast_binop_gen_code(AST *ast, FILE *out) {
       break;
     case '=':
     case '!':
+      rel_gen_code(binop_ast->op, out);
+      break;
     case '&':
     case '|':
-      rel_gen_code(binop_ast->op, out);
+      bool_gen_code(ast, lhs, rhs, binop_ast->op, out);
       break;
     default:
       arith_gen_code(ast, binop_ast->op, out);
