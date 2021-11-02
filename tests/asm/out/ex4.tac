@@ -250,12 +250,11 @@ param $0
 call get_var_val, 1
 pop $1
 
-seq $1, $1, 0
 param $1
 call set_bool, 1
 pop $1
 
-brnz printf_L0_ELSE, $1
+brz printf_L0_ELSE, $1
 mema $0, 2
 mov $0[0], 1
 mov $0[1], 0
@@ -324,12 +323,11 @@ param $0
 call get_var_val, 1
 pop $1
 
-seq $1, $1, 0
 param $1
 call set_bool, 1
 pop $1
 
-brnz printf_L1_ELSE, $1
+brz printf_L1_ELSE, $1
 mema $0, 2
 mov $0[0], 3
 mov $0[1], &str_2
@@ -401,12 +399,11 @@ param $0
 call get_var_val, 1
 pop $1
 
-seq $1, $1, 0
 param $1
 call set_bool, 1
 pop $1
 
-brnz size_L0_ELSE, $1
+brz size_L0_ELSE, $1
 mema $0, 2
 mov $0[0], 1
 mov $0[1], 0
@@ -531,12 +528,11 @@ param $3
 call get_var_val, 1
 pop $4
 
-seq $4, $4, 0
 param $4
 call set_bool, 1
 pop $4
 
-brnz peek_L0_END, $4
+brz peek_L0_END, $4
 push $1
 
 pop $3
@@ -665,12 +661,11 @@ param $5
 call get_var_val, 1
 pop $6
 
-seq $6, $6, 0
 param $6
 call set_bool, 1
 pop $6
 
-brnz twoSum_L0_END, $6
+brz twoSum_L0_END, $6
 mema $5, 2
 mov $5[0], 1
 mov $5[1], 0
@@ -719,12 +714,11 @@ param $5
 call get_var_val, 1
 pop $6
 
-seq $6, $6, 0
 param $6
 call set_bool, 1
 pop $6
 
-brnz twoSum_L1_END, $6
+brz twoSum_L1_END, $6
 // local var int l
 mema $2, 2
 mov $2[0], 1
@@ -799,6 +793,7 @@ pop $6
 param $6
 call set_bool, 1
 pop $6
+push $5
 
 brz twoSum_LAZY_EVAL_L2, $6
 push $2
@@ -858,6 +853,8 @@ push $6
 twoSum_LAZY_EVAL_L2_END:
 pop $6
 
+pop $5
+
 param $5
 call get_var_val, 1
 pop $7
@@ -889,12 +886,11 @@ param $5
 call get_var_val, 1
 pop $6
 
-seq $6, $6, 0
 param $6
 call set_bool, 1
 pop $6
 
-brnz twoSum_L3_ELSE, $6
+brz twoSum_L3_ELSE, $6
 push $0
 
 push $1

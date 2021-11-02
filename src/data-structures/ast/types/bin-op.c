@@ -474,13 +474,13 @@ void bool_gen_code(AST *ast, AST *lhs, AST *rhs, char *op, FILE *out) {
     cast_gen_code(ast->cast_info, tmp, out);
 
   fprintf(out, "pop $%d\n", tmp);
-
   fprintf(out, "param $%d\n", tmp);
   fprintf(out, "call get_var_val, 1\n");
   fprintf(out, "pop $%d\n", tmp + 1);
   fprintf(out, "param $%d\n", tmp + 1);
   fprintf(out, "call set_bool, 1\n");
-  fprintf(out, "pop $%d\n\n", tmp + 1);
+  fprintf(out, "pop $%d\n", tmp + 1);
+  fprintf(out, "push $%d\n\n", tmp);
 
   int label = current_context->t9n->label;
 
@@ -504,7 +504,7 @@ void bool_gen_code(AST *ast, AST *lhs, AST *rhs, char *op, FILE *out) {
 
   fprintf(out, "%s_LAZY_EVAL_L%d_END:\n", current_context->name, label);
   fprintf(out, "pop $%d\n\n", tmp + 1);
-  // fprintf(out, "pop $%d\n\n", tmp);
+  fprintf(out, "pop $%d\n\n", tmp);
 
   fprintf(out, "param $%d\n", tmp);
   fprintf(out, "call get_var_val, 1\n");

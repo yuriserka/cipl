@@ -361,12 +361,11 @@ param $6
 call get_var_val, 1
 pop $7
 
-seq $7, $7, 0
 param $7
 call set_bool, 1
 pop $7
 
-brnz main_L0_END, $7
+brz main_L0_END, $7
 push $3
 
 pop $6
@@ -537,12 +536,11 @@ param $6
 call get_var_val, 1
 pop $7
 
-seq $7, $7, 0
 param $7
 call set_bool, 1
 pop $7
 
-brnz main_L2_END, $7
+brz main_L2_END, $7
 mema $6, 2
 mov $6[0], 3
 mov $6[1], &str_0

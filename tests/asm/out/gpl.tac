@@ -602,12 +602,11 @@ param $5
 call get_var_val, 1
 pop $6
 
-seq $6, $6, 0
 param $6
 call set_bool, 1
 pop $6
 
-brnz main_L0_END, $6
+brz main_L0_END, $6
 push $4
 
 pop $5

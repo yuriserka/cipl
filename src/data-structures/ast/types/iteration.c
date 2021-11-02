@@ -78,8 +78,9 @@ void ast_iter_gen_code(AST *ast, FILE *out) {
 
   ast_gen_code(b4_all, out);
 
-  fprintf(out, "%s_L%d_LOOP:\n", current_context->name,
-          current_context->t9n->label);
+  int label = current_context->t9n->label;
+
+  fprintf(out, "%s_L%d_LOOP:\n", current_context->name, label);
 
   ast_gen_code(b4_each, out);
 
@@ -87,14 +88,14 @@ void ast_iter_gen_code(AST *ast, FILE *out) {
   fprintf(out, "param $%d\n", curr_tmp);
   fprintf(out, "call get_var_val, 1\n");
   fprintf(out, "pop $%d\n\n", curr_tmp + 1);
-  fprintf(out, "seq $%d, $%d, 0\n", curr_tmp + 1, curr_tmp + 1);
+  // fprintf(out, "seq $%d, $%d, 0\n", curr_tmp + 1, curr_tmp + 1);
   fprintf(out, "param $%d\n", curr_tmp + 1);
   fprintf(out, "call set_bool, 1\n");
   fprintf(out, "pop $%d\n\n", curr_tmp + 1);
-  fprintf(out, "brnz %s_L%d_END, $%d\n", current_context->name,
-          current_context->t9n->label, curr_tmp + 1);
-  int label = current_context->t9n->label++;
+  fprintf(out, "brz %s_L%d_END, $%d\n", current_context->name, label,
+          curr_tmp + 1);
 
+  ++current_context->t9n->label;
   ast_gen_code(stmts, out);
 
   ast_gen_code(after_each, out);

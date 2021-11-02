@@ -412,12 +412,11 @@ param $2
 call get_var_val, 1
 pop $3
 
-seq $3, $3, 0
 param $3
 call set_bool, 1
 pop $3
 
-brnz print_list_it_L0_END, $3
+brz print_list_it_L0_END, $3
 push $1
 
 pop $2
@@ -476,12 +475,11 @@ param $2
 call get_var_val, 1
 pop $3
 
-seq $3, $3, 0
 param $3
 call set_bool, 1
 pop $3
 
-brnz print_list_it_L1_ELSE, $3
+brz print_list_it_L1_ELSE, $3
 mema $2, 2
 mov $2[0], 3
 mov $2[1], &str_13
@@ -597,12 +595,11 @@ param $0
 call get_var_val, 1
 pop $1
 
-seq $1, $1, 0
 param $1
 call set_bool, 1
 pop $1
 
-brnz print_ilist_rec_L0_ELSE, $1
+brz print_ilist_rec_L0_ELSE, $1
 mema $0, 2
 mov $0[0], 1
 mov $0[1], 0
@@ -671,12 +668,11 @@ param $0
 call get_var_val, 1
 pop $1
 
-seq $1, $1, 0
 param $1
 call set_bool, 1
 pop $1
 
-brnz print_ilist_rec_L1_ELSE, $1
+brz print_ilist_rec_L1_ELSE, $1
 mema $0, 2
 mov $0[0], 3
 mov $0[1], &str_5
@@ -753,12 +749,11 @@ param $0
 call get_var_val, 1
 pop $1
 
-seq $1, $1, 0
 param $1
 call set_bool, 1
 pop $1
 
-brnz print_flist_rec_L0_ELSE, $1
+brz print_flist_rec_L0_ELSE, $1
 mema $0, 2
 mov $0[0], 1
 mov $0[1], 0
@@ -827,12 +822,11 @@ param $0
 call get_var_val, 1
 pop $1
 
-seq $1, $1, 0
 param $1
 call set_bool, 1
 pop $1
 
-brnz print_flist_rec_L1_ELSE, $1
+brz print_flist_rec_L1_ELSE, $1
 mema $0, 2
 mov $0[0], 3
 mov $0[1], &str_6
@@ -909,12 +903,11 @@ param $0
 call get_var_val, 1
 pop $1
 
-seq $1, $1, 0
 param $1
 call set_bool, 1
 pop $1
 
-brnz sum_list_L0_ELSE, $1
+brz sum_list_L0_ELSE, $1
 mema $0, 2
 mov $0[0], 1
 mov $0[1], 0
@@ -1228,12 +1221,11 @@ param $3
 call get_var_val, 1
 pop $4
 
-seq $4, $4, 0
 param $4
 call set_bool, 1
 pop $4
 
-brnz main_L0_ELSE, $4
+brz main_L0_ELSE, $4
 mema $3, 2
 mov $3[0], 3
 mov $3[1], &str_7
@@ -1559,12 +1551,11 @@ param $3
 call get_var_val, 1
 pop $4
 
-seq $4, $4, 0
 param $4
 call set_bool, 1
 pop $4
 
-brnz main_L1_ELSE, $4
+brz main_L1_ELSE, $4
 mema $3, 2
 mov $3[0], 3
 mov $3[1], &str_12
@@ -1679,12 +1670,11 @@ param $3
 call get_var_val, 1
 pop $4
 
-seq $4, $4, 0
 param $4
 call set_bool, 1
 pop $4
 
-brnz main_L2_ELSE, $4
+brz main_L2_ELSE, $4
 mema $3, 2
 mov $3[0], 3
 mov $3[1], &str_14

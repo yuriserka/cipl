@@ -331,12 +331,11 @@ param $6
 call get_var_val, 1
 pop $7
 
-seq $7, $7, 0
 param $7
 call set_bool, 1
 pop $7
 
-brnz read_list_L0_END, $7
+brz read_list_L0_END, $7
 // local var int elem
 mema $4, 2
 mov $4[0], 1
@@ -696,12 +695,11 @@ param $6
 call get_var_val, 1
 pop $7
 
-seq $7, $7, 0
 param $7
 call set_bool, 1
 pop $7
 
-brnz main_L2_ELSE, $7
+brz main_L2_ELSE, $7
 // local var float list AUXL
 mema $4, 3
 mov $4[0], 5
@@ -770,12 +768,11 @@ param $6
 call get_var_val, 1
 pop $7
 
-seq $7, $7, 0
 param $7
 call set_bool, 1
 pop $7
 
-brnz main_L3_END, $7
+brz main_L3_END, $7
 push $5
 
 mema $6, 2
